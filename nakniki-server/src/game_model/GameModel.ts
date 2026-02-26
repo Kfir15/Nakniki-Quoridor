@@ -1,39 +1,69 @@
-import { PlayerId, GameState, GameStatus, Player } from "./types";
+import { PlayerId, GameState, GameStatus, Player, Orientation } from "./types";
 import { Position } from "./Position";
-import { Wall } from "./Wall";
+import { BoardManager } from "./BoardManager";
+
+const BOARD_SIZE = 9
+const MIDDLE_COL_OF_BOARD = ((BOARD_SIZE - 1) / 2)
 
 export class GameModel {
     private gameId: string;
-    private rows: number;
-    private cols: number;
+    private size: number;
     private players: Record<PlayerId, Player>;
     private currentTurn: PlayerId;
-    private walls: Wall[];
+    private boardManager: BoardManager;
     public status: GameStatus;
     public winner: PlayerId | null;
 
     constructor(gameId: string) {
         this.gameId = gameId;
-        this.rows = 9;
-        this.cols = 9;
+        this.size = BOARD_SIZE;
+        this.boardManager = new BoardManager(this.size);
         this.players = {
             p1: {
                 id: 'p1',
-                position: new Position(8, 4),
+                position: new Position(BOARD_SIZE - 1, MIDDLE_COL_OF_BOARD),
                 wallsLeft: 10
             },
             p2: {
                 id: 'p2',
-                position: new Position(0, 4),
+                position: new Position(0, MIDDLE_COL_OF_BOARD),
                 wallsLeft: 10
             }
         };
         this.currentTurn = 'p1';
         this.status = 'IN_PROGRESS';
         this.winner = null;
-        this.walls = [];
     }
 
+    public tryPlaceWall(playerId: PlayerId, wallPosition: Position, orientation: Orientation): [boolean, GameState] {
+        // check if player is allowed to place wall
+        if (this.status === 'FINISHED' || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {
+            return [false, this.getState()];
+        }
+
+        // check if the wall can be placed in the desired position
+        if (!this.boardManager.canPlaceWall(wallPosition, orientation)) {
+            return [false, this.getState()];
+        }
+
+        // place the wall
+        this.boardManager.placeWall(wallPosition, orientation);
+
+        // Check there is paths
+        if (!this.boardManager.hasPath(this.players.p1.position, 0) || !this.boardManager.hasPath(this.players.p2.position, BOARD_SIZE - 1)) {
+            // if not, remove the wall and return false
+            this.boardManager.removeWall(wallPosition, orientation);
+            return [false, this.getState()];
+        }
+
+        // Decrease the player's walls left
+        this.players[playerId].wallsLeft--;
+
+        // Switch the turn
+        this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
+        return [true, this.getState()];
+    }
+    
     public tryMovePawn(playerId: PlayerId, target: Position): [boolean, GameState] {
         // check if player is allowed to move
         if (this.status === 'FINISHED' || playerId !== this.currentTurn) {
@@ -41,11 +71,11 @@ export class GameModel {
         }
 
         // check if the target is in the board
-        if (!target.isWithinBounds(this.rows, this.cols)) {
+        if (!target.isWithinBounds(this.size)) {
             return [false, this.getState()];
         }
 
-        // get the player position
+        // get the players position
         const currentPos = this.players[playerId].position;
         const opponentId = playerId === 'p1' ? 'p2' : 'p1';
         const opponentPos = this.players[opponentId].position;
@@ -53,14 +83,15 @@ export class GameModel {
         // check if the target is near pos
         const { rowDiff, colDiff } = currentPos.getDiff(target);
 
+        // regular move
         if (rowDiff + colDiff == 1) {
             // check if the target is the opponent
             if (target.equals(opponentPos)) {
                 return [false, this.getState()];
             }
 
-            // check if blocked by wall
-            if (this.blockedByWall(currentPos, target)) {
+            // check if move blocked by wall
+            if (this.boardManager.isMoveBlocked(currentPos, target)) {
                 return [false, this.getState()];
             }
 
@@ -68,17 +99,16 @@ export class GameModel {
             this.movePawn(playerId, target);
             return [true, this.getState()];
         }
-        // straight jump
+        // jump above opponent
         else if ((rowDiff == 2 && colDiff == 0) || (rowDiff == 0 && colDiff == 2)) {
             // check if the oppenent is in the way
-            const rowAvg = (currentPos.r + target.r) / 2;
-            const colAvg = (currentPos.c + target.c) / 2;
-            if (!(opponentPos.r === rowAvg && opponentPos.c === colAvg)) {
+            const avgPos = new Position((currentPos.r + target.r) / 2, (currentPos.c + target.c) / 2);
+            if (!opponentPos.equals(avgPos)) {
                 return [false, this.getState()];
             }
 
             // check that the way is not blocked by wall
-            if (this.blockedByWall(opponentPos, target) || this.blockedByWall(currentPos, opponentPos)) {
+            if (this.boardManager.isMoveBlocked(currentPos, opponentPos) || this.boardManager.isMoveBlocked(opponentPos, target)) {
                 return [false, this.getState()];
             }
 
@@ -86,58 +116,52 @@ export class GameModel {
             this.movePawn(playerId, target);
             return [true, this.getState()];
         }
-
+        // Opponent in front and blocked by wall behind them (diagonal move)
+        // else if (rowDiff == 1 && colDiff == 1) {
+        //     // TODO (mybe)
+        // }
         else {
             return [false, this.getState()];
         }
+
     }
 
+    // Moves the pawn (assuming the move is valid)
     private movePawn(playerId: PlayerId, target: Position): void {
-        // move the pawn
+        // Move the pawn
         this.players[playerId].position = target;
 
-        // check if the player won
+        // Check if the player won
         this.checkWin();
 
-        // switch the turn
+        // Switch the turn
         if (this.status !== 'FINISHED') {
             this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
         }
     }
 
-    private blockedByWall(pos1: Position, pos2: Position): boolean {
-        // check if the wall is between pos1 and pos2
-        for (const wall of this.walls) {
-            if (wall.blocksMove(pos1, pos2)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private checkWin(): void {
-        // check if the game ended
+        // check if a player has reached their end goal
         if (this.players.p1.position.r === 0) {
             this.status = 'FINISHED';
             this.winner = 'p1';
         }
-        if (this.players.p2.position.r === 8) {
+        if (this.players.p2.position.r === BOARD_SIZE - 1) {
             this.status = 'FINISHED';
             this.winner = 'p2';
         }
     }
-
+    
     public getState(): GameState {
         return {
             id: this.gameId,
-            rows: this.rows,
-            cols: this.cols,
+            size: this.size,
             player1: this.players.p1,
             player2: this.players.p2,
             turn: this.currentTurn,
             status: this.status,
-            walls: this.walls,
-            winner: this.winner
+            winner: this.winner,
+            extendedBoard: this.boardManager.getBoard()
         };
     }
 }
