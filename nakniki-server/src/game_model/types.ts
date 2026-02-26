@@ -1,5 +1,7 @@
 import { Position } from "./Position";
-import { Wall } from "./Wall";
+import { CellType } from "./BoardManager";
+
+export type Orientation = "h" | "v";
 
 export type PlayerId = 'p1' | 'p2';
 
@@ -13,12 +15,11 @@ export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
 
 export interface GameState {
     id: string;
-    rows: number;
-    cols: number;
+    size: number;
     player1: Player;
     player2: Player;
     turn: PlayerId;
     status: GameStatus;
-    walls: Wall[];
     winner: PlayerId | null;
+    extendedBoard?: CellType[][];
 }

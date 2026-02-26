@@ -14,9 +14,9 @@ export class Position {
         return this.r === other.r && this.c === other.c;
     }
 
-    // check if pos in bounds
-    public isWithinBounds(rows: number, cols: number): boolean {
-        return this.r >= 0 && this.r < rows && this.c >= 0 && this.c < cols;
+    // check if the position in bounds
+    public isWithinBounds(size: number): boolean {
+        return this.r >= 0 && this.r < size && this.c >= 0 && this.c < size;
     }
 
     // check if adjacent to other position
