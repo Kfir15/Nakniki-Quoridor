@@ -1,14 +1,19 @@
 import { GameModel } from './GameModel';
 
+export interface GameSession {
+    game: GameModel;
+    isAI: boolean;
+}
+
 export class GameManager {
-    private games: Map<string, GameModel>;
+    private games: Map<string, GameSession>;
 
     constructor() {
-        this.games = new Map<string, GameModel>();
+        this.games = new Map<string, GameSession>();
     }
 
     // generate random 6 digits game id
-    private generateGameId(): string {
+    private generateSessionId(): string {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         const MAX_ATTEMPTS = 1000;
 
@@ -29,31 +34,37 @@ export class GameManager {
         throw new Error("Server is too busy to generate a unique lobby code right now.");
     }
 
-
-    // create new game
-    public createGame(): GameModel {
+    // create new Session
+    public createSession(isAI: boolean = false): { gameId: string, session: GameSession } {
         // get the game id
-        const gameId = this.generateGameId();
+        const gameId = this.generateSessionId();
 
         // create the new game
         const newGame = new GameModel(gameId);
-        this.games.set(gameId, newGame);
+        const newSession: GameSession = {
+            game: newGame,
+            isAI: isAI
+        };
 
-        return newGame;
+        // store the session in the map
+        this.games.set(gameId, newSession);
+
+        // return both the ID and the session
+        return { gameId, session: newSession };
     }
 
-    // get game by id
-    public getGame(gameId: string): GameModel | undefined {
+    // get Session by id
+    public getSession(gameId: string): GameSession | undefined {
         return this.games.get(gameId);
     }
 
-    // check if game exists
-    public hasGame(gameId: string): boolean {
+    // check if Session exists
+    public hasSession(gameId: string): boolean {
         return this.games.has(gameId);
     }
 
-    // delete game
-    public deleteGame(gameId: string): boolean {
+    // delete Session
+    public deleteSession(gameId: string): boolean {
         return this.games.delete(gameId);
     }
 }

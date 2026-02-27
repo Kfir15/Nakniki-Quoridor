@@ -4,6 +4,7 @@ import { BoardManager } from "./BoardManager";
 
 const BOARD_SIZE = 9
 const MIDDLE_COL_OF_BOARD = ((BOARD_SIZE - 1) / 2)
+const INITIAL_WALLS = 10;
 
 export class GameModel {
     private gameId: string;
@@ -22,12 +23,14 @@ export class GameModel {
             p1: {
                 id: 'p1',
                 position: new Position(BOARD_SIZE - 1, MIDDLE_COL_OF_BOARD),
-                wallsLeft: 10
+                wallsLeft: INITIAL_WALLS,
+                targetRow: 0,
             },
             p2: {
                 id: 'p2',
                 position: new Position(0, MIDDLE_COL_OF_BOARD),
-                wallsLeft: 10
+                wallsLeft: INITIAL_WALLS,
+                targetRow: BOARD_SIZE - 1,
             }
         };
         this.currentTurn = 'p1';
@@ -50,7 +53,8 @@ export class GameModel {
         this.boardManager.placeWall(wallPosition, orientation);
 
         // Check there is paths
-        if (!this.boardManager.hasPath(this.players.p1.position, 0) || !this.boardManager.hasPath(this.players.p2.position, BOARD_SIZE - 1)) {
+        if (!this.boardManager.hasPath(this.players.p1.position, this.players.p1.targetRow)
+             || !this.boardManager.hasPath(this.players.p2.position, this.players.p2.targetRow)) {
             // if not, remove the wall and return false
             this.boardManager.removeWall(wallPosition, orientation);
             return [false, this.getState()];
@@ -142,11 +146,11 @@ export class GameModel {
 
     private checkWin(): void {
         // check if a player has reached their end goal
-        if (this.players.p1.position.r === 0) {
+        if (this.players.p1.position.r === this.players.p1.targetRow) {
             this.status = 'FINISHED';
             this.winner = 'p1';
         }
-        if (this.players.p2.position.r === BOARD_SIZE - 1) {
+        if (this.players.p2.position.r === this.players.p2.targetRow) {
             this.status = 'FINISHED';
             this.winner = 'p2';
         }
