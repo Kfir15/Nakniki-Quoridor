@@ -9,6 +9,7 @@ export interface Player {
     id: PlayerId;
     position: Position;
     wallsLeft: number;
+    targetRow: number;
 }
 
 export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
