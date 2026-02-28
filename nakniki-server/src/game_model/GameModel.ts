@@ -133,10 +133,17 @@ export class GameModel {
             const { rowDiff: oppRowTrueDiff, colDiff: oppColTrueDiff } = opponentPos.getTrueValueDiff(currentPos);
             const opponentFrontPos = new Position(opponentPos.r + oppRowTrueDiff, opponentPos.c + oppColTrueDiff);
             
-            // If the way to the opponent is blocked, or the way behind the opponent is not blocked, the move is illegal
-            if (this.boardManager.isMoveBlocked(currentPos, opponentPos) || !this.boardManager.isMoveBlocked(opponentPos, opponentFrontPos)) {
+            // If the way to the opponent is blocked,
+            if (this.boardManager.isMoveBlocked(currentPos, opponentPos)) {
                 return [false, this.getState()];
             }
+
+            // Checking if the opponent is at the edge of the board, if not, checking if the position in front of the opponent is blocked
+            if (opponentFrontPos.isWithinBounds(this.size)) {
+                if (!this.boardManager.isMoveBlocked(opponentPos, opponentFrontPos)) {
+                    return [false, this.getState()];
+                }
+            }    
 
             // Check if the target is in a diagonal position, and goes through the opponent
             // First we check whether the opponent is in the same row or column as the player.
