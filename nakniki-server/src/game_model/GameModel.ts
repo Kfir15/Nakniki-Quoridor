@@ -121,9 +121,54 @@ export class GameModel {
             return [true, this.getState()];
         }
         // Opponent in front and blocked by wall behind them (diagonal move)
-        // else if (rowDiff == 1 && colDiff == 1) {
-        //     // TODO (mybe)
-        // }
+        else if (rowDiff == 1 && colDiff == 1) {
+            const { rowDiff: oppRowDiff, colDiff: oppColDiff } = currentPos.getDiff(opponentPos);
+            
+            // Checking if the opponent is one tile away from the player
+            if (Math.abs(oppRowDiff) + Math.abs(oppColDiff) != 1) {
+                return [false, this.getState()];
+            }
+            // Check if there is a wall blocking the jump over the opponent
+            // First saves the true value diff (positive or negative) to calculate the position behind the opponent
+            const { rowDiff: oppRowTrueDiff, colDiff: oppColTrueDiff } = opponentPos.getTrueValueDiff(currentPos);
+            const opponentFrontPos = new Position(opponentPos.r + oppRowTrueDiff, opponentPos.c + oppColTrueDiff);
+            
+            // If the way to the opponent is blocked, or the way behind the opponent is not blocked, the move is illegal
+            if (this.boardManager.isMoveBlocked(currentPos, opponentPos) || !this.boardManager.isMoveBlocked(opponentPos, opponentFrontPos)) {
+                return [false, this.getState()];
+            }
+
+            // Check if the target is in a diagonal position, and goes through the opponent
+            // First we check whether the opponent is in the same row or column as the player.
+            // Then we check if the target is in the correct diagonal position (relative to the opponent)
+            if ((oppRowDiff == 0)) {
+                // Opponent is in the same row, so the target should in a different row than the opponent, and the same col
+                if (target.c != opponentPos.c || Math.abs(target.r - opponentPos.r) != 1) {
+                    return [false, this.getState()];
+                }
+                // Now check if the way from the opponent to the target is blocked or not
+                if (this.boardManager.isMoveBlocked(opponentPos, target)) {
+                    return [false, this.getState()];
+                }
+                // If we passed all checks, the mvoe is legal, so we move the pawn
+                this.movePawn(playerId, target);
+                return [true, this.getState()];
+
+            } else {
+                // Opponent is in the same column, so the target should be in a different column than the opponent, and the same row
+                if (target.r != opponentPos.r || Math.abs(target.c - opponentPos.c) != 1) {
+                    return [false, this.getState()];
+                }
+                // Now check if the way from the opponent to the target is blocked or not
+                if (this.boardManager.isMoveBlocked(opponentPos, target)) {
+                    return [false, this.getState()];
+                }
+                // If we passed all checks, the mvoe is legal, so we move the pawn
+                this.movePawn(playerId, target);
+                return [true, this.getState()]; 
+            }
+        }
+        // In case the target tile is more than two moves away, it is illegal.
         else {
             return [false, this.getState()];
         }
