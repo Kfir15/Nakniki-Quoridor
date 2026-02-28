@@ -33,4 +33,12 @@ export class Position {
             colDiff: Math.abs(this.c - other.c)
         };
     }
+
+    // Returns the coordinates of THIS minus the coordinates of OTHER, without taking the absolute value.
+    public getTrueValueDiff(other: Position) {
+        return {
+            rowDiff: this.r - other.r,
+            colDiff: this.c - other.c
+        };
+    }
 }
