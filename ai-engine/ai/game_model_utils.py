@@ -60,7 +60,6 @@ def get_player_walls_left(state):
     get the number of walls left for the current player
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-
     player = player1 if turn == "p1" else player2
     return player["wallsLeft"]
 
@@ -73,3 +72,13 @@ def get_players_ids(state):
     player = player1 if turn == "p1" else player2
     opponent = player2 if turn == "p1" else player1
     return player["id"], opponent["id"]
+
+
+def get_target_rows(state):
+    """
+    return the target rows of the players
+    """
+    _, _, player1, player2, turn, _, _ = get_state_values(state)
+    player = player1 if turn == "p1" else player2
+    opponent = player2 if turn == "p1" else player1
+    return player["targetRow"], opponent["targetRow"]
