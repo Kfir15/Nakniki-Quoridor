@@ -1,5 +1,4 @@
-import copy
-from .game_model_utils import get_current_player, check_game_over
+from .game_model_utils import get_current_player, check_game_over, fast_copy_state
 
 
 def apply_transition(state, action):
@@ -8,7 +7,7 @@ def apply_transition(state, action):
     return the new game state after applying the action
     """
 
-    new_state = copy.deepcopy(state)
+    new_state = fast_copy_state(state)
 
     # get the action type
     action_type = action[0]

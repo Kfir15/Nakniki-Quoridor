@@ -99,9 +99,40 @@ def check_game_over(state):
     return True if the game is over, False otherwise
     """
 
-    player = get_current_player(state)
+    _, _, player1, player2, _, _, _ = get_state_values(state)
 
     # check if the player reached the target
-    if player["position"]["r"] == player["targetRow"]:
+    if player1["position"]["r"] == player1["targetRow"]:
         return True
+    if player2["position"]["r"] == player2["targetRow"]:
+        return True
+
     return False
+
+
+def fast_copy_state(state):
+    return {
+        "id": state.get("id"),
+        "size": state["size"],
+        "turn": state["turn"],
+        "status": state["status"],
+        "walls": state["walls"],
+        "player1": {
+            "id": state["player1"]["id"],
+            "wallsLeft": state["player1"]["wallsLeft"],
+            "targetRow": state["player1"]["targetRow"],
+            "position": {
+                "r": state["player1"]["position"]["r"],
+                "c": state["player1"]["position"]["c"],
+            },
+        },
+        "player2": {
+            "id": state["player2"]["id"],
+            "wallsLeft": state["player2"]["wallsLeft"],
+            "targetRow": state["player2"]["targetRow"],
+            "position": {
+                "r": state["player2"]["position"]["r"],
+                "c": state["player2"]["position"]["c"],
+            },
+        },
+    }

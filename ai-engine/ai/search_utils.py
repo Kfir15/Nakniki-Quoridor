@@ -1,6 +1,8 @@
 from collections import deque
+import functools
 
 
+@functools.lru_cache(maxsize=10000)
 def has_path(start_r, start_c, target_r, size, walls):
     """
     check if there is a path from (start_r, start_c) to target_r using BFS
@@ -39,11 +41,13 @@ def has_path(start_r, start_c, target_r, size, walls):
 
     return False
 
+
+@functools.lru_cache(maxsize=10000)
 def get_path(start_r, start_c, target_r, size, walls):
     """
     return (if exists) the path from (start_r, start_c) to target_r using BFS
     """
-    
+
     # queue that stores positions to check
     queue = deque([(start_r, start_c)])
     # set that stores visited positions
@@ -51,7 +55,7 @@ def get_path(start_r, start_c, target_r, size, walls):
     # directions for moves
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     parent_map = {}
-    
+
     while queue:
         # get position
         r, c = queue.popleft()
@@ -60,7 +64,7 @@ def get_path(start_r, start_c, target_r, size, walls):
         if r == target_r:
             path = {(r, c)}
             curr = (r, c)
-            
+
             # go backwards until we reach the start position
             while curr in parent_map:
                 pr, pc = parent_map[curr]
@@ -86,4 +90,3 @@ def get_path(start_r, start_c, target_r, size, walls):
                     queue.append((nr, nc))
 
     return None
-        

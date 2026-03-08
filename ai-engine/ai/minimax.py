@@ -1,4 +1,5 @@
 import math
+import time
 from .rules import successors
 from .transitions import apply_transition
 from .game_model_utils import get_current_player, check_game_over, get_state_values
@@ -21,6 +22,35 @@ def get_action(state, depth=4):
 
     # return the action
     return best_action
+
+
+# ---TODO--- check wich get action method better
+
+
+# def get_action(state, max_time=3, max_depth=10):
+#     """
+#     get state
+#     return best action
+#     """
+#     curr_player = get_current_player(state)
+#     best_action = None
+
+#     start_time = time.time()
+
+#     # search depth 1, then 2, then 3, until we run out of time
+#     for depth in range(1, max_depth + 1):
+#         # get the action
+#         value, action = minimax(state, depth, NEG_INF, INF, curr_player["id"])
+
+#         # ALWAYS update our best action, because deeper = smarter!
+#         if action is not None:
+#             best_action = action
+
+#         # if we have spent too much time, stop searching deeper and return what we have
+#         if time.time() - start_time > max_time:
+#             break
+
+#     return best_action
 
 
 def minimax(state, depth, alpha, beta, maximizing_player_id):

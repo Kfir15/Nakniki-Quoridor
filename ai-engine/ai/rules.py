@@ -1,3 +1,4 @@
+import functools
 from .game_model_utils import (
     get_state_values,
     get_players_positions,
@@ -36,6 +37,9 @@ def successors(state):
         curr_id, curr_row, curr_col, opp_row, opp_col, size, walls
     )
 
+    # sort the moves base on the dist to target
+    move_actions = sorted(move_actions, key=lambda m: abs(m[2][0] - curr_target_row))
+
     # get the legal wall placements
     wall_actions = get_legal_walls(
         curr_id,
@@ -53,6 +57,7 @@ def successors(state):
     return move_actions + wall_actions
 
 
+@functools.lru_cache(maxsize=10000)
 def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
     # check all possible moves for player
     moves = []
@@ -133,6 +138,7 @@ def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
     return moves
 
 
+@functools.lru_cache(maxsize=10000)
 def get_legal_walls(
     curr_id,
     curr_row,
