@@ -7,6 +7,7 @@ from .game_model_utils import (
 )
 from .search_utils import has_path, get_path
 
+
 def successors(state):
     """
     Get the current game state and return all legal moves
@@ -37,7 +38,16 @@ def successors(state):
 
     # get the legal wall placements
     wall_actions = get_legal_walls(
-        curr_id, curr_row, curr_col, curr_target_row, opp_row, opp_col, opp_target_row, size, walls, walls_left
+        curr_id,
+        curr_row,
+        curr_col,
+        curr_target_row,
+        opp_row,
+        opp_col,
+        opp_target_row,
+        size,
+        walls,
+        walls_left,
     )
 
     return move_actions + wall_actions
@@ -85,9 +95,11 @@ def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
                 continue
 
             # try diagonal jump
-            if (wall_behind_opp_r, wall_behind_opp_c) not in walls and (0 <= jump_r < size and 0 <= jump_c < size):
+            if (wall_behind_opp_r, wall_behind_opp_c) not in walls and (
+                0 <= jump_r < size and 0 <= jump_c < size
+            ):
                 continue
-            
+
             # get the diagonal jump directions (up/down sides or left/right sides, based on the direction of the move)
             if dr != 0:
                 # if move is up or down, try diagonal jump left and right
@@ -120,118 +132,157 @@ def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
 
     return moves
 
-def get_legal_walls(curr_id, curr_row, curr_col, curr_target, opp_row, opp_col, opp_target, size, walls, walls_left):
+
+def get_legal_walls(
+    curr_id,
+    curr_row,
+    curr_col,
+    curr_target,
+    opp_row,
+    opp_col,
+    opp_target,
+    size,
+    walls,
+    walls_left,
+):
     # check all possible wall placements
 
     walls_with_scores = []
-    
+
     if walls_left <= 0:
         return []
-    
+
     """
     optimization - instead of run "has_path" for every possible wall placement, 
     we can get the current paths for both players and check if the wall placement blocks the path, which is much faster.
     if the wall placement blocks the path, then we can run "has_path" to check if it completely blocks the player from reaching the target. 
     """
-    
+
     # get the players shortest paths to target
     curr_path = get_path(curr_row, curr_col, curr_target, size, walls)
     opp_path = get_path(opp_row, opp_col, opp_target, size, walls)
-    
+
     # if there is no path for one of the players, return []
     if not curr_path or not opp_path:
         return []
-    
+
     # check all possible wall placements
     for r in range(size - 1):
         for c in range(size - 1):
-            
             # ===horizontal wall===
             h1 = (2 * r + 1, 2 * c)
             h2 = (2 * r + 1, 2 * c + 1)
             h3 = (2 * r + 1, 2 * c + 2)
-            
-            # if there is already a wall in the way, skip
-            if h1 in walls or h2 in walls or h3 in walls:
-                continue
-            
-            # check if the wall placement blocks the current player or the opponent paths
-            blocks_curr, blocks_opp = check_if_blocks(r, c, "h", curr_path, opp_path)
-            
-            is_legal = True
-            
-            # if the wall block either player, check if it completely blocks them from reaching the target 
-            if blocks_curr or blocks_opp:
-                # create a test wall set that includes the new wall
-                test_wall = set(walls)
-                test_wall.update([h1, h2, h3])
-                
-                # check if both players still have a path to the target with the new wall
-                if blocks_curr and not has_path(curr_row, curr_col, curr_target, size, test_wall):
-                    is_legal = False
-                if is_legal and blocks_opp and not has_path(opp_row, opp_col, opp_target, size, test_wall):
-                    is_legal = False
-            
-            # if the wall legal, add it to the list with its score
-            if is_legal:
-                score = wall_heuristic(r, c, "h", opp_row, opp_col, opp_target, blocks_curr, blocks_opp)
-                walls_with_scores.append(("wall", curr_id, (r, c), "h", score))
-                
+
+            # if the walls dont exist
+            if h1 not in walls and h2 not in walls and h3 not in walls:
+                # check if the wall placement blocks the current player or the opponent paths
+                blocks_curr, blocks_opp = check_if_blocks(
+                    r, c, "h", curr_path, opp_path
+                )
+
+                is_legal = True
+
+                # if the wall block either player, check if it completely blocks them from reaching the target
+                if blocks_curr or blocks_opp:
+                    # create a test wall set that includes the new wall
+                    test_wall = set(walls)
+                    test_wall.update([h1, h2, h3])
+
+                    # check if both players still have a path to the target with the new wall
+                    if blocks_curr and not has_path(
+                        curr_row, curr_col, curr_target, size, test_wall
+                    ):
+                        is_legal = False
+                    if (
+                        is_legal
+                        and blocks_opp
+                        and not has_path(opp_row, opp_col, opp_target, size, test_wall)
+                    ):
+                        is_legal = False
+
+                # if the wall legal, add it to the list with its score
+                if is_legal:
+                    score = wall_heuristic(
+                        r, c, "h", opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+                    )
+                    walls_with_scores.append(("wall", curr_id, (r, c), "h", score))
+
             # ===vertical wall===
             v1 = (2 * r, 2 * c + 1)
             v2 = (2 * r + 1, 2 * c + 1)
             v3 = (2 * r + 2, 2 * c + 1)
-            
-            # if there is already a wall in the way, skip
-            if v1 in walls or v2 in walls or v3 in walls:
-                continue
-            
-            # evaluate the wall placement and get indicators if it blocks the player or the opponent
-            blocks_curr, blocks_opp = check_if_blocks(r, c, "v", curr_path, opp_path)
-            
-            is_legal = True
-            
-            # if the wall block either player, check if it completely blocks them from reaching the target
-            if blocks_curr or blocks_opp:
-                # create a test wall set that includes the new wall
-                test_wall = set(walls)
-                test_wall.update([v1, v2, v3])
-                
-                # check if both players still have a path to the target with the new wall
-                if blocks_curr and not has_path(curr_row, curr_col, curr_target, size, test_wall):
-                    is_legal = False
-                if is_legal and blocks_opp and not has_path(opp_row, opp_col, opp_target, size, test_wall):
-                    is_legal = False
-                    
-            # if the wall legal, add it to the list with its score
-            if is_legal:
-                score = wall_heuristic(r, c, "v", opp_row, opp_col, opp_target, blocks_curr, blocks_opp)
-                walls_with_scores.append(("wall", curr_id, (r, c), "v", score))
-    
+
+            # if the walls dont exist
+            if v1 not in walls and v2 not in walls and v3 not in walls:
+                # evaluate the wall placement and get indicators if it blocks the player or the opponent
+                blocks_curr, blocks_opp = check_if_blocks(
+                    r, c, "v", curr_path, opp_path
+                )
+
+                is_legal = True
+
+                # if the wall block either player, check if it completely blocks them from reaching the target
+                if blocks_curr or blocks_opp:
+                    # create a test wall set that includes the new wall
+                    test_wall = set(walls)
+                    test_wall.update([v1, v2, v3])
+
+                    # check if both players still have a path to the target with the new wall
+                    if blocks_curr and not has_path(
+                        curr_row, curr_col, curr_target, size, test_wall
+                    ):
+                        is_legal = False
+                    if (
+                        is_legal
+                        and blocks_opp
+                        and not has_path(opp_row, opp_col, opp_target, size, test_wall)
+                    ):
+                        is_legal = False
+
+                # if the wall legal, add it to the list with its score
+                if is_legal:
+                    score = wall_heuristic(
+                        r, c, "v", opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+                    )
+                    walls_with_scores.append(("wall", curr_id, (r, c), "v", score))
+
     # sort the walls by score and return the walls
     walls_with_scores.sort(key=lambda x: x[4])
     return [action[:4] for action in walls_with_scores]
+
 
 def check_if_blocks(wall_r, wall_c, orientation, curr_path, opp_path):
     # for each orientation
     if orientation == "h":
         # check if the wall placement blocks the current player or the opponent paths
-        blocks_curr = ((wall_r, wall_c) in curr_path and (wall_r + 1, wall_c) in curr_path) or \
-                      ((wall_r, wall_c + 1) in curr_path and (wall_r + 1, wall_c + 1) in curr_path)
-        
-        blocks_opp =  ((wall_r, wall_c) in opp_path and (wall_r + 1, wall_c) in opp_path) or \
-                      ((wall_r, wall_c + 1) in opp_path and (wall_r + 1, wall_c + 1) in opp_path)
+        blocks_curr = (
+            (wall_r, wall_c) in curr_path and (wall_r + 1, wall_c) in curr_path
+        ) or (
+            (wall_r, wall_c + 1) in curr_path and (wall_r + 1, wall_c + 1) in curr_path
+        )
+
+        blocks_opp = (
+            (wall_r, wall_c) in opp_path and (wall_r + 1, wall_c) in opp_path
+        ) or ((wall_r, wall_c + 1) in opp_path and (wall_r + 1, wall_c + 1) in opp_path)
     else:
         # check if the wall placement blocks the current player or the opponent paths
-        blocks_curr = ((wall_r, wall_c) in curr_path and (wall_r, wall_c + 1) in curr_path) or \
-                      ((wall_r + 1, wall_c) in curr_path and (wall_r + 1, wall_c + 1) in curr_path)
-                      
-        blocks_opp =  ((wall_r, wall_c) in opp_path and (wall_r, wall_c + 1) in opp_path) or \
-                      ((wall_r + 1, wall_c) in opp_path and (wall_r + 1, wall_c + 1) in opp_path)
-                      
+        blocks_curr = (
+            (wall_r, wall_c) in curr_path and (wall_r, wall_c + 1) in curr_path
+        ) or (
+            (wall_r + 1, wall_c) in curr_path and (wall_r + 1, wall_c + 1) in curr_path
+        )
+
+        blocks_opp = (
+            (wall_r, wall_c) in opp_path and (wall_r, wall_c + 1) in opp_path
+        ) or ((wall_r + 1, wall_c) in opp_path and (wall_r + 1, wall_c + 1) in opp_path)
+
     return blocks_curr, blocks_opp
 
-def wall_heuristic(wall_r, wall_c, orientation, opp_row, opp_col, opp_target, blocks_curr, blocks_opp):
+
+def wall_heuristic(
+    wall_r, wall_c, orientation, opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+):
     """
     evaluate the wall placement and return a score
     """
@@ -248,20 +299,20 @@ def wall_heuristic(wall_r, wall_c, orientation, opp_row, opp_col, opp_target, bl
     score += dist_to_opp * 2
 
     # check if wall is placed behind or directly in front of the opponent
-    if opp_target > opp_row: # opponent is moving down
+    if opp_target > opp_row:  # opponent is moving down
         if wall_r < opp_row:
             # penalty - wall is behind them
             score += 40
         elif wall_r == opp_row and orientation == "h":
             # bonus - horizontal wall right in front of them
-            score -= 15 
-    else: # opponent is moving up
+            score -= 15
+    else:  # opponent is moving up
         if wall_r >= opp_row:
             # penalty - wall is behind them
-            score += 40 
+            score += 40
         elif wall_r == opp_row - 1 and orientation == "h":
             # bonus - horizontal wall right in front of them
-            score -= 15 
+            score -= 15
 
     # walls in the center of the board disrupt more paths than edge walls
     dist_to_center = abs(wall_r - 3.5) + abs(wall_c - 3.5)

@@ -82,3 +82,26 @@ def get_target_rows(state):
     player = player1 if turn == "p1" else player2
     opponent = player2 if turn == "p1" else player1
     return player["targetRow"], opponent["targetRow"]
+
+
+def get_current_player(state):
+    """
+    get the current player
+    """
+    _, _, player1, player2, turn, _, _ = get_state_values(state)
+    player = player1 if turn == "p1" else player2
+    return player
+
+
+def check_game_over(state):
+    """
+    get game state
+    return True if the game is over, False otherwise
+    """
+
+    player = get_current_player(state)
+
+    # check if the player reached the target
+    if player["position"]["r"] == player["targetRow"]:
+        return True
+    return False
