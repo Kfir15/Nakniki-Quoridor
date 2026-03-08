@@ -1,0 +1,167 @@
+import math
+from .rules import successors
+from .transitions import apply_transition
+from .game_model_utils import get_current_player, check_game_over, get_state_values
+from .search_utils import get_path
+
+
+INF = float("inf")
+NEG_INF = float("-inf")
+
+
+def get_action(state, depth=4):
+    """
+    get state
+    return best action
+    """
+
+    # get the best action from the minimax for this player
+    curr_player = get_current_player(state)
+    _, best_action = minimax(state, depth, NEG_INF, INF, curr_player["id"])
+
+    # return the action
+    return best_action
+
+
+def minimax(state, depth, alpha, beta, maximizing_player_id):
+    """
+    minimax algorithm with alpha-beta pruning
+    """
+
+    # check if game over or depth is 0
+    if check_game_over(state) or depth == 0:
+        return state_heuristic(state, maximizing_player_id), None
+
+    # get the current player
+    curr_player = get_current_player(state)
+
+    # check if the current player is the maximizing player
+    is_maximizing = curr_player["id"] == maximizing_player_id
+
+    # get all the possible actions for this state
+    actions = successors(state)
+    best_action = None
+
+    # if the current player is the maximizing player (alpha)
+    if is_maximizing:
+        best_value = NEG_INF
+
+        # for each possible action
+        for action in actions:
+            # apply the action
+            new_state = apply_transition(state, action)
+
+            # get the value of the new state
+            value, _ = minimax(new_state, depth - 1, alpha, beta, maximizing_player_id)
+
+            # if this state has better value
+            if value > best_value or best_action is None:
+                # save the val and action
+                best_value = value
+                best_action = action
+
+            # check alpha beta prunning
+            alpha = max(alpha, best_value)
+            if beta <= alpha:
+                break
+
+        # return the best value and action
+        return best_value, best_action
+    # if this is the opponent (beta)
+    else:
+        best_value = INF
+
+        # for each possible action
+        for action in actions:
+            # apply the action
+            new_state = apply_transition(state, action)
+
+            # get the value of the new state
+            value, _ = minimax(new_state, depth - 1, alpha, beta, maximizing_player_id)
+
+            # if this state has better value
+            if value < best_value or best_action is None:
+                # save the val and action
+                best_value = value
+                best_action = action
+
+            # check alpha beta prunning
+            beta = min(beta, best_value)
+            if beta <= alpha:
+                break
+
+        # return the best value and action
+        return best_value, best_action
+
+
+def state_heuristic(state, maximizing_player_id):
+    """
+    get state
+    return the state heuristic
+    """
+
+    # get the state values
+    _, size, player1, player2, turn, _, walls = get_state_values(state)
+
+    # set the max and min players
+    if player1["id"] == maximizing_player_id:
+        max_p = player1
+        min_p = player2
+    else:
+        max_p = player2
+        min_p = player1
+
+    # check if this is goal state
+    if max_p["position"]["r"] == max_p["targetRow"]:
+        return 100000
+    if min_p["position"]["r"] == min_p["targetRow"]:
+        return -100000
+
+    # get the shortests paths for each player
+    max_path = get_path(
+        max_p["position"]["r"], max_p["position"]["c"], max_p["targetRow"], size, walls
+    )
+    min_path = get_path(
+        min_p["position"]["r"], min_p["position"]["c"], min_p["targetRow"], size, walls
+    )
+
+    if not max_path:
+        return -100000
+    if not min_path:
+        return 100000
+
+    # get the dists
+    max_dist = len(max_path)
+    min_dist = len(min_path)
+
+    # disstance score (we want min_dist (opponent) to be high, and max_dist (us) to be low)
+    score = (min_dist - max_dist) * 100
+
+    # the player whose turn it is effectively has a half-step head start.
+    is_max_turn = (turn == "p1" and player1["id"] == maximizing_player_id) or (
+        turn == "p2" and player2["id"] == maximizing_player_id
+    )
+    if is_max_turn:
+        score += 50
+    else:
+        score -= 50
+
+    # add wall score base on the opponent distance
+    wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
+    if min_dist <= 3:  # opponent is close, walls are critical
+        score += wall_diff * 40
+    elif min_dist <= 6:  # opponent in mid
+        score += wall_diff * 20
+    else:
+        score += wall_diff * 10
+
+    # for each player, get dist to the center (Pawns in the center columns have more options)
+    center_col = size // 2
+    max_centrality = abs(max_p["position"]["c"] - center_col)
+    min_centrality = abs(min_p["position"]["c"] - center_col)
+
+    # penalize being pushed to the edges
+    score -= max_centrality * 5
+    score += min_centrality * 5
+
+    return score
