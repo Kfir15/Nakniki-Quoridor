@@ -172,9 +172,16 @@ def get_legal_walls(
     if not curr_path or not opp_path:
         return []
 
+    relevant_rows = range(
+        max(0, min(curr_row, opp_row) - 3), min(size - 1, max(curr_row, opp_row) + 3)
+    )
+    relevant_cols = range(
+        max(0, min(curr_col, opp_col) - 3), min(size - 1, max(curr_col, opp_col) + 3)
+    )
+
     # check all possible wall placements
-    for r in range(size - 1):
-        for c in range(size - 1):
+    for r in relevant_rows:
+        for c in relevant_cols:
             # ===horizontal wall===
             h1 = (2 * r + 1, 2 * c)
             h2 = (2 * r + 1, 2 * c + 1)
@@ -197,13 +204,15 @@ def get_legal_walls(
 
                     # check if both players still have a path to the target with the new wall
                     if blocks_curr and not has_path(
-                        curr_row, curr_col, curr_target, size, test_wall
+                        curr_row, curr_col, curr_target, size, frozenset(test_wall)
                     ):
                         is_legal = False
                     if (
                         is_legal
                         and blocks_opp
-                        and not has_path(opp_row, opp_col, opp_target, size, test_wall)
+                        and not has_path(
+                            opp_row, opp_col, opp_target, size, frozenset(test_wall)
+                        )
                     ):
                         is_legal = False
 
@@ -236,13 +245,15 @@ def get_legal_walls(
 
                     # check if both players still have a path to the target with the new wall
                     if blocks_curr and not has_path(
-                        curr_row, curr_col, curr_target, size, test_wall
+                        curr_row, curr_col, curr_target, size, frozenset(test_wall)
                     ):
                         is_legal = False
                     if (
                         is_legal
                         and blocks_opp
-                        and not has_path(opp_row, opp_col, opp_target, size, test_wall)
+                        and not has_path(
+                            opp_row, opp_col, opp_target, size, frozenset(test_wall)
+                        )
                     ):
                         is_legal = False
 

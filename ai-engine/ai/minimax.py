@@ -10,53 +10,45 @@ INF = float("inf")
 NEG_INF = float("-inf")
 
 
-def get_action(state, depth=4):
+def get_action(state, max_time=2, max_depth=10):
     """
     get state
     return best action
     """
-
-    # get the best action from the minimax for this player
     curr_player = get_current_player(state)
-    _, best_action = minimax(state, depth, NEG_INF, INF, curr_player["id"])
+    best_action = None
 
-    # return the action
+    start_time = time.time()
+
+    # search depth 1, then 2, then 3, until we run out of time
+    for depth in range(2, max_depth + 1):
+        try:
+            # get the action
+            value, action = minimax(
+                state, depth, NEG_INF, INF, curr_player["id"], start_time, max_time
+            )
+
+            # ALWAYS update our best action, because deeper = smarter!
+            if action is not None:
+                best_action = action
+
+            # if we have spent too much time, stop searching deeper and return what we have
+            if time.time() - start_time > max_time:
+                break
+
+        except TimeoutError:
+            break
+
     return best_action
 
 
-# ---TODO--- check wich get action method better
-
-
-# def get_action(state, max_time=3, max_depth=10):
-#     """
-#     get state
-#     return best action
-#     """
-#     curr_player = get_current_player(state)
-#     best_action = None
-
-#     start_time = time.time()
-
-#     # search depth 1, then 2, then 3, until we run out of time
-#     for depth in range(1, max_depth + 1):
-#         # get the action
-#         value, action = minimax(state, depth, NEG_INF, INF, curr_player["id"])
-
-#         # ALWAYS update our best action, because deeper = smarter!
-#         if action is not None:
-#             best_action = action
-
-#         # if we have spent too much time, stop searching deeper and return what we have
-#         if time.time() - start_time > max_time:
-#             break
-
-#     return best_action
-
-
-def minimax(state, depth, alpha, beta, maximizing_player_id):
+def minimax(state, depth, alpha, beta, maximizing_player_id, start_time, max_time):
     """
     minimax algorithm with alpha-beta pruning
     """
+    # check time
+    if time.time() - start_time > max_time:
+        raise TimeoutError()
 
     # check if game over or depth is 0
     if check_game_over(state) or depth == 0:
@@ -82,7 +74,15 @@ def minimax(state, depth, alpha, beta, maximizing_player_id):
             new_state = apply_transition(state, action)
 
             # get the value of the new state
-            value, _ = minimax(new_state, depth - 1, alpha, beta, maximizing_player_id)
+            value, _ = minimax(
+                new_state,
+                depth - 1,
+                alpha,
+                beta,
+                maximizing_player_id,
+                start_time,
+                max_time,
+            )
 
             # if this state has better value
             if value > best_value or best_action is None:
@@ -107,7 +107,15 @@ def minimax(state, depth, alpha, beta, maximizing_player_id):
             new_state = apply_transition(state, action)
 
             # get the value of the new state
-            value, _ = minimax(new_state, depth - 1, alpha, beta, maximizing_player_id)
+            value, _ = minimax(
+                new_state,
+                depth - 1,
+                alpha,
+                beta,
+                maximizing_player_id,
+                start_time,
+                max_time,
+            )
 
             # if this state has better value
             if value < best_value or best_action is None:
