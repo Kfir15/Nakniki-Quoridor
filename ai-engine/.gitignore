@@ -1,4 +1,5 @@
 quoridor_ai_logs.txt
+ai_vs_ai_logs.txt
 __pycache__/
 *.py[cod]
 *$py.class

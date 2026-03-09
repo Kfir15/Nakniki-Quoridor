@@ -11,7 +11,8 @@ from .search_utils import has_path, get_path
 
 def successors(state):
     """
-    Get the current game state and return all legal moves
+    Get the current game state
+    return all legal moves
     """
 
     _, size, player1, player2, turn, status, walls = get_state_values(state)
@@ -37,6 +38,12 @@ def successors(state):
         curr_id, curr_row, curr_col, opp_row, opp_col, size, walls
     )
 
+    # if there are no walls left, use the zero walls moves
+    if walls_left == 0:
+        return zero_walls_moves(
+            move_actions, curr_row, curr_col, curr_target_row, size, walls
+        )
+
     # sort the moves base on the dist to target
     move_actions = sorted(move_actions, key=lambda m: abs(m[2][0] - curr_target_row))
 
@@ -57,8 +64,36 @@ def successors(state):
     return move_actions + wall_actions
 
 
+def zero_walls_moves(moves_actions, curr_r, curr_c, curr_target_row, size, walls):
+    """
+    get legal moves when there are no walls left
+    """
+
+    # get the current player path to target
+    curr_path = get_path(curr_r, curr_c, curr_target_row, size, walls)
+    curr_dist = len(curr_path)
+
+    aggression_moves = []
+
+    # for every move, check that it is closer to the target than the current path
+    for move in moves_actions:
+        # get the new position and path
+        new_r, new_c = move[2]
+        new_path = get_path(new_r, new_c, curr_target_row, size, walls)
+
+        # if the new path is shorter than the current path add it to the aggression moves
+        if new_path and len(new_path) < curr_dist:
+            aggression_moves.append(move)
+
+    return aggression_moves if aggression_moves else moves_actions
+
+
 @functools.lru_cache(maxsize=10000)
 def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
+    """
+    return legal moves for the current player
+    """
+
     # check all possible moves for player
     moves = []
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]

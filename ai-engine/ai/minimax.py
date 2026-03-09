@@ -10,7 +10,7 @@ INF = float("inf")
 NEG_INF = float("-inf")
 
 
-def get_action(state, max_time=2, max_depth=10):
+def get_action(state, max_time=3, max_depth=10):
     """
     get state
     return best action
@@ -173,7 +173,7 @@ def state_heuristic(state, maximizing_player_id):
     min_dist = len(min_path)
 
     # disstance score (we want min_dist (opponent) to be high, and max_dist (us) to be low)
-    score = (min_dist - max_dist) * 100
+    score = (min_dist - max_dist) * 200
 
     # the player whose turn it is effectively has a half-step head start.
     is_max_turn = (turn == "p1" and player1["id"] == maximizing_player_id) or (
@@ -187,11 +187,11 @@ def state_heuristic(state, maximizing_player_id):
     # add wall score base on the opponent distance
     wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
     if min_dist <= 3:  # opponent is close, walls are critical
-        score += wall_diff * 40
+        score += wall_diff * 150
     elif min_dist <= 6:  # opponent in mid
-        score += wall_diff * 20
+        score += wall_diff * 100
     else:
-        score += wall_diff * 10
+        score += wall_diff * 80
 
     # for each player, get dist to the center (Pawns in the center columns have more options)
     center_col = size // 2
