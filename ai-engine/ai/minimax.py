@@ -193,9 +193,9 @@ def state_heuristic(state, maximizing_player_id, depth=0):
 
     # add wall score base on the opponent distance
     wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
-    if min_dist <= 3:  # opponent is close, walls are critical
+    if min_dist <= 3:
         score += wall_diff * 150
-    elif min_dist <= 6:  # opponent in mid
+    elif min_dist <= 6:
         score += wall_diff * 100
     else:
         score += wall_diff * 80
@@ -209,31 +209,23 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     score -= max_centrality * 5
     score += min_centrality * 5
 
-    # === NEW WALL EVALUATION LOGIC ===
-    wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
-
-    # 1. Dynamic Wall Value
+    # find the wall value base on the opponent distance
     if min_dist > 6:
-        # EARLY GAME: Walls are precious!
-        # Valuing them at 250 means the AI will ONLY place a wall if it
-        # delays the opponent by at least 2 steps (400 points).
         wall_value = 125
     elif min_dist > 3:
-        # MID GAME: Walls are moderately important.
         wall_value = 80
     else:
-        # LATE GAME: Opponent is close! Throw everything at them!
         wall_value = 45
 
+    # add wall score with his value
     score += wall_diff * wall_value
 
-    # 2. Progressive "Desperation" Penalty
-    # Prevent the AI from bleeding its walls dry if the opponent is still far away.
+    # prevent the AI from bleeding its walls dry if the opponent is still far away
     if max_p["wallsLeft"] <= 2 and min_dist > 4:
-        score -= 400  # Massive penalty for leaving yourself defenseless early
+        score -= 400
 
     if max_p["wallsLeft"] == 0 and min_dist > 2:
-        score -= 800  # Terminal penalty for running out of walls completely while opponent is far
+        score -= 800
 
     score += max_p["wallsLeft"] * 10
     score -= min_p["wallsLeft"] * 10
