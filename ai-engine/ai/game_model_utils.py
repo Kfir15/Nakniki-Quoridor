@@ -93,6 +93,15 @@ def get_current_player(state):
     return player
 
 
+def get_opponent(state):
+    """
+    get the opponent
+    """
+    _, _, player1, player2, turn, _, _ = get_state_values(state)
+    opponent = player2 if turn == "p1" else player1
+    return opponent
+
+
 def check_game_over(state):
     """
     get game state

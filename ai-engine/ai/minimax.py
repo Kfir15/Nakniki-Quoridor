@@ -52,7 +52,7 @@ def minimax(state, depth, alpha, beta, maximizing_player_id, start_time, max_tim
 
     # check if game over or depth is 0
     if check_game_over(state) or depth == 0:
-        return state_heuristic(state, maximizing_player_id), None
+        return state_heuristic(state, maximizing_player_id, depth), None
 
     # get the current player
     curr_player = get_current_player(state)
@@ -132,7 +132,7 @@ def minimax(state, depth, alpha, beta, maximizing_player_id, start_time, max_tim
         return best_value, best_action
 
 
-def state_heuristic(state, maximizing_player_id):
+def state_heuristic(state, maximizing_player_id, depth=0):
     """
     get state
     return the state heuristic
@@ -151,9 +151,9 @@ def state_heuristic(state, maximizing_player_id):
 
     # check if this is goal state
     if max_p["position"]["r"] == max_p["targetRow"]:
-        return 100000
+        return 100000 + (depth * 1000)
     if min_p["position"]["r"] == min_p["targetRow"]:
-        return -100000
+        return -100000 - (depth * 1000)
 
     # get the shortests paths for each player
     max_path = get_path(
@@ -173,7 +173,14 @@ def state_heuristic(state, maximizing_player_id):
     min_dist = len(min_path)
 
     # disstance score (we want min_dist (opponent) to be high, and max_dist (us) to be low)
-    score = (min_dist - max_dist) * 200
+    score = (min_dist * 200) - (max_dist * 100)
+
+    progress = (
+        max_p["position"]["r"]
+        if max_p["targetRow"] == size - 1
+        else (size - 1 - max_p["position"]["r"])
+    )
+    score += progress * 10
 
     # the player whose turn it is effectively has a half-step head start.
     is_max_turn = (turn == "p1" and player1["id"] == maximizing_player_id) or (
@@ -201,5 +208,34 @@ def state_heuristic(state, maximizing_player_id):
     # penalize being pushed to the edges
     score -= max_centrality * 5
     score += min_centrality * 5
+
+    # === NEW WALL EVALUATION LOGIC ===
+    wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
+
+    # 1. Dynamic Wall Value
+    if min_dist > 6:
+        # EARLY GAME: Walls are precious!
+        # Valuing them at 250 means the AI will ONLY place a wall if it
+        # delays the opponent by at least 2 steps (400 points).
+        wall_value = 125
+    elif min_dist > 3:
+        # MID GAME: Walls are moderately important.
+        wall_value = 80
+    else:
+        # LATE GAME: Opponent is close! Throw everything at them!
+        wall_value = 45
+
+    score += wall_diff * wall_value
+
+    # 2. Progressive "Desperation" Penalty
+    # Prevent the AI from bleeding its walls dry if the opponent is still far away.
+    if max_p["wallsLeft"] <= 2 and min_dist > 4:
+        score -= 400  # Massive penalty for leaving yourself defenseless early
+
+    if max_p["wallsLeft"] == 0 and min_dist > 2:
+        score -= 800  # Terminal penalty for running out of walls completely while opponent is far
+
+    score += max_p["wallsLeft"] * 10
+    score -= min_p["wallsLeft"] * 10
 
     return score

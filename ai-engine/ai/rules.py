@@ -194,9 +194,9 @@ def get_legal_walls(
         return []
 
     """
-    optimization - instead of run "has_path" for every possible wall placement, 
+    optimization - instead of run "has_path" for every possible wall placement,
     we can get the current paths for both players and check if the wall placement blocks the path, which is much faster.
-    if the wall placement blocks the path, then we can run "has_path" to check if it completely blocks the player from reaching the target. 
+    if the wall placement blocks the path, then we can run "has_path" to check if it completely blocks the player from reaching the target.
     """
 
     # get the players shortest paths to target
@@ -207,11 +207,15 @@ def get_legal_walls(
     if not curr_path or not opp_path:
         return []
 
+    # only check walls in the area around the players
+    search_radius = 3
     relevant_rows = range(
-        max(0, min(curr_row, opp_row) - 3), min(size - 1, max(curr_row, opp_row) + 3)
+        max(0, min(curr_row, opp_row) - search_radius),
+        min(size - 1, max(curr_row, opp_row) + search_radius),
     )
     relevant_cols = range(
-        max(0, min(curr_col, opp_col) - 3), min(size - 1, max(curr_col, opp_col) + 3)
+        max(0, min(curr_col, opp_col) - search_radius),
+        min(size - 1, max(curr_col, opp_col) + search_radius),
     )
 
     # check all possible wall placements
@@ -254,7 +258,15 @@ def get_legal_walls(
                 # if the wall legal, add it to the list with its score
                 if is_legal:
                     score = wall_heuristic(
-                        r, c, "h", opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+                        r,
+                        c,
+                        "h",
+                        opp_row,
+                        opp_col,
+                        opp_target,
+                        blocks_curr,
+                        blocks_opp,
+                        size,
                     )
                     walls_with_scores.append(("wall", curr_id, (r, c), "h", score))
 
@@ -295,7 +307,15 @@ def get_legal_walls(
                 # if the wall legal, add it to the list with its score
                 if is_legal:
                     score = wall_heuristic(
-                        r, c, "v", opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+                        r,
+                        c,
+                        "v",
+                        opp_row,
+                        opp_col,
+                        opp_target,
+                        blocks_curr,
+                        blocks_opp,
+                        size,
                     )
                     walls_with_scores.append(("wall", curr_id, (r, c), "v", score))
 
@@ -333,7 +353,15 @@ def check_if_blocks(wall_r, wall_c, orientation, curr_path, opp_path):
 
 
 def wall_heuristic(
-    wall_r, wall_c, orientation, opp_row, opp_col, opp_target, blocks_curr, blocks_opp
+    wall_r,
+    wall_c,
+    orientation,
+    opp_row,
+    opp_col,
+    opp_target,
+    blocks_curr,
+    blocks_opp,
+    size,
 ):
     """
     evaluate the wall placement and return a score
@@ -367,7 +395,8 @@ def wall_heuristic(
             score -= 15
 
     # walls in the center of the board disrupt more paths than edge walls
-    dist_to_center = abs(wall_r - 3.5) + abs(wall_c - 3.5)
+    center = (size - 1) / 2.0
+    dist_to_center = abs(wall_r - center) + abs(wall_c - center)
     score += int(dist_to_center)
 
     # horizontal walls are slightly better at stopping vertical movement
