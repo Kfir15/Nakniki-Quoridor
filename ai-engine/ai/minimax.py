@@ -221,6 +221,6 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     score += wall_diff * wall_value
 
     # add random noise to break ties
-    score += random.uniform(0.0, 0.75)
+    score += random.uniform(0.0, 0.05)
 
     return score
