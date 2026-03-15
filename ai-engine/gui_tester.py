@@ -2,39 +2,38 @@ import tkinter as tk
 from tkinter import messagebox
 import threading
 import time
-import logging
+import copy
+import json
 
-# Ensure these modules are in your python path
+# Core AI modules
 from ai.minimax import get_action
 from ai.transitions import apply_transition
 from ai.game_model_utils import check_game_over
-from ai.rules import successors
-
-# --- LOGGING CONFIGURATION ---
-# 'w' mode ensures the file is emptied every time the application starts
-logging.basicConfig(
-    filename="quoridor_ai_logs.txt",
-    filemode="w",
-    level=logging.INFO,
-    format="%(message)s",
-)
+from ai.rules import get_legal_moves
+from ai.search_utils import has_path
 
 
-class QuoridorGUI:
+class NaknikiAdvancedTester:
     def __init__(self, root):
         self.root = root
-        self.root.title("Quoridor AI Debugger")
+        self.root.title("Nakniki Quoridor - Advanced AI Tester")
+        self.root.configure(bg="#2b2b2b")
 
-        # Board Visual Settings
+        # Board metrics
         self.size = 9
-        self.cell_size = 50
-        self.wall_width = 12
-        self.unit = self.cell_size + self.wall_width
+        self.cell_sz = 55
+        self.wall_th = 16
+        self.unit = self.cell_sz + self.wall_th
         self.wall_mode = "h"
 
-        # Initial State
-        self.state = {
-            "id": "gui_test",
+        # Game Tracking
+        self.history = []
+        self.is_thinking = False
+        self.hint_move = None
+
+        # Initial clean state
+        self.initial_state = {
+            "id": "gui_adv",
             "size": self.size,
             "turn": "p1",
             "status": "IN_PROGRESS",
@@ -52,245 +51,423 @@ class QuoridorGUI:
                 "position": {"r": 0, "c": 4},
             },
         }
+        self.state = copy.deepcopy(self.initial_state)
 
-        self.setup_ui()
+        self.build_ui()
         self.draw_board()
 
-        # Initial log entry
-        logging.info("=== GAME STARTED ===")
-        self.print_console_board()
-        logging.info("Waiting for Human move...\n")
+    def build_ui(self):
+        # Main Layout Frames
+        self.left_frame = tk.Frame(self.root, bg="#2b2b2b")
+        self.left_frame.pack(side=tk.LEFT, padx=20, pady=20)
 
-    def setup_ui(self):
-        self.info_label = tk.Label(
-            self.root, text="Your Turn (Blue)", font=("Arial", 14, "bold")
+        self.right_frame = tk.Frame(
+            self.root, bg="#333333", padx=20, pady=20, relief=tk.RIDGE, bd=2
         )
-        self.info_label.pack(pady=5)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=20, pady=20)
 
-        # Canvas sizing
-        canvas_dim = self.size * self.unit - self.wall_width
+        # --- LEFT FRAME (Board) ---
+        self.status_var = tk.StringVar(value="Your Turn (Blue)")
+        self.status_label = tk.Label(
+            self.left_frame,
+            textvariable=self.status_var,
+            font=("Segoe UI", 16, "bold"),
+            bg="#2b2b2b",
+            fg="#4da6ff",
+        )
+        self.status_label.pack(pady=(0, 10))
+
+        canvas_dim = self.size * self.unit - self.wall_th
         self.canvas = tk.Canvas(
-            self.root, width=canvas_dim, height=canvas_dim, bg="#deb887"
+            self.left_frame,
+            width=canvas_dim,
+            height=canvas_dim,
+            bg="#8c6b4a",
+            highlightthickness=0,
         )
-        self.canvas.pack(padx=20, pady=10)
-        self.canvas.bind("<Button-1>", self.handle_click)
+        self.canvas.pack()
+        self.canvas.bind("<Button-1>", self.on_board_click)
 
-        # Bottom Controls
-        ctrl_frame = tk.Frame(self.root)
-        ctrl_frame.pack(pady=10)
-
+        # Bottom Wall Toggle
         self.mode_btn = tk.Button(
-            ctrl_frame,
-            text="Wall Mode: Horizontal (H)",
-            command=self.toggle_mode,
-            width=22,
+            self.left_frame,
+            text="Wall Mode: Horizontal (Click to Swap)",
+            command=self.toggle_wall_mode,
+            font=("Segoe UI", 10, "bold"),
+            bg="#555555",
+            fg="white",
+            relief=tk.FLAT,
+            pady=5,
         )
-        self.mode_btn.pack(side=tk.LEFT, padx=10)
+        self.mode_btn.pack(fill=tk.X, pady=10)
 
-        self.p1_walls_label = tk.Label(
-            ctrl_frame, text="Your Walls: 10", fg="blue", font=("Arial", 12, "bold")
+        # --- RIGHT FRAME (Controls) ---
+        tk.Label(
+            self.right_frame,
+            text="Test Controls",
+            font=("Segoe UI", 14, "bold"),
+            bg="#333333",
+            fg="white",
+        ).pack(pady=(0, 20))
+
+        # Walls Left display
+        self.p1_walls_lbl = tk.Label(
+            self.right_frame,
+            text="P1 Walls: 10",
+            font=("Segoe UI", 12),
+            bg="#333333",
+            fg="#4da6ff",
         )
-        self.p1_walls_label.pack(side=tk.LEFT, padx=15)
-
-        self.p2_walls_label = tk.Label(
-            ctrl_frame, text="AI Walls: 10", font=("Arial", 12, "bold")
+        self.p1_walls_lbl.pack(anchor="w")
+        self.p2_walls_lbl = tk.Label(
+            self.right_frame,
+            text="P2 Walls: 10",
+            font=("Segoe UI", 12),
+            bg="#333333",
+            fg="#ff4d4d",
         )
-        self.p2_walls_label.pack(side=tk.LEFT, padx=15)
+        self.p2_walls_lbl.pack(anchor="w", pady=(0, 20))
 
-    def toggle_mode(self):
+        # Action Buttons
+        btn_style = {
+            "font": ("Segoe UI", 10, "bold"),
+            "fg": "white",
+            "relief": tk.FLAT,
+            "width": 18,
+            "pady": 5,
+        }
+
+        tk.Button(
+            self.right_frame,
+            text="💡 Show AI Hint",
+            bg="#b38f00",
+            command=self.request_hint,
+            **btn_style,
+        ).pack(pady=5)
+        tk.Button(
+            self.right_frame,
+            text="🤖 Force AI Move",
+            bg="#0066cc",
+            command=self.trigger_ai_turn,
+            **btn_style,
+        ).pack(pady=5)
+        tk.Button(
+            self.right_frame,
+            text="↩️ Undo Move",
+            bg="#cc5200",
+            command=self.undo_move,
+            **btn_style,
+        ).pack(pady=5)
+        tk.Button(
+            self.right_frame,
+            text="🔄 Reset Game",
+            bg="#cc0000",
+            command=self.reset_game,
+            **btn_style,
+        ).pack(pady=25)
+
+        tk.Button(
+            self.right_frame,
+            text="📋 Copy Raw State",
+            bg="#4d4d4d",
+            command=self.copy_state,
+            **btn_style,
+        ).pack(side=tk.BOTTOM)
+
+    def toggle_wall_mode(self):
         self.wall_mode = "v" if self.wall_mode == "h" else "h"
-        self.mode_btn.config(
-            text=f"Wall Mode: {'Vertical (V)' if self.wall_mode == 'v' else 'Horizontal (H)'}"
-        )
+        mode_text = "Vertical" if self.wall_mode == "v" else "Horizontal"
+        self.mode_btn.config(text=f"Wall Mode: {mode_text} (Click to Swap)")
 
     def draw_board(self):
         self.canvas.delete("all")
 
-        # 1. Draw all base cells
+        # 1. Floor tiles
         for r in range(self.size):
             for c in range(self.size):
-                x1 = c * self.unit
-                y1 = r * self.unit
-                x2 = x1 + self.cell_size
-                y2 = y1 + self.cell_size
+                x0 = c * self.unit
+                y0 = r * self.unit
                 self.canvas.create_rectangle(
-                    x1, y1, x2, y2, fill="#f5deb3", outline="#8b4513"
+                    x0,
+                    y0,
+                    x0 + self.cell_sz,
+                    y0 + self.cell_sz,
+                    fill="#e0c097",
+                    outline="#5c4322",
+                    width=2,
                 )
 
-        # 2. Draw Walls perfectly using extended coordinates
-        for er, ec in self.state["walls"]:
-            row = er // 2
-            col = ec // 2
-            is_h_gap = er % 2 != 0
-            is_v_gap = ec % 2 != 0
+        # 2. Placed Walls
+        for extended_r, extended_c in self.state["walls"]:
+            self._draw_wall(extended_r, extended_c, fill_color="#d13838")
 
-            x1 = col * self.unit
-            y1 = row * self.unit
+        # 3. Highlight Hint Move (if active)
+        if self.hint_move:
+            self._draw_hint(self.hint_move)
 
-            if is_h_gap:
-                y1 += self.cell_size
-                y2 = y1 + self.wall_width
-            else:
-                y2 = y1 + self.cell_size
-
-            if is_v_gap:
-                x1 += self.cell_size
-                x2 = x1 + self.wall_width
-            else:
-                x2 = x1 + self.cell_size
-
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill="#8b0000", outline="")
-
-        # 3. Draw Players
-        for p_key, color in [("player1", "blue"), ("player2", "black")]:
+        # 4. Pawns
+        for p_key, color in [("player1", "#0066cc"), ("player2", "#333333")]:
             pos = self.state[p_key]["position"]
-            x = pos["c"] * self.unit + self.cell_size // 2
-            y = pos["r"] * self.unit + self.cell_size // 2
-            self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill=color)
-
-        self.p1_walls_label.config(
-            text=f"Your Walls: {self.state['player1']['wallsLeft']}"
-        )
-        self.p2_walls_label.config(
-            text=f"AI Walls: {self.state['player2']['wallsLeft']}"
-        )
-
-    def print_console_board(self):
-        """Writes an ASCII version of the board to the log file."""
-        walls = self.state["walls"]
-        p1 = self.state["player1"]["position"]
-        p2 = self.state["player2"]["position"]
-
-        output = []
-        output.append("\n   " + "   ".join(map(str, range(self.size))))
-        for r in range(self.size):
-            # Print row with players and vertical walls
-            row_str = f"{r} "
-            for c in range(self.size):
-                char = "."
-                if p1["r"] == r and p1["c"] == c:
-                    char = "1"
-                elif p2["r"] == r and p2["c"] == c:
-                    char = "2"
-
-                v_wall = "|" if (2 * r, 2 * c + 1) in walls else " "
-                row_str += f" {char} {v_wall}"
-            output.append(row_str)
-
-            # Print horizontal walls between rows
-            if r < self.size - 1:
-                h_row = "  "
-                for c in range(self.size):
-                    h_wall = "---" if (2 * r + 1, 2 * c) in walls else "   "
-                    h_row += f" {h_wall}"
-                output.append(h_row)
-
-        logging.info("\n".join(output) + "\n")
-
-    def log_action(self, actor, action, duration=None):
-        """Logs the move and current stats to the file."""
-        logging.info("-" * 40)
-
-        # Format the action string
-        if action[0] == "move":
-            action_str = f"MOVED to ({action[2][0]}, {action[2][1]})"
-        else:
-            action_str = (
-                f"PLACED {action[3].upper()}-WALL at ({action[2][0]}, {action[2][1]})"
+            px = pos["c"] * self.unit + self.cell_sz // 2
+            py = pos["r"] * self.unit + self.cell_sz // 2
+            self.canvas.create_oval(
+                px - 18, py - 18, px + 18, py + 18, fill=color, outline="white", width=2
             )
 
-        time_str = f" [Took: {duration:.2f}s]" if duration else ""
-        logging.info(f"[{actor}] {action_str}{time_str}")
-
-        # Log Stats
-        p1 = self.state["player1"]
-        p2 = self.state["player2"]
-        logging.info(
-            f"P1 (Human) | Pos: ({p1['position']['r']}, {p1['position']['c']}) | Walls: {p1['wallsLeft']}"
+        # Labels
+        self.p1_walls_lbl.config(
+            text=f"P1 (Blue) Walls: {self.state['player1']['wallsLeft']}"
         )
-        logging.info(
-            f"P2 (AI)    | Pos: ({p2['position']['r']}, {p2['position']['c']}) | Walls: {p2['wallsLeft']}"
+        self.p2_walls_lbl.config(
+            text=f"P2 (Black) Walls: {self.state['player2']['wallsLeft']}"
         )
 
-        self.print_console_board()
+    def _draw_wall(self, extended_r, extended_c, fill_color):
+        r = extended_r // 2
+        c = extended_c // 2
+        is_h_gap = extended_r % 2 != 0
+        is_v_gap = extended_c % 2 != 0
 
-    def handle_click(self, event):
-        if self.state["turn"] != "p1" or self.state["status"] == "FINISHED":
+        # Base top-left of the main cell (r, c)
+        x0 = c * self.unit
+        y0 = r * self.unit
+
+        if is_h_gap and is_v_gap:
+            # Intersection between 4 cells
+            x1 = x0 + self.cell_sz
+            y1 = y0 + self.cell_sz
+            x2 = x0 + self.unit
+            y2 = y0 + self.unit
+        elif is_h_gap:
+            # Horizontal gap (directly below the cell)
+            x1 = x0
+            y1 = y0 + self.cell_sz
+            x2 = x0 + self.cell_sz
+            y2 = y0 + self.unit
+        elif is_v_gap:
+            # Vertical gap (directly to the right of the cell)
+            x1 = x0 + self.cell_sz
+            y1 = y0
+            x2 = x0 + self.unit
+            y2 = y0 + self.cell_sz
+        else:
+            # Shouldn't happen for walls, but fall back to the cell area
+            x1 = x0
+            y1 = y0
+            x2 = x0 + self.cell_sz
+            y2 = y0 + self.cell_sz
+
+        self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline="")
+
+    def _draw_hint(self, move):
+        action_type = move[0]
+        if action_type == "move":
+            r, c = move[2]
+            px = c * self.unit + self.cell_sz // 2
+            py = r * self.unit + self.cell_sz // 2
+            self.canvas.create_oval(
+                px - 12, py - 12, px + 12, py + 12, fill="#00ff00", outline=""
+            )
+        elif action_type == "wall":
+            r, c = move[2]
+            orientation = move[3]
+            walls_to_draw = (
+                [(2 * r + 1, 2 * c), (2 * r + 1, 2 * c + 1), (2 * r + 1, 2 * c + 2)]
+                if orientation == "h"
+                else [
+                    (2 * r, 2 * c + 1),
+                    (2 * r + 1, 2 * c + 1),
+                    (2 * r + 2, 2 * c + 1),
+                ]
+            )
+            for wr, wc in walls_to_draw:
+                self._draw_wall(wr, wc, fill_color="#00ff00")
+
+    def validate_human_move(self, action):
+        act_type = action[0]
+        if act_type == "move":
+            target_r, target_c = action[2]
+            p1 = self.state["player1"]["position"]
+            p2 = self.state["player2"]["position"]
+            legal_moves = get_legal_moves(
+                self.state["turn"],
+                p1["r"],
+                p1["c"],
+                p2["r"],
+                p2["c"],
+                self.size,
+                self.state["walls"],
+            )
+            return action in legal_moves
+        elif act_type == "wall":
+            r, c = action[2]
+            orientation = action[3]
+
+            # FIXED: Map "p1" to "player1" and "p2" to "player2"
+            player_key = "player1" if self.state["turn"] == "p1" else "player2"
+            current_player = self.state[player_key]
+
+            if (
+                current_player["wallsLeft"] <= 0
+                or r < 0
+                or r >= self.size - 1
+                or c < 0
+                or c >= self.size - 1
+            ):
+                return False
+
+            new_coords = (
+                {(2 * r + 1, 2 * c), (2 * r + 1, 2 * c + 1), (2 * r + 1, 2 * c + 2)}
+                if orientation == "h"
+                else {
+                    (2 * r, 2 * c + 1),
+                    (2 * r + 1, 2 * c + 1),
+                    (2 * r + 2, 2 * c + 1),
+                }
+            )
+            if new_coords.intersection(self.state["walls"]):
+                return False
+
+            test_walls = frozenset(self.state["walls"].union(new_coords))
+            p1_can_finish = has_path(
+                self.state["player1"]["position"]["r"],
+                self.state["player1"]["position"]["c"],
+                self.state["player1"]["targetRow"],
+                self.size,
+                test_walls,
+            )
+            p2_can_finish = has_path(
+                self.state["player2"]["position"]["r"],
+                self.state["player2"]["position"]["c"],
+                self.state["player2"]["targetRow"],
+                self.size,
+                test_walls,
+            )
+            return p1_can_finish and p2_can_finish
+        return False
+
+    def on_board_click(self, event):
+        if self.is_thinking or self.state["status"] == "FINISHED":
             return
 
         c = event.x // self.unit
         r = event.y // self.unit
-        offsetX = event.x % self.unit
-        offsetY = event.y % self.unit
-
+        off_x = event.x % self.unit
+        off_y = event.y % self.unit
         if r >= self.size or c >= self.size:
             return
 
         action = None
+        turn_id = self.state["turn"]
 
-        # Move click detection
-        if offsetX < self.cell_size and offsetY < self.cell_size:
-            action = ("move", "p1", (r, c))
-        # Wall click detection
+        if off_x < self.cell_sz and off_y < self.cell_sz:
+            action = ("move", turn_id, (r, c))
         else:
-            wr = min(r, 7)
-            wc = min(c, 7)
-            if offsetX >= self.cell_size and offsetY < self.cell_size:
-                action = ("wall", "p1", (wr, wc), "v")
-            elif offsetY >= self.cell_size and offsetX < self.cell_size:
-                action = ("wall", "p1", (wr, wc), "h")
+            wr, wc = min(r, self.size - 2), min(c, self.size - 2)
+            if off_x >= self.cell_sz and off_y < self.cell_sz:
+                action = ("wall", turn_id, (wr, wc), "v")
+            elif off_y >= self.cell_sz and off_x < self.cell_sz:
+                action = ("wall", turn_id, (wr, wc), "h")
             else:
-                action = ("wall", "p1", (wr, wc), self.wall_mode)
+                action = ("wall", turn_id, (wr, wc), self.wall_mode)
 
-        # Validation against legal moves
-        legal_actions = successors(self.state)
+        if action and self.validate_human_move(action):
+            self.execute_action(action)
+            # Auto-trigger AI if it's p2's turn now
+            if self.state["turn"] == "p2" and not check_game_over(self.state):
+                self.trigger_ai_turn()
 
-        if action in legal_actions:
-            self.state = apply_transition(self.state, action)
-            self.draw_board()
-            self.log_action("HUMAN", action)
-
-            if check_game_over(self.state):
-                self.end_game()
-            else:
-                self.info_label.config(text="AI is thinking...", fg="red")
-                self.root.update()
-                threading.Thread(target=self.ai_turn).start()
-        else:
-            logging.warning(f"--> Illegal move attempted: {action}")
-
-    def ai_turn(self):
-        start = time.time()
-        # Ensure max_time is sufficient for your minimax depth
-        move = get_action(self.state, max_time=2.5)
-        duration = time.time() - start
-
-        self.state = apply_transition(self.state, move)
-        self.log_action("AI", move, duration)
-
-        self.root.after(0, self.update_after_ai)
-
-    def update_after_ai(self):
+    def execute_action(self, action):
+        self.hint_move = None
+        self.history.append(copy.deepcopy(self.state))
+        self.state = apply_transition(self.state, action)
         self.draw_board()
-        if check_game_over(self.state):
-            self.end_game()
-        else:
-            self.info_label.config(text="Your Turn (Blue)", fg="black")
+        self._update_status()
 
-    def end_game(self):
-        winner = (
-            "You (Blue)"
-            if self.state["player1"]["position"]["r"] == 0
-            else "AI (Black)"
-        )
-        self.info_label.config(text=f"GAME OVER! Winner: {winner}")
-        logging.info("=" * 40)
-        logging.info(f"GAME OVER! Winner: {winner}")
-        logging.info("=" * 40)
-        messagebox.showinfo("Game Over", f"The winner is {winner}!")
+    # --- ADVANCED TESTER TOOLS ---
+
+    def trigger_ai_turn(self):
+        if self.is_thinking or self.state["status"] == "FINISHED":
+            return
+        self.is_thinking = True
+        self.status_var.set("AI is Thinking...")
+        self.status_label.config(fg="#ff4d4d")
+        self.root.update()
+        threading.Thread(target=self._ai_worker, daemon=True).start()
+
+    def _ai_worker(self):
+        ai_move = get_action(self.state, max_time=2.5)
+        self.root.after(0, lambda: self._apply_ai_move(ai_move))
+
+    def _apply_ai_move(self, ai_move):
+        self.is_thinking = False
+        if ai_move:
+            self.execute_action(ai_move)
+
+    def request_hint(self):
+        if self.is_thinking or self.state["status"] == "FINISHED":
+            return
+        self.is_thinking = True
+        self.status_var.set("Calculating Hint...")
+        self.root.update()
+        threading.Thread(target=self._hint_worker, daemon=True).start()
+
+    def _hint_worker(self):
+        best_move = get_action(self.state, max_time=2.0)
+        self.root.after(0, lambda: self._show_hint(best_move))
+
+    def _show_hint(self, move):
+        self.is_thinking = False
+        self.hint_move = move
+        self.draw_board()
+        self._update_status()
+
+    def undo_move(self):
+        if self.is_thinking or not self.history:
+            return
+        self.hint_move = None
+        self.state = self.history.pop()
+        self.draw_board()
+        self._update_status()
+
+    def reset_game(self):
+        if self.is_thinking:
+            return
+        self.hint_move = None
+        self.history.clear()
+        self.state = copy.deepcopy(self.initial_state)
+        self.draw_board()
+        self._update_status()
+
+    def copy_state(self):
+        # Convert frozenset back to list for JSON serialization
+        export_state = copy.deepcopy(self.state)
+        export_state["walls"] = list(export_state["walls"])
+        state_json = json.dumps(export_state, indent=2)
+        self.root.clipboard_clear()
+        self.root.clipboard_append(state_json)
+        messagebox.showinfo("Copied", "Current game state JSON copied to clipboard!")
+
+    def _update_status(self):
+        if self.state["status"] == "FINISHED":
+            winner = (
+                "P1 (Blue) Won!"
+                if self.state["player1"]["position"]["r"]
+                == self.state["player1"]["targetRow"]
+                else "P2 (Black) Won!"
+            )
+            self.status_var.set(f"Game Over: {winner}")
+            self.status_label.config(fg="#00ff00")
+        else:
+            if self.state["turn"] == "p1":
+                self.status_var.set("P1 Turn (Blue)")
+                self.status_label.config(fg="#4da6ff")
+            else:
+                self.status_var.set("P2 Turn (Black)")
+                self.status_label.config(fg="#ff4d4d")
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = QuoridorGUI(root)
+    app = NaknikiAdvancedTester(root)
     root.mainloop()
