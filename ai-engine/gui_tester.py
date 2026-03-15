@@ -4,6 +4,7 @@ import threading
 import time
 import copy
 import json
+import logging
 
 # Core AI modules
 from ai.minimax import get_action
@@ -11,6 +12,14 @@ from ai.transitions import apply_transition
 from ai.game_model_utils import check_game_over
 from ai.rules import get_legal_moves
 from ai.search_utils import has_path
+
+# --- LOGGING CONFIGURATION ---
+logging.basicConfig(
+    filename="quoridor_ai_logs.txt",
+    filemode="w",
+    level=logging.INFO,
+    format="%(message)s",
+)
 
 
 class NaknikiAdvancedTester:
@@ -55,6 +64,8 @@ class NaknikiAdvancedTester:
 
         self.build_ui()
         self.draw_board()
+
+        logging.info("=== NAKNIKI ADVANCED TESTER STARTED ===")
 
     def build_ui(self):
         # Main Layout Frames
@@ -372,19 +383,30 @@ class NaknikiAdvancedTester:
                 action = ("wall", turn_id, (wr, wc), self.wall_mode)
 
         if action and self.validate_human_move(action):
-            self.execute_action(action)
+            self.execute_action(action, actor="Human")
             # Auto-trigger AI if it's p2's turn now
             if self.state["turn"] == "p2" and not check_game_over(self.state):
                 self.trigger_ai_turn()
 
-    def execute_action(self, action):
+    def execute_action(self, action, actor="AI", duration=0.0):
         self.hint_move = None
         self.history.append(copy.deepcopy(self.state))
+        self.log_action(actor, action, duration)
         self.state = apply_transition(self.state, action)
         self.draw_board()
         self._update_status()
 
     # --- ADVANCED TESTER TOOLS ---
+
+    def log_action(self, actor, action, duration):
+        actor_label = f"{actor} ({'Blue' if self.state['turn'] == 'p1' else 'Black'})"
+        action_type = (
+            "MOVED" if action[0] == "move" else f"PLACED {action[3].upper()}-WALL"
+        )
+        logging.info("-" * 30)
+        logging.info(
+            f"[{actor_label}] {action_type} to {action[2]} | Time: {duration:.2f}s"
+        )
 
     def trigger_ai_turn(self):
         if self.is_thinking or self.state["status"] == "FINISHED":
@@ -396,13 +418,15 @@ class NaknikiAdvancedTester:
         threading.Thread(target=self._ai_worker, daemon=True).start()
 
     def _ai_worker(self):
+        start_time = time.time()
         ai_move = get_action(self.state, max_time=2.5)
-        self.root.after(0, lambda: self._apply_ai_move(ai_move))
+        duration = time.time() - start_time
+        self.root.after(0, lambda: self._apply_ai_move(ai_move, duration))
 
-    def _apply_ai_move(self, ai_move):
+    def _apply_ai_move(self, ai_move, duration):
         self.is_thinking = False
         if ai_move:
-            self.execute_action(ai_move)
+            self.execute_action(ai_move, actor="AI", duration=duration)
 
     def request_hint(self):
         if self.is_thinking or self.state["status"] == "FINISHED":
@@ -413,7 +437,10 @@ class NaknikiAdvancedTester:
         threading.Thread(target=self._hint_worker, daemon=True).start()
 
     def _hint_worker(self):
+        start_time = time.time()
         best_move = get_action(self.state, max_time=2.0)
+        duration = time.time() - start_time
+        logging.info(f"[HINT REQUESTED] AI suggested {best_move} in {duration:.2f}s")
         self.root.after(0, lambda: self._show_hint(best_move))
 
     def _show_hint(self, move):
@@ -427,6 +454,7 @@ class NaknikiAdvancedTester:
             return
         self.hint_move = None
         self.state = self.history.pop()
+        logging.info("[UNDO] Reverted to previous state.")
         self.draw_board()
         self._update_status()
 
@@ -436,6 +464,7 @@ class NaknikiAdvancedTester:
         self.hint_move = None
         self.history.clear()
         self.state = copy.deepcopy(self.initial_state)
+        logging.info("=== GAME RESET ===")
         self.draw_board()
         self._update_status()
 
@@ -458,6 +487,7 @@ class NaknikiAdvancedTester:
             )
             self.status_var.set(f"Game Over: {winner}")
             self.status_label.config(fg="#00ff00")
+            logging.info(f"=== GAME OVER: {winner} ===")
         else:
             if self.state["turn"] == "p1":
                 self.status_var.set("P1 Turn (Blue)")

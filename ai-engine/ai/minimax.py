@@ -1,5 +1,6 @@
 import math
 import time
+import random
 from .rules import successors
 from .transitions import apply_transition
 from .game_model_utils import get_current_player, check_game_over, get_state_values
@@ -191,15 +192,6 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     else:
         score -= 50
 
-    # add wall score base on the opponent distance
-    wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
-    if min_dist <= 3:
-        score += wall_diff * 150
-    elif min_dist <= 6:
-        score += wall_diff * 100
-    else:
-        score += wall_diff * 80
-
     # for each player, get dist to the center (Pawns in the center columns have more options)
     center_col = size // 2
     max_centrality = abs(max_p["position"]["c"] - center_col)
@@ -209,17 +201,6 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     score -= max_centrality * 5
     score += min_centrality * 5
 
-    # find the wall value base on the opponent distance
-    if min_dist > 6:
-        wall_value = 125
-    elif min_dist > 3:
-        wall_value = 80
-    else:
-        wall_value = 45
-
-    # add wall score with his value
-    score += wall_diff * wall_value
-
     # prevent the AI from bleeding its walls dry if the opponent is still far away
     if max_p["wallsLeft"] <= 2 and min_dist > 4:
         score -= 400
@@ -227,7 +208,19 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     if max_p["wallsLeft"] == 0 and min_dist > 2:
         score -= 800
 
-    score += max_p["wallsLeft"] * 10
-    score -= min_p["wallsLeft"] * 10
+    wall_diff = max_p["wallsLeft"] - min_p["wallsLeft"]
+
+    # find the wall value base on the opponent distance
+    if min_dist > 6:
+        wall_value = 180
+    elif min_dist > 3:
+        wall_value = 110
+    else:
+        wall_value = 40
+
+    score += wall_diff * wall_value
+
+    # add random noise to break ties
+    score += random.uniform(0.0, 0.75)
 
     return score
