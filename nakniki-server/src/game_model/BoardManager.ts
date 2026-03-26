@@ -40,7 +40,7 @@ export class BoardManager {
         if (!pos.isWithinBounds(this.originalSize - 1)) {
             return false;
         }
-        
+
         // Check that the wall is not overlapping another wall
         if (o == "h") {
             const r = pos.r * 2 + 1;
@@ -71,7 +71,7 @@ export class BoardManager {
             this.board[r]![c] = "wall";
             this.board[r + 1]![c] = "wall";
             this.board[r + 2]![c] = "wall";
-        }       
+        }
     }
 
     public removeWall(pos: Position, o: Orientation): void {
@@ -90,17 +90,17 @@ export class BoardManager {
             this.board[r]![c] = "empty";
             this.board[r + 1]![c] = "intersection";
             this.board[r + 2]![c] = "empty";
-        } 
-       
+        }
+
     }
 
     // Assuming start and target are neighbors on the game board, and are legal squares
     public isMoveBlocked(start: Position, target: Position): boolean {
-        
+
         // Translates the positions on the game matrix into the boardManager matrix
         const new_start = new Position(start.r * 2, start.c * 2);
         const new_target = new Position(target.r * 2, target.c * 2);
-        
+
         // Checks if the edge to the next cell (located in between the two cells) is clear
         const middle_cell = new Position((new_start.r + new_target.r) / 2, (new_start.c + new_target.c) / 2);
         return this.board[middle_cell.r]![middle_cell.c] === "wall";
@@ -110,7 +110,7 @@ export class BoardManager {
     public hasPath(start: Position, rowTarget: number): boolean {
         // Visited matrix to keep track of visited positions
         const visited: boolean[][] = Array.from(
-            { length: this.originalSize }, 
+            { length: this.originalSize },
             () => Array(this.originalSize).fill(false)
         );
 
@@ -140,7 +140,7 @@ export class BoardManager {
                 const newR = current.r + dir.dr;
                 const newC = current.c + dir.dc;
                 const nextPos = new Position(newR, newC);
-                
+
                 // check that the next pos is valid
                 if (nextPos.r >= 0 && nextPos.r < this.originalSize && nextPos.c >= 0 && nextPos.c < this.originalSize) {
                     if (!this.isMoveBlocked(current, nextPos) && !visited[nextPos.r]![nextPos.c]) {
@@ -154,4 +154,3 @@ export class BoardManager {
         return false;
     }
 }
-    

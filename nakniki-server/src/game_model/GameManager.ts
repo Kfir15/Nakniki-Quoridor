@@ -3,6 +3,15 @@ import { GameModel } from './GameModel';
 export interface GameSession {
     game: GameModel;
     isAI: boolean;
+    leagueMatchId?: string | undefined; // optional field
+    sockets: {
+        p1: string | null;
+        p2: string | null;
+    };
+    userIds: {
+        p1: string | null;
+        p2: string | null;
+    };
 }
 
 export class GameManager {
@@ -35,15 +44,25 @@ export class GameManager {
     }
 
     // create new Session
-    public createSession(isAI: boolean = false): { gameId: string, session: GameSession } {
+    public createSession(isAI: boolean = false, leagueMatchId?: string): { gameId: string, session: GameSession } {
         // get the game id
         const gameId = this.generateSessionId();
 
         // create the new game
         const newGame = new GameModel(gameId);
+
         const newSession: GameSession = {
             game: newGame,
-            isAI: isAI
+            isAI: isAI,
+            leagueMatchId: leagueMatchId,
+            sockets: {
+                p1: null,
+                p2: null
+            },
+            userIds: {
+                p1: null,
+                p2: null
+            }
         };
 
         // store the session in the map
@@ -66,5 +85,26 @@ export class GameManager {
     // delete Session
     public deleteSession(gameId: string): boolean {
         return this.games.delete(gameId);
+    }
+
+    // get waiting lobbbies
+    public getAvailableLobbies(): { gameId: string, hostId: string }[] {
+        const AvailableLobbies: { gameId: string, hostId: string }[] = [];
+
+        // iterate over all the games
+        for (const [gameId, session] of this.games.entries()) {
+            // if this is empty lobby
+            if (!session.isAI
+                && !session.leagueMatchId
+                && session.sockets.p1 !== null
+                && session.sockets.p2 === null) {
+                AvailableLobbies.push({
+                    gameId: gameId,
+                    hostId: session.userIds.p1!
+                })
+            }
+        }
+
+        return AvailableLobbies;
     }
 }

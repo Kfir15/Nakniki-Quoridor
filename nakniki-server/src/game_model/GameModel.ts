@@ -34,13 +34,20 @@ export class GameModel {
             }
         };
         this.currentTurn = 'p1';
-        this.status = 'IN_PROGRESS';
+        this.status = 'WAITING';
         this.winner = null;
+    }
+
+    // start the game
+    public startGame(): void {
+        if (this.status === 'WAITING') {
+            this.status = 'IN_PROGRESS';
+        }
     }
 
     public tryPlaceWall(playerId: PlayerId, wallPosition: Position, orientation: Orientation): [boolean, GameState] {
         // check if player is allowed to place wall
-        if (this.status === 'FINISHED' || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {
+        if (this.status !== 'IN_PROGRESS' || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {
             return [false, this.getState()];
         }
 
@@ -54,7 +61,7 @@ export class GameModel {
 
         // Check there is paths
         if (!this.boardManager.hasPath(this.players.p1.position, this.players.p1.targetRow)
-             || !this.boardManager.hasPath(this.players.p2.position, this.players.p2.targetRow)) {
+            || !this.boardManager.hasPath(this.players.p2.position, this.players.p2.targetRow)) {
             // if not, remove the wall and return false
             this.boardManager.removeWall(wallPosition, orientation);
             return [false, this.getState()];
@@ -67,10 +74,10 @@ export class GameModel {
         this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
         return [true, this.getState()];
     }
-    
+
     public tryMovePawn(playerId: PlayerId, target: Position): [boolean, GameState] {
         // check if player is allowed to move
-        if (this.status === 'FINISHED' || playerId !== this.currentTurn) {
+        if (this.status !== 'IN_PROGRESS' || playerId !== this.currentTurn) {
             return [false, this.getState()];
         }
 
@@ -123,7 +130,7 @@ export class GameModel {
         // Opponent in front and blocked by wall behind them (diagonal move)
         else if (rowDiff == 1 && colDiff == 1) {
             const { rowDiff: oppRowDiff, colDiff: oppColDiff } = currentPos.getDiff(opponentPos);
-            
+
             // Checking if the opponent is one tile away from the player
             if (Math.abs(oppRowDiff) + Math.abs(oppColDiff) != 1) {
                 return [false, this.getState()];
@@ -132,7 +139,7 @@ export class GameModel {
             // First saves the true value diff (positive or negative) to calculate the position behind the opponent
             const { rowDiff: oppRowTrueDiff, colDiff: oppColTrueDiff } = opponentPos.getTrueValueDiff(currentPos);
             const opponentFrontPos = new Position(opponentPos.r + oppRowTrueDiff, opponentPos.c + oppColTrueDiff);
-            
+
             // If the way to the opponent is blocked,
             if (this.boardManager.isMoveBlocked(currentPos, opponentPos)) {
                 return [false, this.getState()];
@@ -143,7 +150,7 @@ export class GameModel {
                 if (!this.boardManager.isMoveBlocked(opponentPos, opponentFrontPos)) {
                     return [false, this.getState()];
                 }
-            }    
+            }
 
             // Check if the target is in a diagonal position, and goes through the opponent
             // First we check whether the opponent is in the same row or column as the player.
@@ -172,7 +179,7 @@ export class GameModel {
                 }
                 // If we passed all checks, the mvoe is legal, so we move the pawn
                 this.movePawn(playerId, target);
-                return [true, this.getState()]; 
+                return [true, this.getState()];
             }
         }
         // In case the target tile is more than two moves away, it is illegal.
@@ -207,7 +214,7 @@ export class GameModel {
             this.winner = 'p2';
         }
     }
-    
+
     public getState(): GameState {
         return {
             id: this.gameId,

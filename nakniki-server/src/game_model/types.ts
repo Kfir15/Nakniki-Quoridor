@@ -12,7 +12,7 @@ export interface Player {
     targetRow: number;
 }
 
-export type GameStatus = 'IN_PROGRESS' | 'FINISHED';
+export type GameStatus = 'WAITING' | 'IN_PROGRESS' | 'FINISHED';
 
 export interface GameState {
     id: string;
