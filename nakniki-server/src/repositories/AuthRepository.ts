@@ -3,7 +3,7 @@ const { supabase } = require('../lib/supabase');
 const AuthRepository = {
     async signUp(email: string, password: string, username: string, avatar_url = null) {
         // try to sign up
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -14,8 +14,21 @@ const AuthRepository = {
             }
         });
 
-        // check if success
-        if (error) throw error;
+        if (authError) throw authError;
+
+        if (data.user) {
+            // insert the user
+            const { error: dbError } = await supabase
+                .from('users')
+                .insert({
+                    id: data.user.id,
+                    email: email,
+                    username: username,
+                    avatar_url: avatar_url,
+                });
+
+            if (dbError) throw dbError;
+        }
 
         // return  the user data
         return data;

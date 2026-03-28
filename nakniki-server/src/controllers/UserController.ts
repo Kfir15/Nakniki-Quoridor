@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import { UNIQUE_VIOLATION } from 'pg-error-codes';
 const UserRepository = require('../repositories/UserRepository');
 
 const UserController = {
     async getUser(req: Request, res: Response) {
         try {
             // get the user id from the request
-            const userId = req.user?.id;
+            const userId = (req as any).user?.id;
             if (!userId) {
                 return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
             }
@@ -29,7 +28,7 @@ const UserController = {
     async updateUser(req: Request, res: Response) {
         try {
             // get the user id
-            const userId = req.user?.id;
+            const userId = (req as any).user?.id;
             if (!userId) {
                 return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
             }
@@ -45,7 +44,7 @@ const UserController = {
             return res.status(StatusCodes.OK).json(updatedUser);
         } catch (error: any) {
             // if this is uniqe name error
-            if (error.code === UNIQUE_VIOLATION) {
+            if (error.code === '23505') {
                 return res.status(StatusCodes.CONFLICT).json({ error: "Username is already taken" });
             }
 
