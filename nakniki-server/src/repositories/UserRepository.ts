@@ -63,13 +63,13 @@ const UserRepository = {
         return data;
     },
 
-    async getUserByUsername(username: string) {
-        // serach user by username
+    async searchUsers(prefix: string) {
+        // serach users by prefix
         const { data, error } = await supabase
             .from('users')
-            .select('*')
-            .eq('username', username)
-            .single();
+            .select('username, avatar_url, elo_rating, total_games, total_wins')
+            .ilike('username', `${prefix}%`)
+            .limit(15);
 
         // check if success
         if (error) throw error;
@@ -82,7 +82,7 @@ const UserRepository = {
         // get the leaderboard
         const { data, error } = await supabase
             .from('users')
-            .select('username, elo_rating, total_games, total_wins')
+            .select('username, avatar_url, elo_rating, total_games, total_wins')
             .order('elo_rating', { ascending: false });
 
         // check if success

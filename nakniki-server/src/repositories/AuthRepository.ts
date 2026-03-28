@@ -35,17 +35,6 @@ const AuthRepository = {
         return data;
     },
 
-    async signOut(token: string) {
-        // log out the user
-        const { error } = await supabase.auth.admin.signOut(token);
-
-        // check if success
-        if (error) throw error;
-
-        // return success
-        return true;
-    },
-
     async getUser(token: string) {
         // get user data by token
         const { data, error } = await supabase.auth.getUser(token);
@@ -54,7 +43,7 @@ const AuthRepository = {
         if (error) throw error;
 
         // return  the user data
-        return data;
+        return data.user;
     }
 }
 
