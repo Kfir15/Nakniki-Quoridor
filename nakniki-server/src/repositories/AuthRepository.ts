@@ -16,20 +16,6 @@ const AuthRepository = {
 
         if (authError) throw authError;
 
-        if (data.user) {
-            // insert the user
-            const { error: dbError } = await supabase
-                .from('users')
-                .insert({
-                    id: data.user.id,
-                    email: email,
-                    username: username,
-                    avatar_url: avatar_url,
-                });
-
-            if (dbError) throw dbError;
-        }
-
         // return  the user data
         return data;
     },

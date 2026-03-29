@@ -1,18 +1,25 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 const AuthRepository = require('../repositories/AuthRepository');
+import { uploadAvatarToSupabase } from '../utils/storageHelper';
 
 const AuthController = {
     async signUp(req: Request, res: Response) {
         try {
             // get the user info
-            const { email, password, username, avatar_url } = req.body;
+            const { email, password, username } = req.body;
+            let avatar_url = req.body.avatar_url || null;
 
             // user must insert email and password and username
             if (!email || !password || !username) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     error: "Email, password, and username are required."
                 });
+            }
+
+            // if avatar was uploaded, upload to storage
+            if (req.file) {
+                avatar_url = await uploadAvatarToSupabase(req.file);
             }
 
             // create the user and return
@@ -47,6 +54,7 @@ const AuthController = {
                 user: data.user
             });
         } catch (error: any) {
+            console.error("SUPABASE LOGIN ERROR:", error);
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 error: "Invalid email or password."
             });

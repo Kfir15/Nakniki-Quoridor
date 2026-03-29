@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 const UserRepository = require('../repositories/UserRepository');
+import { uploadAvatarToSupabase, deleteOldAvatar } from '../utils/storageHelper';
 
 const UserController = {
     async getUser(req: Request, res: Response) {
@@ -34,7 +35,21 @@ const UserController = {
             }
 
             // get the changes
-            const { username, avatar_url } = req.body;
+            let { username } = req.body;
+            let avatar_url = req.body.avatar_url;
+
+            // if new avatar uploaded
+            if (req.file) {
+                // get the current url and upload the new avatar
+                const currentUser = await UserRepository.getUserById(userId);
+                avatar_url = await uploadAvatarToSupabase(req.file);
+
+                // delete the old avatar from storage
+                if (currentUser && currentUser.avatar_url) {
+                    await deleteOldAvatar(currentUser.avatar_url);
+                }
+            }
+
             if (!username && !avatar_url) {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "Nothing to update" });
             }
