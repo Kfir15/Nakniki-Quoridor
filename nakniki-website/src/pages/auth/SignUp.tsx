@@ -193,7 +193,7 @@ export default function Signup() {
                         {/* confirm password */}
                         <Box>
                             <Text as="div" size="2" mb="1" weight="bold">Confirm Password</Text>
-                            <TextField.Root type={showPassword ? "text" : "password"} placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                            <TextField.Root type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                         </Box>
 
                         {/* terms of privacy checkbox */}
@@ -217,7 +217,9 @@ export default function Signup() {
                             </Callout.Root>
                         )}
 
-                        <Button type="submit" size="3" loading={loading} style={{ cursor: 'pointer' }}>Sign Up</Button>
+                        <Button type="submit" size="3" loading={loading} style={{ cursor: 'pointer' }}>
+                            Sign Up
+                        </Button>
 
                         {/* continue with seperator */}
                         <Flex align="center" gap="3" mt="1" mb="1">
