@@ -1,7 +1,12 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useUser } from './services/UserContext';
+import Login from './pages/auth/Login';
+
+
 export default function App() {
   return (
-    <div>
-      <h1>Nakniki Quoridor UI Setup</h1>
-    </div>
-  )
+    <Routes>
+      <Route path="/login" element={<Login />} />
+    </Routes>
+  );
 }

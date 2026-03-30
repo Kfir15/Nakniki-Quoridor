@@ -5,13 +5,16 @@ import './index.css'
 import '@radix-ui/themes/styles.css';
 import { Theme } from '@radix-ui/themes';
 import { BrowserRouter } from 'react-router-dom';
+import { UserProvider } from './services/UserContext';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Theme appearance="dark" accentColor="red" radius="medium">
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <UserProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </UserProvider>
     </Theme>
   </React.StrictMode>,
 )

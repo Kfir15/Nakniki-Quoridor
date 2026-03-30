@@ -50,11 +50,11 @@ const AuthController = {
             const data = await AuthRepository.signIn(email, password);
             return res.status(StatusCodes.OK).json({
                 message: "Login successful",
-                token: data.session.access_token,
+                access_token: data.session?.access_token,
+                refresh_token: data.session?.refresh_token,
                 user: data.user
             });
         } catch (error: any) {
-            console.error("SUPABASE LOGIN ERROR:", error);
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 error: "Invalid email or password."
             });
