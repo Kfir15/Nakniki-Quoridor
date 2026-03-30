@@ -4,6 +4,7 @@ import { EyeOpenIcon, EyeNoneIcon, ExclamationTriangleIcon } from '@radix-ui/rea
 import { supabase } from '../../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { sendPost } from '../../services/api';
+import BackButton from '../../components/BackButton';
 
 export default function Login() {
     // create the state variables
@@ -82,6 +83,9 @@ export default function Login() {
 
     return (
         <Flex align="center" justify="center" style={{ minHeight: '100vh', background: 'var(--gray-2)' }}>
+
+            <BackButton />
+
             <Card size="4" style={{ width: 450, padding: 20 }}>
                 <form onSubmit={handleLogin}>
                     <Flex direction="column" gap="4">
@@ -153,7 +157,7 @@ export default function Login() {
                             Sign In
                         </Button>
 
-                        {/* Custom "OR" Separator */}
+                        {/* continue with seperator */}
                         <Flex align="center" gap="3" mt="1" mb="1">
                             <Separator size="4" style={{ flex: 1 }} />
                             <Text size="1" color="gray" weight="bold">
@@ -162,7 +166,7 @@ export default function Login() {
                             <Separator size="4" style={{ flex: 1 }} />
                         </Flex>
 
-                        {/* Side-by-Side OAuth Buttons */}
+                        {/* google btn */}
                         <Flex gap="3">
                             <Button
                                 type="button"
@@ -181,6 +185,7 @@ export default function Login() {
                                 Google
                             </Button>
 
+                            {/* github btn */}
                             <Button
                                 type="button"
                                 variant="soft"
