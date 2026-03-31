@@ -1,5 +1,5 @@
 import { Flex, Button, Separator, Text } from '@radix-ui/themes';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 interface SocialAuthProps {
     onError: (message: string) => void;

@@ -4,13 +4,14 @@ interface PrivacyPolicyModalProps {
     onAccept: () => void;
 }
 
+// pop up dialog of our private policy terms
 export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps) {
     return (
         <Dialog.Root>
             <Dialog.Trigger>
                 <Text
                     style={{
-                        color: 'var(--blue-9)',
+                        color: 'var(--red-9)',
                         cursor: 'pointer',
                         textDecoration: 'underline'
                     }}
@@ -19,7 +20,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                 </Text>
             </Dialog.Trigger>
 
-            {/* privacy policy */}
+            {/* privacy terms */}
             <Dialog.Content style={{ maxWidth: 500 }}>
                 <Dialog.Title>Privacy Policy & Terms of Service</Dialog.Title>
                 <Dialog.Description size="2" mb="4" color="gray">
@@ -27,6 +28,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                 </Dialog.Description>
 
                 <Flex direction="column" gap="3">
+                    {/* data collection */}
                     <Box>
                         <Text as="div" weight="bold" size="2">1. Data Collection and Usage</Text>
                         <Text as="div" size="2" color="gray">
@@ -35,6 +37,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                         </Text>
                     </Box>
 
+                    {/* public statistics */}
                     <Box>
                         <Text as="div" weight="bold" size="2">2. Leaderboard and Public Statistics</Text>
                         <Text as="div" size="2" color="gray">
@@ -43,6 +46,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                         </Text>
                     </Box>
 
+                    {/* account conduct */}
                     <Box>
                         <Text as="div" weight="bold" size="2">3. Account Conduct</Text>
                         <Text as="div" size="2" color="gray">
@@ -51,6 +55,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                         </Text>
                     </Box>
 
+                    {/* auth */}
                     <Box>
                         <Text as="div" weight="bold" size="2">4. Third-Party Authentication</Text>
                         <Text as="div" size="2" color="gray">
@@ -60,6 +65,7 @@ export default function PrivacyPolicyModal({ onAccept }: PrivacyPolicyModalProps
                     </Box>
                 </Flex>
 
+                {/* accept the terms btn */}
                 <Flex gap="3" mt="4" justify="end">
                     <Dialog.Close>
                         <Button variant="soft" color="gray" style={{ cursor: 'pointer' }}>Cancel</Button>
