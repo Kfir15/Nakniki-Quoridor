@@ -12,6 +12,7 @@ export class GameModel {
     private players: Record<PlayerId, Player>;
     private currentTurn: PlayerId;
     private boardManager: BoardManager;
+    private turnCount: number;
     public status: GameStatus;
     public winner: PlayerId | null;
 
@@ -35,6 +36,7 @@ export class GameModel {
         };
         this.currentTurn = 'p1';
         this.status = 'WAITING';
+        this.turnCount = 0;
         this.winner = null;
     }
 
@@ -69,6 +71,8 @@ export class GameModel {
 
         // Decrease the player's walls left
         this.players[playerId].wallsLeft--;
+
+        this.turnCount++;
 
         // Switch the turn
         this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
@@ -194,6 +198,8 @@ export class GameModel {
         // Move the pawn
         this.players[playerId].position = target;
 
+        this.turnCount++;
+
         // Check if the player won
         this.checkWin();
 
@@ -224,6 +230,7 @@ export class GameModel {
             turn: this.currentTurn,
             status: this.status,
             winner: this.winner,
+            turnCount: this.turnCount,
             extendedBoard: this.boardManager.getBoard()
         };
     }

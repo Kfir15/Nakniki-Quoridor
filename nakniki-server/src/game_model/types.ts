@@ -22,5 +22,6 @@ export interface GameState {
     turn: PlayerId;
     status: GameStatus;
     winner: PlayerId | null;
+    turnCount: number,
     extendedBoard?: CellType[][];
 }
