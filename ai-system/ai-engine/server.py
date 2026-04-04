@@ -1,6 +1,8 @@
+from waitress import serve
 from flask import Flask, request, jsonify
 from ai.minimax import get_action
 from ai.game_model_utils import parse_state
+import sys
 
 app = Flask(__name__)
 
@@ -24,6 +26,11 @@ def api_get_action():
 
 
 if __name__ == "__main__":
-    print("Quoridor AI Server is running on http://127.0.0.1:5000")
+    # get the port
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+    else:
+        port = 5001
+
     # run the server
-    app.run(host="127.0.0.1", port=5000, threaded=True)
+    serve(app, host="127.0.0.1", port=port, _quiet=True)
