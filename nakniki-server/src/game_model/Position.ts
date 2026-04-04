@@ -41,4 +41,14 @@ export class Position {
             colDiff: this.c - other.c
         };
     }
+
+    // add two posiotions
+    public add(other: Position): Position {
+        return new Position(this.r + other.r, this.c + other.c);
+    }
+
+    // multiply the position
+    public multiply(scalar: number): Position {
+        return new Position(this.r * scalar, this.c * scalar);
+    }
 }

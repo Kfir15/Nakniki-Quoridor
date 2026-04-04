@@ -1,55 +1,53 @@
-import { PlayerId, GameState, GameStatus, Player, Orientation } from "./types";
+import { GameState, Player } from "../types/game.interfaces";
 import { Position } from "./Position";
 import { BoardManager } from "./BoardManager";
-
-const BOARD_SIZE = 9
-const MIDDLE_COL_OF_BOARD = ((BOARD_SIZE - 1) / 2)
-const INITIAL_WALLS = 10;
+import { GAME_CONSTANTS as G } from "../constants/game.constants";
+import { PlayerRole, GameStatus, Orientation } from "../types/game.enums";
 
 export class GameModel {
     private gameId: string;
     private size: number;
-    private players: Record<PlayerId, Player>;
-    private currentTurn: PlayerId;
+    private players: Record<PlayerRole, Player>;
+    private currentTurn: PlayerRole;
     private boardManager: BoardManager;
     private turnCount: number;
     public status: GameStatus;
-    public winner: PlayerId | null;
+    public winner: PlayerRole | null;
 
     constructor(gameId: string) {
         this.gameId = gameId;
-        this.size = BOARD_SIZE;
+        this.size = G.BOARD_SIZE;
         this.boardManager = new BoardManager(this.size);
         this.players = {
-            p1: {
-                id: 'p1',
-                position: new Position(BOARD_SIZE - 1, MIDDLE_COL_OF_BOARD),
-                wallsLeft: INITIAL_WALLS,
+            [PlayerRole.P1]: {
+                id: PlayerRole.P1,
+                position: new Position(G.BOARD_SIZE - 1, G.MIDDLE_COL_OF_BOARD),
+                wallsLeft: G.INITIAL_WALLS,
                 targetRow: 0,
             },
-            p2: {
-                id: 'p2',
-                position: new Position(0, MIDDLE_COL_OF_BOARD),
-                wallsLeft: INITIAL_WALLS,
-                targetRow: BOARD_SIZE - 1,
+            [PlayerRole.P2]: {
+                id: PlayerRole.P2,
+                position: new Position(0, G.MIDDLE_COL_OF_BOARD),
+                wallsLeft: G.INITIAL_WALLS,
+                targetRow: G.BOARD_SIZE - 1,
             }
         };
-        this.currentTurn = 'p1';
-        this.status = 'WAITING';
+        this.currentTurn = PlayerRole.P1;
+        this.status = GameStatus.WAITING;
         this.turnCount = 0;
         this.winner = null;
     }
 
     // start the game
     public startGame(): void {
-        if (this.status === 'WAITING') {
-            this.status = 'IN_PROGRESS';
+        if (this.status === GameStatus.WAITING) {
+            this.status = GameStatus.IN_PROGRESS;
         }
     }
 
-    public tryPlaceWall(playerId: PlayerId, wallPosition: Position, orientation: Orientation): [boolean, GameState] {
+    public tryPlaceWall(playerId: PlayerRole, wallPosition: Position, orientation: Orientation): [boolean, GameState] {
         // check if player is allowed to place wall
-        if (this.status !== 'IN_PROGRESS' || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {
+        if (this.status !== GameStatus.IN_PROGRESS || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {
             return [false, this.getState()];
         }
 
@@ -62,8 +60,8 @@ export class GameModel {
         this.boardManager.placeWall(wallPosition, orientation);
 
         // Check there is paths
-        if (!this.boardManager.hasPath(this.players.p1.position, this.players.p1.targetRow)
-            || !this.boardManager.hasPath(this.players.p2.position, this.players.p2.targetRow)) {
+        if (!this.boardManager.hasPath(this.players[PlayerRole.P1].position, this.players[PlayerRole.P1].targetRow)
+            || !this.boardManager.hasPath(this.players[PlayerRole.P2].position, this.players[PlayerRole.P2].targetRow)) {
             // if not, remove the wall and return false
             this.boardManager.removeWall(wallPosition, orientation);
             return [false, this.getState()];
@@ -75,13 +73,13 @@ export class GameModel {
         this.turnCount++;
 
         // Switch the turn
-        this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
+        this.changeTurn(playerId);
         return [true, this.getState()];
     }
 
-    public tryMovePawn(playerId: PlayerId, target: Position): [boolean, GameState] {
+    public tryMovePawn(playerId: PlayerRole, target: Position): [boolean, GameState] {
         // check if player is allowed to move
-        if (this.status !== 'IN_PROGRESS' || playerId !== this.currentTurn) {
+        if (this.status !== GameStatus.IN_PROGRESS || playerId !== this.currentTurn) {
             return [false, this.getState()];
         }
 
@@ -92,7 +90,7 @@ export class GameModel {
 
         // get the players position
         const currentPos = this.players[playerId].position;
-        const opponentId = playerId === 'p1' ? 'p2' : 'p1';
+        const opponentId = playerId === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
         const opponentPos = this.players[opponentId].position;
 
         // check if the target is near pos
@@ -194,7 +192,7 @@ export class GameModel {
     }
 
     // Moves the pawn (assuming the move is valid)
-    private movePawn(playerId: PlayerId, target: Position): void {
+    private movePawn(playerId: PlayerRole, target: Position): void {
         // Move the pawn
         this.players[playerId].position = target;
 
@@ -204,29 +202,32 @@ export class GameModel {
         this.checkWin();
 
         // Switch the turn
-        if (this.status !== 'FINISHED') {
-            this.currentTurn = playerId === 'p1' ? 'p2' : 'p1';
+        if (this.status !== GameStatus.FINISHED) {
+            this.changeTurn(playerId);
         }
     }
 
     private checkWin(): void {
-        // check if a player has reached their end goal
-        if (this.players.p1.position.r === this.players.p1.targetRow) {
-            this.status = 'FINISHED';
-            this.winner = 'p1';
+        if (this.players[PlayerRole.P1].position.r === this.players[PlayerRole.P1].targetRow) {
+            this.status = GameStatus.FINISHED;
+            this.winner = PlayerRole.P1;
         }
-        if (this.players.p2.position.r === this.players.p2.targetRow) {
-            this.status = 'FINISHED';
-            this.winner = 'p2';
+        if (this.players[PlayerRole.P2].position.r === this.players[PlayerRole.P2].targetRow) {
+            this.status = GameStatus.FINISHED;
+            this.winner = PlayerRole.P2;
         }
+    }
+
+    private changeTurn(playerId: PlayerRole): void {
+        this.currentTurn = playerId === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
     }
 
     public getState(): GameState {
         return {
             id: this.gameId,
             size: this.size,
-            player1: this.players.p1,
-            player2: this.players.p2,
+            player1: this.players[PlayerRole.P1],
+            player2: this.players[PlayerRole.P2],
             turn: this.currentTurn,
             status: this.status,
             winner: this.winner,

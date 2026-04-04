@@ -7,6 +7,7 @@ from .game_model_utils import (
     get_target_rows,
 )
 from .search_utils import has_path, get_path
+from .common.enums import ActionType, Orientation, GameStatus
 
 
 def successors(state):
@@ -18,7 +19,7 @@ def successors(state):
     _, size, player1, player2, turn, status, walls = get_state_values(state)
 
     # if the game is finished, return no legal moves
-    if status == "FINISHED":
+    if status == GameStatus.FINISHED:
         return []
 
     # get the players positions
@@ -131,7 +132,7 @@ def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
                 and 0 <= jump_c < size
                 and (wall_behind_opp_r, wall_behind_opp_c) not in walls
             ):
-                moves.append(("move", curr_id, (jump_r, jump_c)))
+                moves.append((ActionType.MOVE, curr_id, (jump_r, jump_c)))
                 continue
 
             # try diagonal jump
@@ -164,11 +165,11 @@ def get_legal_moves(curr_id, curr_row, curr_col, opp_row, opp_col, size, walls):
                 if (wall_r, wall_c) in walls:
                     continue
 
-                moves.append(("move", curr_id, (diag_jump_r, diag_jump_c)))
+                moves.append((ActionType.MOVE, curr_id, (diag_jump_r, diag_jump_c)))
 
         # else, regular move
         else:
-            moves.append(("move", curr_id, (target_r, target_c)))
+            moves.append((ActionType.MOVE, curr_id, (target_r, target_c)))
 
     return moves
 
@@ -230,7 +231,7 @@ def get_legal_walls(
             if h1 not in walls and h2 not in walls and h3 not in walls:
                 # check if the wall placement blocks the current player or the opponent paths
                 blocks_curr, blocks_opp = check_if_blocks(
-                    r, c, "h", curr_path, opp_path
+                    r, c, Orientation.HORIZONTAL, curr_path, opp_path
                 )
 
                 is_legal = True
@@ -260,7 +261,7 @@ def get_legal_walls(
                     score = wall_heuristic(
                         r,
                         c,
-                        "h",
+                        Orientation.HORIZONTAL,
                         opp_row,
                         opp_col,
                         opp_target,
@@ -268,7 +269,15 @@ def get_legal_walls(
                         blocks_opp,
                         size,
                     )
-                    walls_with_scores.append(("wall", curr_id, (r, c), "h", score))
+                    walls_with_scores.append(
+                        (
+                            ActionType.WALL,
+                            curr_id,
+                            (r, c),
+                            Orientation.HORIZONTAL,
+                            score,
+                        )
+                    )
 
             # ===vertical wall===
             v1 = (2 * r, 2 * c + 1)
@@ -279,7 +288,7 @@ def get_legal_walls(
             if v1 not in walls and v2 not in walls and v3 not in walls:
                 # evaluate the wall placement and get indicators if it blocks the player or the opponent
                 blocks_curr, blocks_opp = check_if_blocks(
-                    r, c, "v", curr_path, opp_path
+                    r, c, Orientation.VERTICAL, curr_path, opp_path
                 )
 
                 is_legal = True
@@ -309,7 +318,7 @@ def get_legal_walls(
                     score = wall_heuristic(
                         r,
                         c,
-                        "v",
+                        Orientation.VERTICAL,
                         opp_row,
                         opp_col,
                         opp_target,
@@ -317,7 +326,9 @@ def get_legal_walls(
                         blocks_opp,
                         size,
                     )
-                    walls_with_scores.append(("wall", curr_id, (r, c), "v", score))
+                    walls_with_scores.append(
+                        (ActionType.WALL, curr_id, (r, c), Orientation.VERTICAL, score)
+                    )
 
     # sort the walls by score and return the walls
     walls_with_scores.sort(key=lambda x: x[4])
@@ -326,7 +337,7 @@ def get_legal_walls(
 
 def check_if_blocks(wall_r, wall_c, orientation, curr_path, opp_path):
     # for each orientation
-    if orientation == "h":
+    if orientation == Orientation.HORIZONTAL:
         # check if the wall placement blocks the current player or the opponent paths
         blocks_curr = (
             (wall_r, wall_c) in curr_path and (wall_r + 1, wall_c) in curr_path
@@ -383,14 +394,14 @@ def wall_heuristic(
         if wall_r < opp_row:
             # penalty - wall is behind them
             score += 40
-        elif wall_r == opp_row and orientation == "h":
+        elif wall_r == opp_row and orientation == Orientation.HORIZONTAL:
             # bonus - horizontal wall right in front of them
             score -= 15
     else:  # opponent is moving up
         if wall_r >= opp_row:
             # penalty - wall is behind them
             score += 40
-        elif wall_r == opp_row - 1 and orientation == "h":
+        elif wall_r == opp_row - 1 and orientation == Orientation.HORIZONTAL:
             # bonus - horizontal wall right in front of them
             score -= 15
 
@@ -400,7 +411,7 @@ def wall_heuristic(
     score += int(dist_to_center)
 
     # horizontal walls are slightly better at stopping vertical movement
-    if orientation == "h":
+    if orientation == Orientation.HORIZONTAL:
         score -= 2
 
     return score

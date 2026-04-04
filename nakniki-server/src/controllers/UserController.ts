@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-const UserRepository = require('../repositories/UserRepository');
+import { UserRepository } from '../repositories/UserRepository';
 import { uploadAvatarToSupabase, deleteOldAvatar } from '../utils/storageHelper';
+import { DB_CONSTANTS as DB } from '../constants/db.constants';
 
-const UserController = {
+export const UserController = {
     async getUser(req: Request, res: Response) {
         try {
             // get the user id from the request
-            const userId = (req as any).user?.id;
+            const userId = req.user?.id;
             if (!userId) {
                 return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
             }
@@ -29,7 +30,7 @@ const UserController = {
     async updateUser(req: Request, res: Response) {
         try {
             // get the user id
-            const userId = (req as any).user?.id;
+            const userId = req.user?.id;
             if (!userId) {
                 return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
             }
@@ -59,7 +60,7 @@ const UserController = {
             return res.status(StatusCodes.OK).json(updatedUser);
         } catch (error: any) {
             // if this is uniqe name error
-            if (error.code === '23505') {
+            if (error.code === DB.ERROR_CODES.UNIQUE_VIOLATION) {
                 return res.status(StatusCodes.CONFLICT).json({ error: "Username is already taken" });
             }
 
@@ -93,5 +94,3 @@ const UserController = {
         }
     }
 };
-
-module.exports = UserController;

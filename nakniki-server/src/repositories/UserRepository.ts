@@ -1,11 +1,12 @@
-const { supabase } = require('../lib/supabase');
+import { supabase } from '../lib/supabase';
+import { DB_CONSTANTS as DB } from '../constants/db.constants';
 
-const UserRepository = {
+export const UserRepository = {
     // get user by his id
     async getUserById(id: string) {
         // check if the user exists
         const { data, error } = await supabase
-            .from('users')
+            .from(DB.TABLES.USERS)
             .select('*')
             .eq('id', id)
             .single();
@@ -21,7 +22,7 @@ const UserRepository = {
     async updateProfile(id: string, updates: { username?: string, avatar_url?: string }) {
         // check if the user exists
         const { data, error } = await supabase
-            .from('users')
+            .from(DB.TABLES.USERS)
             .update(updates)
             .eq('id', id)
             .select()
@@ -46,7 +47,7 @@ const UserRepository = {
 
         // update the user stats
         const { data, error } = await supabase
-            .from('users')
+            .from(DB.TABLES.USERS)
             .update({
                 elo_rating: newElo,
                 total_games: user.total_games + 1,
@@ -66,10 +67,10 @@ const UserRepository = {
     async searchUsers(prefix: string) {
         // serach users by prefix
         const { data, error } = await supabase
-            .from('users')
+            .from(DB.TABLES.USERS)
             .select('username, avatar_url, elo_rating, total_games, total_wins')
             .ilike('username', `${prefix}%`)
-            .limit(15);
+            .limit(DB.LIMITS.SEARCH_USERS);
 
         // check if success
         if (error) throw error;
@@ -81,7 +82,7 @@ const UserRepository = {
     async getLeaderboard() {
         // get the leaderboard
         const { data, error } = await supabase
-            .from('users')
+            .from(DB.TABLES.USERS)
             .select('username, avatar_url, elo_rating, total_games, total_wins')
             .order('elo_rating', { ascending: false });
 
@@ -92,5 +93,3 @@ const UserRepository = {
         return data;
     }
 }
-
-module.exports = UserRepository;

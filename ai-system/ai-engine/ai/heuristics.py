@@ -1,6 +1,7 @@
 import random
 from .search_utils import get_path
 from .game_model_utils import get_state_values
+from .common.enums import PlayerRole
 
 
 def state_heuristic(state, maximizing_player_id, depth=0):
@@ -54,8 +55,8 @@ def state_heuristic(state, maximizing_player_id, depth=0):
     score += progress * 10
 
     # the player whose turn it is effectively has a half-step head start.
-    is_max_turn = (turn == "p1" and player1["id"] == maximizing_player_id) or (
-        turn == "p2" and player2["id"] == maximizing_player_id
+    is_max_turn = (turn == PlayerRole.P1 and player1["id"] == maximizing_player_id) or (
+        turn == PlayerRole.P2 and player2["id"] == maximizing_player_id
     )
     if is_max_turn:
         score += 50

@@ -11,8 +11,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const appRouter = require('./routes/app.routes')
-app.use('/api', appRouter)
+import appRouter from './routes/app.routes';
+app.use('/api', appRouter);
 
 app.get('/', (req, res) => {
     res.status(StatusCodes.OK).send("Quoridor API is running 🚀");

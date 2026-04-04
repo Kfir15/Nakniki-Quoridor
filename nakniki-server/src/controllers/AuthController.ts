@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-const AuthRepository = require('../repositories/AuthRepository');
+import { AuthRepository } from '../repositories/AuthRepository';
 import { uploadAvatarToSupabase } from '../utils/storageHelper';
 
-const AuthController = {
+export const AuthController = {
     async signUp(req: Request, res: Response) {
         try {
             // get the user info
@@ -61,5 +61,3 @@ const AuthController = {
         }
     },
 }
-
-module.exports = AuthController

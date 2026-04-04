@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-const AuthRepository = require('../repositories/AuthRepository');
+import { AuthRepository } from '../repositories/AuthRepository';
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
     // get the token
@@ -22,7 +22,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
         }
 
         //move to the next step
-        (req as any).user = user;
+        req.user = user;
         next();
     } catch (error: any) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);

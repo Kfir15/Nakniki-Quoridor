@@ -1,16 +1,18 @@
 import { GameModel } from './GameModel';
+import { GAME_CONSTANTS as G } from '../constants/game.constants';
+import { PlayerRole } from '../types/game.enums';
 
 export interface GameSession {
     game: GameModel;
     isAI: boolean;
-    leagueMatchId?: string | undefined; // optional field
+    leagueMatchId?: string | undefined;
     sockets: {
-        p1: string | null;
-        p2: string | null;
+        [PlayerRole.P1]: string | null;
+        [PlayerRole.P2]: string | null;
     };
     userIds: {
-        p1: string | null;
-        p2: string | null;
+        [PlayerRole.P1]: string | null;
+        [PlayerRole.P2]: string | null;
     };
 }
 
@@ -23,13 +25,13 @@ export class GameManager {
 
     // generate random 6 digits game id
     private generateSessionId(): string {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        const MAX_ATTEMPTS = 1000;
+        const characters = G.SESSION_ID_CHARACTERS;
+        const MAX_ATTEMPTS = G.MAX_SESSION_GENERATION_ATTEMPTS;
 
         // generate unique game id
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             let result = '';
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < G.SESSION_ID_LENGTH; i++) {
                 result += characters.charAt(Math.floor(Math.random() * characters.length));
             }
 
@@ -56,12 +58,12 @@ export class GameManager {
             isAI: isAI,
             leagueMatchId: leagueMatchId,
             sockets: {
-                p1: null,
-                p2: null
+                [PlayerRole.P1]: null,
+                [PlayerRole.P2]: null
             },
             userIds: {
-                p1: null,
-                p2: null
+                [PlayerRole.P1]: null,
+                [PlayerRole.P2]: null
             }
         };
 
@@ -96,11 +98,11 @@ export class GameManager {
             // if this is empty lobby
             if (!session.isAI
                 && !session.leagueMatchId
-                && session.sockets.p1 !== null
-                && session.sockets.p2 === null) {
+                && session.sockets[PlayerRole.P1] !== null
+                && session.sockets[PlayerRole.P2] === null) {
                 AvailableLobbies.push({
                     gameId: gameId,
-                    hostId: session.userIds.p1!
+                    hostId: session.userIds[PlayerRole.P1]!
                 })
             }
         }

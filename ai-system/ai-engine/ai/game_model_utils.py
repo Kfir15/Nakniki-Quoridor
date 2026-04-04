@@ -1,7 +1,9 @@
 import copy
+from typing import Dict, Any, Tuple
+from .common.enums import CellType, PlayerRole
 
 
-def parse_state(game_state: dict) -> dict:
+def parse_state(game_state: Dict[str, Any]) -> Dict[str, Any]:
     """
     get the game state and return new state with walls as a set of coordinates
     """
@@ -15,7 +17,7 @@ def parse_state(game_state: dict) -> dict:
     walls = set()
     for r, row in enumerate(extended_board):
         for c, cell in enumerate(row):
-            if cell == "wall":
+            if cell == CellType.WALL:
                 walls.add((r, c))
 
     # add the walls to the state
@@ -24,85 +26,81 @@ def parse_state(game_state: dict) -> dict:
     return new_state
 
 
-def get_state_values(state):
-    """
-    get the current game state and return all state values
-    """
-
-    id = state["id"]
-    size = state["size"]
-    player1 = state["player1"]
-    player2 = state["player2"]
-    turn = state["turn"]
-    status = state["status"]
-    walls = state["walls"]
-
-    return id, size, player1, player2, turn, status, walls
+def get_state_values(state: Dict[str, Any]) -> Tuple:
+    return (
+        state["id"],
+        state["size"],
+        state["player1"],
+        state["player2"],
+        state["turn"],
+        state["status"],
+        state["walls"],
+    )
 
 
-def get_players_positions(state):
+def get_players_positions(state: Dict[str, Any]) -> Tuple[int, int, int, int]:
     """
     get the players positions
     """
 
     _, _, player1, player2, turn, _, _ = get_state_values(state)
 
-    player = player1 if turn == "p1" else player2
-    opponent = player2 if turn == "p1" else player1
+    player = player1 if turn == PlayerRole.P1 else player2
+    opponent = player2 if turn == PlayerRole.P1 else player1
     player_pos = player["position"]
     opponent_pos = opponent["position"]
 
     return player_pos["r"], player_pos["c"], opponent_pos["r"], opponent_pos["c"]
 
 
-def get_player_walls_left(state):
+def get_player_walls_left(state: Dict[str, Any]) -> int:
     """
     get the number of walls left for the current player
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-    player = player1 if turn == "p1" else player2
+    player = player1 if turn == PlayerRole.P1 else player2
     return player["wallsLeft"]
 
 
-def get_players_ids(state):
+def get_players_ids(state: Dict[str, Any]) -> Tuple[str, str]:
     """
     returns the players ids
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-    player = player1 if turn == "p1" else player2
-    opponent = player2 if turn == "p1" else player1
+    player = player1 if turn == PlayerRole.P1 else player2
+    opponent = player2 if turn == PlayerRole.P1 else player1
     return player["id"], opponent["id"]
 
 
-def get_target_rows(state):
+def get_target_rows(state: Dict[str, Any]) -> Tuple[int, int]:
     """
     return the target rows of the players
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-    player = player1 if turn == "p1" else player2
-    opponent = player2 if turn == "p1" else player1
+    player = player1 if turn == PlayerRole.P1 else player2
+    opponent = player2 if turn == PlayerRole.P1 else player1
     return player["targetRow"], opponent["targetRow"]
 
 
-def get_current_player(state):
+def get_current_player(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     get the current player
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-    player = player1 if turn == "p1" else player2
+    player = player1 if turn == PlayerRole.P1 else player2
     return player
 
 
-def get_opponent(state):
+def get_opponent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     get the opponent
     """
     _, _, player1, player2, turn, _, _ = get_state_values(state)
-    opponent = player2 if turn == "p1" else player1
+    opponent = player2 if turn == PlayerRole.P1 else player1
     return opponent
 
 
-def check_game_over(state):
+def check_game_over(state: Dict[str, Any]) -> bool:
     """
     get game state
     return True if the game is over, False otherwise
@@ -119,7 +117,7 @@ def check_game_over(state):
     return False
 
 
-def fast_copy_state(state):
+def fast_copy_state(state: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "id": state.get("id"),
         "size": state["size"],

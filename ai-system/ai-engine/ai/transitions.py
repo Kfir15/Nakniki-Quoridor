@@ -1,7 +1,8 @@
 from .game_model_utils import get_current_player, check_game_over, fast_copy_state
+from .common.enums import ActionType, Orientation, GameStatus, PlayerRole
 
 
-def apply_transition(state, action):
+def apply_transition(state, action) -> dict:
     """
     get game state and action
     return the new game state after applying the action
@@ -16,7 +17,7 @@ def apply_transition(state, action):
     player = get_current_player(new_state)
 
     # if this is move action
-    if action_type == "move":
+    if action_type == ActionType.MOVE:
         # change the player position
         new_r, new_c = action[2]
         player["position"]["r"] = new_r
@@ -29,7 +30,7 @@ def apply_transition(state, action):
         orientation = action[3]
 
         # get the walls to add
-        if orientation == "h":
+        if orientation == Orientation.HORIZONTAL:
             new_walls = [
                 (2 * wall_r + 1, 2 * wall_c),
                 (2 * wall_r + 1, 2 * wall_c + 1),
@@ -52,10 +53,12 @@ def apply_transition(state, action):
 
     # check if the game is over
     if check_game_over(new_state):
-        new_state["status"] = "FINISHED"
+        new_state["status"] = GameStatus.FINISHED
     # else, change the turn
     else:
-        new_state["turn"] = "p2" if new_state["turn"] == "p1" else "p1"
+        new_state["turn"] = (
+            PlayerRole.P2 if new_state["turn"] == PlayerRole.P1 else PlayerRole.P1
+        )
 
     # return the new state
     return new_state

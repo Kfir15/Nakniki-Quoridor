@@ -1,6 +1,6 @@
-const { supabase } = require('../lib/supabase');
+import { supabase } from '../lib/supabase';
 
-const AuthRepository = {
+export const AuthRepository = {
     async signUp(email: string, password: string, username: string, avatar_url = null) {
         // try to sign up
         const { data, error: authError } = await supabase.auth.signUp({
@@ -45,5 +45,3 @@ const AuthRepository = {
         return data.user;
     }
 }
-
-module.exports = AuthRepository;
