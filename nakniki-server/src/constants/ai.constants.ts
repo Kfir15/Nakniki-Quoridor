@@ -1,5 +1,5 @@
 export const AI_CONSTANTS = {
-    PROXY_BASE_URL: process.env.AI_PROXY_URL || 'http://localhost:5000',
+    PROXY_BASE_URL: process.env.AI_PROXY_URL || 'http://127.0.0.1:5000',
     ENDPOINTS: {
         GET_MOVE: '/ai_get_action',
     },

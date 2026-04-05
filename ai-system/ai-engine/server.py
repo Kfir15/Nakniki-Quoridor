@@ -12,16 +12,19 @@ def api_get_action():
     try:
         # get the game state and parse it
         raw_game_state = request.get_json()
+
+        if "state" in raw_game_state:
+            raw_game_state = raw_game_state["state"]
+
         state = parse_state(raw_game_state)
 
         # get the best action
         best_action = get_action(state)
 
         # return the best action
-        return jsonify({"action": best_action}), 200
+        return jsonify(best_action), 200
 
     except Exception as e:
-        # return error
         return jsonify({"error": str(e)}), 500
 
 

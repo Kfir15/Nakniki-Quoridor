@@ -103,15 +103,15 @@ export class AIGameService {
             });
             if (!response.ok) throw new Error(`AI Server Error: ${response.status}`);
 
-            const aiMove: AIResponse = await response.json();
+            // get the AI action from the array
+            const rawAiMove = await response.json();
+            const [actionType, _playerId, [r, c], orientation] = rawAiMove;
+            const targetPos = new Position(r, c);
             let success = false;
             let newState = currentState;
 
             // if this is move pawn action
-            if (aiMove.actionType === G.ACTION_TYPES.MOVE) {
-                // get the target pos
-                const targetPos = new Position(aiMove.targetRow, aiMove.targetCol);
-
+            if (actionType === G.ACTION_TYPES.MOVE) {
                 // move the pawn
                 [success, newState] = session.game.tryMovePawn(PlayerRole.P2, targetPos);
 
@@ -119,15 +119,12 @@ export class AIGameService {
                 if (success) this.recordAction(session, newState, G.ACTION_TYPES.MOVE, { r: targetPos.r, c: targetPos.c });
             }
             // if this is wall placement action
-            else if (aiMove.actionType === G.ACTION_TYPES.WALL && aiMove.orientation) {
-                // get the wall pos
-                const wallPos = new Position(aiMove.targetRow, aiMove.targetCol);
-
+            else if (actionType === G.ACTION_TYPES.WALL && orientation) {
                 // try to place the wall
-                [success, newState] = session.game.tryPlaceWall(PlayerRole.P2, wallPos, aiMove.orientation);
+                [success, newState] = session.game.tryPlaceWall(PlayerRole.P2, targetPos, orientation);
 
                 // record the action
-                if (success) this.recordAction(session, newState, G.ACTION_TYPES.WALL, { r: wallPos.r, c: wallPos.c, orient: aiMove.orientation });
+                if (success) this.recordAction(session, newState, G.ACTION_TYPES.WALL, { r, c, orient: orientation });
             }
 
             // if the ai win, handle game over
@@ -169,6 +166,23 @@ export class AIGameService {
             await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
             await MatchActionRepository.insertActions(session.actionHistory);
             this.gameManager.deleteSession(finalState.id);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public async abandonGame(gameId: string): Promise<void> {
+        // get the ssession
+        const session = this.gameManager.getSession(gameId);
+        if (!session || !session.dbMatchId) return;
+
+        try {
+            // make the winner null (this is ai game)
+            await MatchRepository.abandonMatch(session.dbMatchId, null);
+            await MatchActionRepository.insertActions(session.actionHistory);
+
+            // delete the session
+            this.gameManager.deleteSession(gameId);
         } catch (error) {
             throw error;
         }
