@@ -6,6 +6,8 @@ export interface GameSession {
     game: GameModel;
     isAI: boolean;
     leagueMatchId?: string | undefined;
+    dbMatchId?: string | undefined;
+    actionHistory: any[];
     sockets: {
         [PlayerRole.P1]: string | null;
         [PlayerRole.P2]: string | null;
@@ -57,6 +59,8 @@ export class GameManager {
             game: newGame,
             isAI: isAI,
             leagueMatchId: leagueMatchId,
+            dbMatchId: undefined,
+            actionHistory: [],
             sockets: {
                 [PlayerRole.P1]: null,
                 [PlayerRole.P2]: null
