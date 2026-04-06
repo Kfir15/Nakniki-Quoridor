@@ -45,6 +45,19 @@ export class GameModel {
         }
     }
 
+    public skipTurn(): [boolean, GameState] {
+        // check if this is actually the player turn
+        if (this.status !== GameStatus.IN_PROGRESS) {
+            return [false, this.getState()];
+        }
+
+        // change the trun
+        this.changeTurn(this.currentTurn);
+        this.turnCount++;
+
+        return [true, this.getState()];
+    }
+
     public tryPlaceWall(playerId: PlayerRole, wallPosition: Position, orientation: Orientation): [boolean, GameState] {
         // check if player is allowed to place wall
         if (this.status !== GameStatus.IN_PROGRESS || playerId !== this.currentTurn || this.players[playerId].wallsLeft <= 0) {

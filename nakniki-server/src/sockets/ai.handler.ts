@@ -109,6 +109,30 @@ export const AIHandlers = (io: Server, socket: Socket, aiService: AIGameService)
         }
     });
 
+    socket.on(S.CLIENT.AI_TURN_TIMEOUT, async (data: { gameId: string }) => {
+        try {
+            const newState = await aiService.processHumanTimeout(data.gameId);
+
+            if (newState) {
+                // notify client the turn is skiped
+                io.to(data.gameId).emit(S.SERVER.STATE_UPDATE, newState);
+
+                // trigger the ai to make a move
+                if (newState.status === GameStatus.IN_PROGRESS) {
+                    const aiMoveState = await aiService.triggerAITurn(data.gameId);
+                    if (aiMoveState) {
+                        // send to player the  ai move
+                        io.to(data.gameId).emit(S.SERVER.STATE_UPDATE, aiMoveState);
+                        if (aiMoveState.status === GameStatus.FINISHED) activeGameId = null;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("AI Timeout Error:", error);
+            socket.emit(S.SERVER.ERROR, { message: "Failed to process turn timeout." });
+        }
+    });
+
     // handle exit button
     socket.on(S.CLIENT.ABANDON_GAME, async () => {
         try {

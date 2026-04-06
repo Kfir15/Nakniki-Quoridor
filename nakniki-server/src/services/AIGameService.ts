@@ -89,6 +89,21 @@ export class AIGameService {
         return newState;
     }
 
+    public async processHumanTimeout(gameId: string): Promise<GameState | null> {
+        // get the session
+        const session = this.gameManager.getSession(gameId);
+        if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+
+        // skip the turn
+        const [success, newState] = session.game.skipTurn();
+        if (!success) return null;
+
+        // record the action
+        this.recordAction(session, newState, G.ACTION_TYPES.SKIP, { reason: "timeout" });
+
+        return newState;
+    }
+
     public async triggerAITurn(gameId: string): Promise<GameState | null> {
         const session = this.gameManager.getSession(gameId);
         if (!session) return null;

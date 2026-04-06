@@ -8,6 +8,7 @@ export const GAME_CONSTANTS = {
 
     ACTION_TYPES: {
         MOVE: 'move',
-        WALL: 'wall'
+        WALL: 'wall',
+        SKIP: 'skip'
     },
 } as const;

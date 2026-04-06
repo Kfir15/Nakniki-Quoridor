@@ -5,6 +5,7 @@ export const SOCKET_EVENTS = {
         AI_MOVE_PAWN: 'ai_move_pawn',
         AI_PLACE_WALL: 'ai_place_wall',
         ABANDON_GAME: 'abandon_game',
+        AI_TURN_TIMEOUT: 'ai_turn_timeout',
     },
     // events sent from server to client
     SERVER: {
