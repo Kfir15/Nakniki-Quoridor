@@ -107,7 +107,7 @@ export const MatchRepository = {
             stats.played += 1;
 
             // if we won add win game, otherwise add loss
-            if (match.status === GameStatus.FINISHED) {
+            if (match.status === GameStatus.FINISHED || match.status === GameStatus.ABANDONED) {
                 if (match.winner_id === userId) {
                     stats.yourWins += 1;
                 } else if (match.winner_id === opponentId) {

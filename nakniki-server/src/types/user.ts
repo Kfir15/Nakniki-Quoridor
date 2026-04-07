@@ -4,7 +4,7 @@ export interface User {
     email: string;
     avatar_url?: string;
     elo_rating: number;
-    games_played: number;
-    games_wins: number;
+    total_games: number;
+    total_wins: number;
     created_at?: string;
 }

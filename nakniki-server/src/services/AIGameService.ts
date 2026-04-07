@@ -6,7 +6,6 @@ import { Position } from '../game_model/Position';
 import { GameState } from '../types/game.interfaces';
 import { AI_CONSTANTS as AI } from '../constants/ai.constants';
 import { GAME_CONSTANTS as G } from '../constants/game.constants';
-
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 interface AIResponse {
@@ -59,7 +58,7 @@ export class AIGameService {
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c });
+        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c });
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -79,7 +78,7 @@ export class AIGameService {
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient });
+        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient });
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -99,7 +98,7 @@ export class AIGameService {
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, G.ACTION_TYPES.SKIP, { reason: "timeout" });
+        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.SKIP, { reason: "timeout" });
 
         return newState;
     }
@@ -131,7 +130,7 @@ export class AIGameService {
                 [success, newState] = session.game.tryMovePawn(PlayerRole.P2, targetPos);
 
                 // record the action
-                if (success) this.recordAction(session, newState, G.ACTION_TYPES.MOVE, { r: targetPos.r, c: targetPos.c });
+                if (success) this.recordAction(session, newState, PlayerRole.P2, G.ACTION_TYPES.MOVE, { r: targetPos.r, c: targetPos.c });
             }
             // if this is wall placement action
             else if (actionType === G.ACTION_TYPES.WALL && orientation) {
@@ -139,7 +138,7 @@ export class AIGameService {
                 [success, newState] = session.game.tryPlaceWall(PlayerRole.P2, targetPos, orientation);
 
                 // record the action
-                if (success) this.recordAction(session, newState, G.ACTION_TYPES.WALL, { r, c, orient: orientation });
+                if (success) this.recordAction(session, newState, PlayerRole.P2, G.ACTION_TYPES.WALL, { r, c, orient: orientation });
             }
 
             // if the ai win, handle game over
@@ -153,17 +152,14 @@ export class AIGameService {
         }
     }
 
-    private recordAction(session: GameSession, state: GameState, type: ActionType, data: any) {
+    private recordAction(session: GameSession, state: GameState, playerRole: PlayerRole, type: ActionType, data: any) {
         if (!session.dbMatchId) return;
-
-        // get the action player id
-        const justPlayed = state.turn === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
 
         // insert the action
         session.actionHistory.push({
             match_id: session.dbMatchId,
             turn_number: state.turnCount,
-            player_id: session.userIds[justPlayed],
+            player_id: session.userIds[playerRole],
             action_type: type,
             action_data: data
         });
@@ -171,6 +167,8 @@ export class AIGameService {
 
     private async handleGameOver(session: GameSession, finalState: GameState) {
         if (!session.dbMatchId) return;
+        const currentDbMatchId = session.dbMatchId;
+        session.dbMatchId = undefined;
 
         // get the winner DB id
         const isHumanWon = finalState.winner === PlayerRole.P1;
@@ -178,11 +176,12 @@ export class AIGameService {
 
         try {
             // finish the game in DB and also insert the actions
-            await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
+            await MatchRepository.finishMatch(currentDbMatchId, winnerDbId);
             await MatchActionRepository.insertActions(session.actionHistory);
-            this.gameManager.deleteSession(finalState.id);
         } catch (error) {
-            throw error;
+            console.error("Failed to save AI game over stats to DB:", error);
+        } finally {
+            this.gameManager.deleteSession(finalState.id);
         }
     }
 
@@ -191,15 +190,17 @@ export class AIGameService {
         const session = this.gameManager.getSession(gameId);
         if (!session || !session.dbMatchId) return;
 
+        const currentDbMatchId = session.dbMatchId;
+        session.dbMatchId = undefined;
+
         try {
             // make the winner null (this is ai game)
-            await MatchRepository.abandonMatch(session.dbMatchId, null);
+            await MatchRepository.abandonMatch(currentDbMatchId, null);
             await MatchActionRepository.insertActions(session.actionHistory);
-
-            // delete the session
-            this.gameManager.deleteSession(gameId);
         } catch (error) {
-            throw error;
+            console.error("Failed to abandon AI game in DB:", error);
+        } finally {
+            this.gameManager.deleteSession(gameId);
         }
     }
 }

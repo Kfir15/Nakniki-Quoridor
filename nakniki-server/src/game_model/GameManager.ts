@@ -5,7 +5,9 @@ import { PlayerRole } from '../types/game.enums';
 export interface GameSession {
     game: GameModel;
     isAI: boolean;
-    leagueMatchId?: string | undefined;
+    isPublicLobby: boolean;
+    lobbyTimeout?: NodeJS.Timeout | undefined;
+    tournamentMatchId?: string | undefined
     dbMatchId?: string | undefined;
     actionHistory: any[];
     sockets: {
@@ -48,7 +50,7 @@ export class GameManager {
     }
 
     // create new Session
-    public createSession(isAI: boolean = false, leagueMatchId?: string): { gameId: string, session: GameSession } {
+    public createSession(isAI: boolean = false, isPublicLobby: boolean = false, tournamentMatchId?: string): { gameId: string, session: GameSession } {
         // get the game id
         const gameId = this.generateSessionId();
 
@@ -58,7 +60,9 @@ export class GameManager {
         const newSession: GameSession = {
             game: newGame,
             isAI: isAI,
-            leagueMatchId: leagueMatchId,
+            isPublicLobby: isPublicLobby,
+            lobbyTimeout: undefined,
+            tournamentMatchId: tournamentMatchId,
             dbMatchId: undefined,
             actionHistory: [],
             sockets: {
@@ -99,9 +103,10 @@ export class GameManager {
 
         // iterate over all the games
         for (const [gameId, session] of this.games.entries()) {
-            // if this is empty lobby
+            // if this is multiplayer public empty lobby
             if (!session.isAI
-                && !session.leagueMatchId
+                && session.isPublicLobby
+                && !session.tournamentMatchId
                 && session.sockets[PlayerRole.P1] !== null
                 && session.sockets[PlayerRole.P2] === null) {
                 AvailableLobbies.push({

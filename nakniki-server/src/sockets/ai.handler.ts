@@ -26,7 +26,6 @@ export const AIHandlers = (io: Server, socket: Socket, aiService: AIGameService)
             socket.join(gameId);
             socket.emit(S.SERVER.GAME_STARTED, { gameId, state });
         } catch (error) {
-            console.error("🚨 AI_START FAILED:", error);
             socket.emit(S.SERVER.ERROR, { message: "Could not initialize AI game." });
         }
     })
@@ -133,28 +132,21 @@ export const AIHandlers = (io: Server, socket: Socket, aiService: AIGameService)
         }
     });
 
-    // handle exit button
-    socket.on(S.CLIENT.ABANDON_GAME, async () => {
+    const handleQuit = async () => {
         try {
             if (activeGameId) {
-                await aiService.abandonGame(activeGameId);
-                socket.emit(S.SERVER.GAME_ABANDONED);
+                const gameToQuit = activeGameId;
                 activeGameId = null;
+
+                socket.emit(S.SERVER.GAME_ABANDONED);
+                await aiService.abandonGame(gameToQuit);
             }
         } catch (error) {
             console.error("Error abandoning game:", error);
         }
-    });
+    };
 
-    // handle sudden disconnect
-    socket.on(S.CORE.DISCONNECT, async () => {
-        try {
-            if (activeGameId) {
-                await aiService.abandonGame(activeGameId);
-                activeGameId = null;
-            }
-        } catch (error) {
-            console.error("Error abandoning game on disconnect:", error);
-        }
-    });
+    // handle abandon and disconnect game
+    socket.on(S.CLIENT.ABANDON_GAME, handleQuit);
+    socket.on(S.CORE.DISCONNECT, handleQuit);
 }
