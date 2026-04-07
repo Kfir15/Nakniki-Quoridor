@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
     PresentationControls,
@@ -10,6 +10,7 @@ import {
     ContactShadows
 } from '@react-three/drei';
 import * as THREE from 'three';
+import { motion } from 'framer-motion';
 
 // define the tiles
 const Tile = ({ position }: { position: [number, number, number] }) => (
@@ -60,9 +61,18 @@ const Pawn = ({ position, color }: { position: [number, number, number], color: 
 // build the board
 const QuoridorBoard = () => {
     const boardRef = useRef<THREE.Group>(null);
+    const [entranceFactor, setEntranceFactor] = useState(0);
 
-    useFrame(() => {
-        if (boardRef.current) boardRef.current.rotation.y += 0.003;
+    useEffect(() => {
+        setEntranceFactor(0);
+    }, []);
+
+    useFrame((state) => {
+        if (boardRef.current) {
+            boardRef.current.rotation.y += 0.003;
+            boardRef.current.scale.lerp(new THREE.Vector3(0.6, 0.6, 0.6), 0.03);
+            boardRef.current.position.y = THREE.MathUtils.lerp(boardRef.current.position.y, 0, 0.03);
+        }
     });
 
     const tiles = [];
@@ -73,7 +83,7 @@ const QuoridorBoard = () => {
     }
 
     return (
-        <group ref={boardRef} scale={0.6}>
+        <group ref={boardRef} scale={0} position={[0, -2, 0]}>
             {tiles}
 
             <RoundedBox args={[9.5, 0.4, 9.5]} radius={0.1} smoothness={4} position={[0, -0.2, 0]} receiveShadow>
@@ -108,16 +118,21 @@ const QuoridorBoard = () => {
 
 // return the complete board
 export default function HeroBoard() {
+    const [isReady, setIsReady] = useState(false);
     return (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isReady ? 1 : 0 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        >
             <Canvas
                 camera={{ position: [0, 16, 24], fov: 28, near: 0.1, far: 2000 }}
                 shadows
                 gl={{ alpha: true, antialias: true }}
+                onCreated={() => setIsReady(true)}
             >
-
                 <Environment preset="city" />
-
                 <PresentationControls
                     global
                     cursor={true}
@@ -130,9 +145,8 @@ export default function HeroBoard() {
                         <QuoridorBoard />
                     </Float>
                 </PresentationControls>
-
                 <ContactShadows position={[0, -4, 0]} opacity={0.8} scale={35} blur={3} far={15} color="#ff0000" />
             </Canvas>
-        </div>
+        </motion.div>
     );
 }
