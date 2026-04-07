@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Grid, Flex, Box, Heading } from '@radix-ui/themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useOutlet } from 'react-router-dom';
+import { useLocation, useOutlet, useNavigate } from 'react-router-dom';
 import BackButton from '../BackButton';
 import HeroBoard from './HeroBoard';
 
@@ -10,12 +10,13 @@ const MemoizedHeroBoard = memo(HeroBoard);
 export default function AuthLayout() {
     const location = useLocation();
     const outlet = useOutlet();
+    const navigate = useNavigate();
 
     return (
         <Grid columns={{ initial: '1', md: '2' }} style={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
 
             <Box style={{ position: 'absolute', top: '7px', left: '24px', zIndex: 20 }}>
-                <BackButton />
+                <BackButton onClick={() => navigate('/')} />
             </Box>
 
             {/* left side of the screen, 3D model */}

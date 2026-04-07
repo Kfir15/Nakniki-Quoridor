@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
     PresentationControls,
@@ -61,13 +61,8 @@ const Pawn = ({ position, color }: { position: [number, number, number], color: 
 // build the board
 const QuoridorBoard = () => {
     const boardRef = useRef<THREE.Group>(null);
-    const [entranceFactor, setEntranceFactor] = useState(0);
 
-    useEffect(() => {
-        setEntranceFactor(0);
-    }, []);
-
-    useFrame((state) => {
+    useFrame(() => {
         if (boardRef.current) {
             boardRef.current.rotation.y += 0.003;
             boardRef.current.scale.lerp(new THREE.Vector3(0.6, 0.6, 0.6), 0.03);
