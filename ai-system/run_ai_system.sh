@@ -8,7 +8,7 @@ error_exit() {
 
 # check that all the files exist
 echo "🔍 Running files checks..."
-if ! command -v python3 &> /dev/null; then error_exit "python3 is not installed."; fi
+if ! command -v python &> /dev/null; then error_exit "python is not installed."; fi
 if [ ! -f "config.json" ]; then error_exit "config.json not found."; fi
 if [ ! -f "ai-engine/server.py" ]; then error_exit "ai-engine/server.py not found."; fi
 if [ ! -f "proxy/proxy.py" ]; then error_exit "proxy/proxy.py not found."; fi
@@ -19,17 +19,17 @@ echo "   ✅ All files found."
 echo "🐍 Setting up Python Virtual Environment..."
 if [ ! -d "venv" ]; then
     echo "   Creating new virtual environment..."
-    python3 -m venv venv || error_exit "Failed to create virtual environment. You might need to run: sudo apt install python3-venv"
+    python -m venv venv || error_exit "Failed to create virtual environment. You might need to run: sudo apt install python3-venv"
 fi
 
 # activate the venv
-source venv/bin/activate || error_exit "Failed to activate virtual environment."
+source venv/Scripts/activate || error_exit "Failed to activate virtual environment."
 echo "   ✅ Virtual environment activated."
 
 # install all the dependencies from requirements.txt
 echo "📦 Checking and installing dependencies..."
 if [ ! -f "venv/.last_install" ] || [ "requirements.txt" -nt "venv/.last_install" ]; then
-    python3 -m pip install -q -r requirements.txt || error_exit "Failed to install requirements."
+    python -m pip install -q -r requirements.txt || error_exit "Failed to install requirements."
     touch venv/.last_install
     echo "   ✅ Dependencies updated."
 else
@@ -39,7 +39,7 @@ fi
 echo "⚙️ Loading configuration from config.json..."
 
 # load the workers urls
-WORKER_PORTS=$(python3 -c "
+WORKER_PORTS=$(python -c "
 import json
 try:
     with open('config.json', encoding='utf-8-sig') as f:
@@ -50,7 +50,7 @@ except Exception:
 ")
 
 # load the proxy port
-PROXY_PORT=$(python3 -c "
+PROXY_PORT=$(python -c "
 import json
 try:
     with open('config.json', encoding='utf-8-sig') as f:
@@ -67,7 +67,7 @@ fi
 PIDS=""
 echo "🚀 Starting AI Workers..."
 for PORT in $WORKER_PORTS; do
-    python3 ai-engine/server.py $PORT &
+    python ai-engine/server.py $PORT &
     PID=$!
     PIDS="$PIDS $PID"
     echo "   ✅ Started AI worker on port $PORT (PID: $PID)"
@@ -75,7 +75,7 @@ done
 
 # start the proxy
 echo "🚀 Starting Proxy Server on port $PROXY_PORT..."
-python3 proxy/proxy.py &
+python proxy/proxy.py &
 PROXY_PID=$!
 
 echo "------------------------------------------------"

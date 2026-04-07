@@ -40,7 +40,7 @@ export const UserRepository = {
         // check if the user exists
         let user;
         try {
-            user = await this.getUserById(id);
+            user = await UserRepository.getUserById(id);
         } catch (error) {
             throw error;
         }
