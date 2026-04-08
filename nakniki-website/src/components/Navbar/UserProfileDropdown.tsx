@@ -51,8 +51,8 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
                         <Box display={{ initial: 'none', md: 'block' }}>
                             <Text as="div" size="2" weight="bold" style={{ color: 'white', lineHeight: 1 }}>{username}</Text>
                             <Flex align="center" gap="1" style={{ marginTop: '2px' }}>
-                                <Shield size={10} color="var(--red-9)" />
-                                <Text size="1" weight="bold" style={{ color: 'var(--red-9)', fontSize: '10px' }}>{elo}</Text>
+                                <Shield size={10} color="var(--yellow-9)" />
+                                <Text size="1" weight="bold" style={{ color: 'var(--yellow-9)', fontSize: '10px' }}>{elo}</Text>
                             </Flex>
                         </Box>
                     </Flex>
@@ -67,7 +67,7 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
                 </DropdownMenu.Item>
 
                 {/* logout */}
-                <DropdownMenu.Item color="red" onClick={logOut} style={{ borderRadius: '8px', cursor: 'pointer' }}>
+                <DropdownMenu.Item color="red" onClick={async () => { await logOut(); navigate('/'); }} style={{ borderRadius: '8px', cursor: 'pointer' }}>
                     <LogOut size={14} style={{ marginRight: '10px' }} /> Logout
                 </DropdownMenu.Item>
             </DropdownMenu.Content>

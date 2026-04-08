@@ -12,6 +12,7 @@ export const ROUTE_CONSTANTS = {
         SEARCH: '/search',
         UPDATE: '/update',
         H2H: '/h2h/:id',
+        RANK: '/rank',
     },
     MATCHES: {
         ROOT: '/matches',

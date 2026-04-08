@@ -110,5 +110,21 @@ export const UserController = {
         } catch (error) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
         }
+    },
+
+    async getUserRank(req: Request, res: Response) {
+        try {
+            // get the user
+            const user = await UserRepository.getUserById(req.user!.id);
+            if (!user) {
+                return res.status(StatusCodes.NOT_FOUND).json({ error: "User not found" });
+            }
+
+            // get the user rank and return
+            const rankBucket = await UserRepository.getUserRankBucket(user.elo_rating);
+            return res.status(StatusCodes.OK).json({ rank: rankBucket });
+        } catch (error) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+        }
     }
 };

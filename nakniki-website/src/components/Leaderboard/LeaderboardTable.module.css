@@ -1,0 +1,66 @@
+.tableContainer {
+    background-color: rgba(10, 10, 10, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.headerRow {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.rankHeader {
+    width: 60px;
+    text-align: center;
+}
+
+.operativeCell {
+    padding: 0 !important;
+}
+
+.operativeFlex {
+    cursor: pointer;
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 0 12px 12px 0;
+    background: transparent;
+    border-left: 3px solid transparent;
+    transform: translateX(0);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.operativeFlex:hover {
+    background: linear-gradient(90deg, rgba(220, 38, 38, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
+    border-left: 3px solid var(--red-9);
+    transform: translateX(6px);
+}
+
+.avatar {
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.operativeFlex:hover .avatar {
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.4);
+}
+
+.avatarRankOne {
+    border-color: #FBBF24 !important;
+}
+
+.username {
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.operativeFlex:hover .username {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.usernameRankOne {
+    color: #FBBF24 !important;
+}
+
+.eloText {
+    color: var(--red-9);
+}

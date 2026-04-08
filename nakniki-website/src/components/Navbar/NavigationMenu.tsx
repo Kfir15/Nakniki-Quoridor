@@ -1,4 +1,4 @@
-import { Flex, Box, Text } from '@radix-ui/themes';
+import { Box, Text } from '@radix-ui/themes';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
@@ -16,20 +16,35 @@ export default function NavigationMenu() {
         { label: 'LEADERBOARD', path: '/leaderboard' },
         { label: 'HOW TO PLAY', path: '/how-to-play' }
     ], []);
-    const activeNavLabel = hoveredNav || navItems.find(i => i.path === location.pathname)?.label;
 
     return (
-        <Flex onMouseLeave={() => setHoveredNav(null)} className="rn-nav-container">
+        <div
+            onMouseLeave={() => setHoveredNav(null)}
+            className="rn-nav-container"
+            style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)'
+            }}
+        >
             {/* for each navigation option */}
             {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const isHovered = hoveredNav === item.label;
-                const hasPill = activeNavLabel === item.label;
+                const hasPill = isActive;
 
                 return (
                     // link to the page
                     <Link key={item.label} to={item.path} style={{ textDecoration: 'none', position: 'relative' }}>
-                        <Box onMouseEnter={() => setHoveredNav(item.label)} className="rn-nav-box">
+                        <Box
+                            onMouseEnter={() => setHoveredNav(item.label)}
+                            className="rn-nav-box"
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}
+                        >
 
                             {/* write the name */}
                             <Text size="2" weight="bold" className="rn-nav-text" style={{
@@ -53,6 +68,6 @@ export default function NavigationMenu() {
                     </Link>
                 );
             })}
-        </Flex>
+        </div>
     );
 }

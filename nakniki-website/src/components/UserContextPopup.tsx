@@ -25,10 +25,18 @@ export default function UserContextPopup({ user, isOpen, onClose }: Props) {
     const { user: currentUser } = useUser();
     const [h2h, setH2h] = useState<{ played: number, yourWins: number, theirWins: number } | null>(null);
     const [loadingH2h, setLoadingH2h] = useState(false);
+    const isSelf = user?.id === currentUser?.id;
 
     useEffect(() => {
         // if the popup open
         if (isOpen && user && currentUser) {
+
+            // dont show H2H start againts yourself
+            if (isSelf) {
+                setH2h(null);
+                setLoadingH2h(false);
+                return;
+            }
 
             // fetch H2H stats
             const fetchH2H = async () => {
@@ -59,14 +67,12 @@ export default function UserContextPopup({ user, isOpen, onClose }: Props) {
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <Dialog.Content size="3" maxWidth="475px">
+            <Dialog.Content size="3" maxWidth="475px" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <Flex direction="column" gap="4">
 
                     {/* go back btn */}
                     <Flex justify="start">
-                        <Dialog.Close>
-                            <BackButton />
-                        </Dialog.Close>
+                        <BackButton onClick={onClose} />
                     </Flex>
 
                     <Flex direction="row" align="center" justify="center" gap="4">
@@ -92,35 +98,37 @@ export default function UserContextPopup({ user, isOpen, onClose }: Props) {
                 </Flex>
 
                 {/* H2H stats */}
-                <Box p="3" mt="4" style={{ background: 'rgba(220, 38, 38, 0.05)', borderRadius: '12px', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
-                    <Flex align="center" gap="2" mb="3">
-                        <Crosshair size={14} color="var(--red-9)" />
-                        <Text size="1" weight="bold" style={{ color: 'var(--red-9)', letterSpacing: '1px' }}>HEAD TO HEAD STATISTICS</Text>
-                    </Flex>
+                {!isSelf && (
+                    <Box p="3" mt="4" style={{ background: 'rgba(220, 38, 38, 0.05)', borderRadius: '12px', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+                        <Flex align="center" gap="2" mb="3">
+                            <Crosshair size={14} color="var(--red-9)" />
+                            <Text size="1" weight="bold" style={{ color: 'var(--red-9)', letterSpacing: '1px' }}>HEAD TO HEAD STATISTICS</Text>
+                        </Flex>
 
-                    <Skeleton loading={loadingH2h}>
-                        {h2h && h2h.played > 0 ? (
-                            <Flex justify="between" align="center" px="4">
-                                <Flex direction="column" align="center">
-                                    <Text size="1" color="gray" weight="bold">WINS</Text>
-                                    <Text size="5" weight="bold">{h2h.yourWins}</Text>
+                        <Skeleton loading={loadingH2h}>
+                            {h2h && h2h.played > 0 ? (
+                                <Flex justify="between" align="center" px="4">
+                                    <Flex direction="column" align="center">
+                                        <Text size="1" color="gray" weight="bold">WINS</Text>
+                                        <Text size="5" weight="bold">{h2h.yourWins}</Text>
+                                    </Flex>
+                                    <Flex direction="column" align="center" style={{ opacity: 0.3 }}>
+                                        <Text size="1" weight="bold">VS</Text>
+                                        <Text size="1">{h2h.played} TOTAL</Text>
+                                    </Flex>
+                                    <Flex direction="column" align="center">
+                                        <Text size="1" color="gray" weight="bold">LOSSES</Text>
+                                        <Text size="5" weight="bold">{h2h.theirWins}</Text>
+                                    </Flex>
                                 </Flex>
-                                <Flex direction="column" align="center" style={{ opacity: 0.3 }}>
-                                    <Text size="1" weight="bold">VS</Text>
-                                    <Text size="1">{h2h.played} TOTAL</Text>
-                                </Flex>
-                                <Flex direction="column" align="center">
-                                    <Text size="1" color="gray" weight="bold">LOSSES</Text>
-                                    <Text size="5" weight="bold">{h2h.theirWins}</Text>
-                                </Flex>
-                            </Flex>
-                        ) : (
-                            <Text size="1" color="gray" align="center" style={{ width: '100%', display: 'block' }}>
-                                {loadingH2h ? "Scanning records..." : "No previous combat data found."}
-                            </Text>
-                        )}
-                    </Skeleton>
-                </Box>
+                            ) : (
+                                <Text size="1" color="gray" align="center" style={{ width: '100%', display: 'block' }}>
+                                    {loadingH2h ? "Scanning records..." : "No previous combat data found."}
+                                </Text>
+                            )}
+                        </Skeleton>
+                    </Box>
+                )}
 
                 <Box mt="4" style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '16px' }}>
                     <Flex direction="column" gap="3">
