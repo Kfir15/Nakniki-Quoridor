@@ -71,6 +71,23 @@ export const MatchRepository = {
         if (error) throw error;
     },
 
+    async getH2HStats(userId: string, opponentId: string) {
+        // get stats between this players
+        const { data, error } = await supabase
+            .from(DB.TABLES.MATCHES)
+            .select('winner_id, status')
+            .or(`and(player_1_id.eq.${userId},player_2_id.eq.${opponentId}),and(player_1_id.eq.${opponentId},player_2_id.eq.${userId})`)
+            .neq('status', 'WAITING');
+        if (error) throw error;
+
+        // return games summary between them
+        return {
+            played: data.length,
+            yourWins: data.filter(m => m.winner_id === userId).length,
+            theirWins: data.filter(m => m.winner_id === opponentId).length
+        };
+    },
+
     async getUserMatchHistory(userId: string) {
         // return the user's history matches
         const { data, error } = await supabase

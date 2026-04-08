@@ -68,7 +68,7 @@ export const UserRepository = {
         // serach users by prefix
         const { data, error } = await supabase
             .from(DB.TABLES.USERS)
-            .select('username, avatar_url, elo_rating, total_games, total_wins')
+            .select('id, username, avatar_url, elo_rating, total_games, total_wins, created_at')
             .ilike('username', `${prefix}%`)
             .limit(DB.LIMITS.SEARCH_USERS);
 

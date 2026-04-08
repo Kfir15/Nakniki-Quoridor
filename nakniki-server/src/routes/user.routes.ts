@@ -10,5 +10,6 @@ router.get(R.USERS.LEADERBOARD, authenticateUser, UserController.getLeaderboard)
 router.get(R.USERS.SEARCH, authenticateUser, UserController.searchUser);
 router.get(R.USERS.PROFILE, authenticateUser, UserController.getUser);
 router.put(R.USERS.UPDATE, authenticateUser, uploadAvatar, UserController.updateUser);
+router.get(R.USERS.H2H, authenticateUser, UserController.searchUserH2H);
 
 export default router;
