@@ -1,4 +1,4 @@
-import { Flex, Separator } from '@radix-ui/themes';
+import { Flex, Separator, Box } from '@radix-ui/themes';
 import { motion } from 'framer-motion';
 import SearchBar from './SearchBar';
 import UserProfileDropdown from './UserProfileDropdown';
@@ -23,13 +23,15 @@ export default function RegisteredNavbar({ user, logOut }: Props) {
         >
             <div className="rn-top-line" />
 
-            <Flex align="center" justify="between" px="6" style={{ width: '100%', maxWidth: '1800px' }}>
+            <Flex align="center" justify="between" px="6" style={{ width: '100%', maxWidth: '1800px', position: 'relative' }}>
 
                 {/* nakiniki logo */}
                 <BrandLogo />
 
                 {/* navigation menu */}
-                <NavigationMenu />
+                <Box style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+                    <NavigationMenu />
+                </Box>
 
                 <Flex align="center" gap="5">
                     {/* search users bar */}
