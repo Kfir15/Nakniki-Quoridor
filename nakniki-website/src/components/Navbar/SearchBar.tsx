@@ -6,6 +6,8 @@ import { sendGet } from '../../services/api';
 import { useUser } from '../../services/UserContext';
 import FloatingError from '../error/FloatingError';
 import UserContextPopup, { type SearchedUser } from '../UserContextPopup';
+import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { HttpStatus } from '../../constants/http.constants';
 
 export default function SearchBar() {
     // state variables
@@ -51,11 +53,11 @@ export default function SearchBar() {
         const delayDebounceFn = setTimeout(async () => {
             try {
                 // get the users from tha api
-                const response = await sendGet(`/users/search?q=${searchQuery}`, user?.token);
+                const response = await sendGet(E.USERS.SEARCH(searchQuery), user?.token);
 
                 if (!isCancelled) {
                     // set the search results
-                    if (response.status === 200) {
+                    if (response.status === HttpStatus.OK) {
                         setSearchResults(response.data);
                         setError('');
                     } else {

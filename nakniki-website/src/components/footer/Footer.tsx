@@ -1,14 +1,14 @@
 import { Box, Container, Flex, Separator, Text } from "@radix-ui/themes";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ROUTES as R } from '../../constants/routes.constants'
 
 const Footer = () => {
     // hisde the footer in this routes
     const location = useLocation();
-    const hiddenRoutes = ['/login', '/signup'];
-    if (hiddenRoutes.includes(location.pathname)) {
-        return null;
-    }
+    const hiddenRoutes = [R.LOGIN, R.SIGNUP];
+    const shouldHide = hiddenRoutes.some(route => location.pathname.startsWith(route));
+    if (shouldHide) return null;
 
     return (
         <motion.div

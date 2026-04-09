@@ -1,0 +1,55 @@
+export const RANK_TIERS = {
+    TOP_1: "1",
+    TOP_2: "2",
+    TOP_3: "3",
+    TOP_4: "4",
+    TOP_5: "5",
+    TOP_6: "6",
+    TOP_7: "7",
+    TOP_8: "8",
+    TOP_9: "9",
+    TOP_10: "10",
+    TOP_11: "11",
+    TOP_12: "12",
+    TOP_13: "13",
+    TOP_14: "14",
+    TOP_15: "15",
+    TOP_50: "50",
+    TOP_100: "100",
+    TOP_500: "500",
+    TOP_1K: "1k",
+    TOP_5K: "5k",
+    TOP_10K: "10k",
+    UNRANKED: "Unranked"
+} as const;
+
+export const RANK_COLORS: Record<string, string> = {
+    [RANK_TIERS.TOP_1]: "yellow",
+    [RANK_TIERS.TOP_2]: "gray",
+    [RANK_TIERS.TOP_3]: "orange",
+    [RANK_TIERS.TOP_4]: "red",
+    [RANK_TIERS.TOP_5]: "red",
+    [RANK_TIERS.TOP_6]: "red",
+    [RANK_TIERS.TOP_7]: "red",
+    [RANK_TIERS.TOP_8]: "red",
+    [RANK_TIERS.TOP_9]: "red",
+    [RANK_TIERS.TOP_10]: "red",
+    [RANK_TIERS.TOP_11]: "red",
+    [RANK_TIERS.TOP_12]: "red",
+    [RANK_TIERS.TOP_13]: "red",
+    [RANK_TIERS.TOP_14]: "red",
+    [RANK_TIERS.TOP_15]: "red",
+    [RANK_TIERS.TOP_50]: "purple",
+    [RANK_TIERS.TOP_100]: "indigo",
+    [RANK_TIERS.TOP_500]: "blue",
+    [RANK_TIERS.TOP_1K]: "cyan",
+    [RANK_TIERS.TOP_5K]: "teal",
+    [RANK_TIERS.TOP_10K]: "green",
+    [RANK_TIERS.UNRANKED]: "gray",
+};
+
+export const MEDAL_COLORS = {
+    GOLD: "#FBBF24",
+    SILVER: "#9CA3AF",
+    BRONZE: "#B45309"
+} as const;

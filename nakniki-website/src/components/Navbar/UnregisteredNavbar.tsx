@@ -4,6 +4,7 @@ import { LogIn, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BrandLogo from './BrandLogo';
 import './UnregisteredNavbar.css';
+import { ROUTES as R } from '../../constants/routes.constants'
 
 export default function UnregisteredNavbar() {
     const navigate = useNavigate();
@@ -25,14 +26,14 @@ export default function UnregisteredNavbar() {
                 {/* login and signup btns */}
                 <Flex align="center" gap="3">
                     <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
-                        <Button className="un-login-btn" onClick={() => navigate('/login')}>
+                        <Button className="un-login-btn" onClick={() => navigate(R.LOGIN)}>
                             <LogIn size={15} />
                             <Text size="2" weight="medium">Log in</Text>
                         </Button>
                     </motion.div>
 
                     <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
-                        <Button className="un-signup-btn" onClick={() => navigate('/signup')}>
+                        <Button className="un-signup-btn" onClick={() => navigate(R.SIGNUP)}>
                             <UserPlus size={15} />
                             <Text size="2" weight="medium">Sign up</Text>
                         </Button>

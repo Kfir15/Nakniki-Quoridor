@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { sendGet } from '../services/api';
 import { useUser } from '../services/UserContext';
 import BackButton from './BackButton';
+import { ENDPOINTS as E } from '../constants/endpoints.constants';
+import { HttpStatus } from '../constants/http.constants';
 
 export interface SearchedUser {
     id: string;
@@ -43,8 +45,8 @@ export default function UserContextPopup({ user, isOpen, onClose }: Props) {
                 setLoadingH2h(true);
                 try {
                     // get the stats and set them
-                    const response = await sendGet(`/users/h2h/${user.id}`, currentUser.token);
-                    if (response.status === 200) setH2h(response.data);
+                    const response = await sendGet(E.USERS.H2H_STATS(user.id), currentUser.token);
+                    if (response.status === HttpStatus.OK) setH2h(response.data);
                 } catch (err) {
                     console.error("H2H fetch error");
                 } finally {

@@ -7,6 +7,9 @@ import { sendPost } from '../../services/api';
 import SocialAuth from '../../components/auth/SocialAuth';
 import AnimatedButton from '../../components/AnimatedButton';
 import FormError from '../../components/error/FormError';
+import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { ROUTES as R } from '../../constants/routes.constants'
+import { HttpStatus } from '../../constants/http.constants';
 
 export default function Login() {
     // define the state variables
@@ -26,20 +29,20 @@ export default function Login() {
 
         try {
             // try to login with email and password
-            const response = await sendPost('/auth/signin', undefined, {}, { email, password });
+            const response = await sendPost(E.AUTH.SIGNIN, undefined, {}, { email, password });
             const { access_token, refresh_token } = response.data;
 
             // create session
             const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
             if (sessionError) throw sessionError;
 
-            navigate('/');
+            navigate(R.HOME);
         } catch (error: any) {
             // print error message base on the status
             const message = error.response?.data?.error || error.message;
-            if (error.response && error.response.status === 400) {
+            if (error.response && error.response.status === HttpStatus.BAD_REQUEST) {
                 setError("Email and password are required.");
-            } else if (error.response && error.response.status === 404) {
+            } else if (error.response && error.response.status === HttpStatus.NOT_FOUND) {
                 setError("Invalid email or password.");
             } else {
                 setError(message || "Something went wrong. Please try again.");

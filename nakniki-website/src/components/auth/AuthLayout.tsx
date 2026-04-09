@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useOutlet, useNavigate } from 'react-router-dom';
 import BackButton from '../BackButton';
 import HeroBoard from './HeroBoard';
+import { ROUTES as R } from '../../constants/routes.constants'
 
 const MemoizedHeroBoard = memo(HeroBoard);
 
@@ -16,7 +17,7 @@ export default function AuthLayout() {
         <Grid columns={{ initial: '1', md: '2' }} style={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
 
             <Box style={{ position: 'absolute', top: '7px', left: '24px', zIndex: 20 }}>
-                <BackButton onClick={() => navigate('/')} />
+                <BackButton onClick={() => navigate(R.HOME)} />
             </Box>
 
             {/* left side of the screen, 3D model */}

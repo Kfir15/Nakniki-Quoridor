@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Flex, Box } from '@radix-ui/themes';
+import { ROUTES as R } from './constants/routes.constants';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
 import AuthLayout from './components/auth/AuthLayout';
@@ -15,14 +16,14 @@ export default function App() {
 
       <Box style={{ flexGrow: 1 }}>
         <Routes>
-          <Route path='/' element={<div>Home Page</div>} />
-          <Route path='/leaderboard' element={<Leaderboard />} />
-          <Route path='/how-to-play' element={<div>How To Play Page</div>} />
-          <Route path='/profile/:username' element={<div>Profile Page</div>} />
+          <Route path={R.HOME} element={<div>Home Page</div>} />
+          <Route path={R.LEADERBOARD} element={<Leaderboard />} />
+          <Route path={R.HOW_TO_PLAY} element={<div>How To Play Page</div>} />
+          <Route path={R.PROFILE_BASE} element={<div>Profile Page</div>} />
 
           <Route element={<AuthLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
+            <Route path={R.LOGIN} element={<Login />} />
+            <Route path={R.SIGNUP} element={<SignUp />} />
           </Route>
         </Routes>
       </Box>

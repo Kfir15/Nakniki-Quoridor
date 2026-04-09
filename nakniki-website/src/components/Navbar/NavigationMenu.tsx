@@ -2,6 +2,7 @@ import { Box, Text } from '@radix-ui/themes';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
+import { ROUTES as R } from '../../constants/routes.constants';
 
 export default function NavigationMenu() {
     const location = useLocation();
@@ -12,9 +13,9 @@ export default function NavigationMenu() {
 
     // the navigation options
     const navItems = useMemo(() => [
-        { label: 'HOME', path: '/' },
-        { label: 'LEADERBOARD', path: '/leaderboard' },
-        { label: 'HOW TO PLAY', path: '/how-to-play' }
+        { label: 'HOME', path: R.HOME },
+        { label: 'LEADERBOARD', path: R.LEADERBOARD },
+        { label: 'HOW TO PLAY', path: R.HOW_TO_PLAY }
     ], []);
 
     return (

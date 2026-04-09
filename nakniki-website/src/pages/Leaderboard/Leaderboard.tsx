@@ -8,6 +8,8 @@ import RankBadge from '../../components/RankBadge';
 import UserContextPopup, { type SearchedUser } from '../../components/UserContextPopup';
 import LeaderboardTable from '../../components/Leaderboard/LeaderboardTable';
 import LeaderboardBackground from '../../components/Leaderboard/LeaderboardBackground';
+import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { HttpStatus } from '../../constants/http.constants';
 
 interface RankData {
     isTop: boolean;
@@ -29,13 +31,13 @@ export default function Leaderboard() {
             try {
                 // get the leaderboard table and also user rank
                 const [leaderboardRes, rankRes] = await Promise.all([
-                    sendGet('/users/leaderboard', user.token),
-                    sendGet('/users/rank', user.token)
+                    sendGet(E.USERS.LEADERBOARD, user.token),
+                    sendGet(E.USERS.RANK, user.token)
                 ]);
 
                 // set the data
-                if (leaderboardRes.status === 200) setTopPlayers(leaderboardRes.data);
-                if (rankRes.status === 200) setMyRank(rankRes.data.rank);
+                if (leaderboardRes.status === HttpStatus.OK) setTopPlayers(leaderboardRes.data);
+                if (rankRes.status === HttpStatus.OK) setMyRank(rankRes.data.rank);
             } catch (error) {
                 console.error("Failed to load leaderboard data");
             } finally {

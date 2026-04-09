@@ -1,23 +1,14 @@
 import { Badge } from '@radix-ui/themes';
+import { RANK_COLORS, RANK_TIERS } from '../constants/ranks.constants';
 
 // return the badge color based on the rank
 const getRankColor = (rank: string) => {
-    if (rank === "1") return "yellow";
-    if (rank === "2") return "gray";
-    if (rank === "3") return "orange";
 
-    const numericRank = parseInt(rank, 10);
-    if (!isNaN(numericRank) && numericRank <= 15) return "red";
-
-    switch (rank) {
-        case "50": return "purple";
-        case "100": return "indigo";
-        case "500": return "blue";
-        case "1k": return "cyan";
-        case "5k": return "teal";
-        case "10k": return "green";
-        default: return "gray";
+    if (RANK_COLORS[rank]) {
+        return RANK_COLORS[rank];
     }
+
+    return "gray";
 };
 
 export default function RankBadge({ rankData, hero = false }: { rankData: any, hero?: boolean }) {
@@ -37,7 +28,7 @@ export default function RankBadge({ rankData, hero = false }: { rankData: any, h
     return (
         // return the badge
         <Badge
-            color={color}
+            color={color as any}
             variant="soft"
             radius="full"
             style={{
@@ -50,7 +41,7 @@ export default function RankBadge({ rankData, hero = false }: { rankData: any, h
                 border: hero ? `1px solid var(--${color}-8)` : 'none'
             }}
         >
-            {rankData.rank === "Unranked" ? "Unranked" : displayText}
+            {rankData.rank === RANK_TIERS.UNRANKED ? "Unranked" : displayText}
         </Badge>
     );
 }

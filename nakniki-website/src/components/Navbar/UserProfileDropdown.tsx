@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { AppUser } from '../../services/UserContext';
 import { sendGet } from '../../services/api';
+import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { ROUTES as R } from '../../constants/routes.constants'
 
 interface Props {
     user: AppUser;
@@ -22,7 +24,7 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
         const fetchProfileData = async () => {
             try {
                 // send the request
-                const response = await sendGet('/users/profile', user.token);
+                const response = await sendGet(E.USERS.PROFILE, user.token);
                 if (response.data?.elo_rating) setElo(response.data.elo_rating);
             } catch (error) {
                 console.error("Failed to fetch user Elo");
@@ -62,12 +64,12 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
             {/* menu items */}
             <DropdownMenu.Content variant="soft" className="rn-dropdown-content">
                 {/* go to profile page */}
-                <DropdownMenu.Item onClick={() => navigate(`/profile/${username}`)} style={{ borderRadius: '8px', cursor: 'pointer' }}>
+                <DropdownMenu.Item onClick={() => navigate(R.PROFILE(username))} style={{ borderRadius: '8px', cursor: 'pointer' }}>
                     <UserIcon size={14} style={{ marginRight: '10px' }} /> Profile
                 </DropdownMenu.Item>
 
                 {/* logout */}
-                <DropdownMenu.Item color="red" onClick={async () => { await logOut(); navigate('/'); }} style={{ borderRadius: '8px', cursor: 'pointer' }}>
+                <DropdownMenu.Item color="red" onClick={async () => { await logOut(); navigate(R.HOME); }} style={{ borderRadius: '8px', cursor: 'pointer' }}>
                     <LogOut size={14} style={{ marginRight: '10px' }} /> Logout
                 </DropdownMenu.Item>
             </DropdownMenu.Content>

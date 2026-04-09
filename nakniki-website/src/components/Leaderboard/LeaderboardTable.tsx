@@ -2,6 +2,7 @@ import { Box, Flex, Text, Avatar, Skeleton, Table } from '@radix-ui/themes';
 import { Trophy, Medal } from 'lucide-react';
 import { type SearchedUser } from '../UserContextPopup';
 import styles from './LeaderboardTable.module.css';
+import { MEDAL_COLORS } from '../../constants/ranks.constants';
 
 interface LeaderboardTableProps {
     isLoading: boolean;
@@ -12,9 +13,9 @@ interface LeaderboardTableProps {
 export default function LeaderboardTable({ isLoading, topPlayers, onUserClick }: LeaderboardTableProps) {
     // get icon base on the rank
     const getRankIcon = (index: number) => {
-        if (index === 0) return <Trophy size={20} color="#FBBF24" />;
-        if (index === 1) return <Medal size={20} color="#9CA3AF" />;
-        if (index === 2) return <Medal size={20} color="#B45309" />;
+        if (index === 0) return <Trophy size={20} color={MEDAL_COLORS.GOLD} />;
+        if (index === 1) return <Medal size={20} color={MEDAL_COLORS.SILVER} />;
+        if (index === 2) return <Medal size={20} color={MEDAL_COLORS.BRONZE} />;
 
         return <Text size="3" weight="bold" style={{ opacity: 0.5, width: '20px', textAlign: 'center' }}>{index + 1}</Text>;
     };

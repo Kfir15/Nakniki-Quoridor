@@ -3,13 +3,14 @@ import { useUser } from '../../services/UserContext';
 import { Box } from '@radix-ui/themes';
 import RegisteredNavbar from './RegisteredNavbar';
 import UnregisteredNavbar from './UnregisteredNavbar';
+import { ROUTES as R } from '../../constants/routes.constants'
 
 export default function Navbar() {
     const location = useLocation();
     const { user, logOut, isLoading } = useUser();
 
     // hide navbar in this routes
-    const hiddenRoutes = ['/login', '/signup'];
+    const hiddenRoutes = [R.LOGIN, R.SIGNUP];
     const shouldHide = hiddenRoutes.some(route => location.pathname.startsWith(route));
     if (shouldHide) return null;
 
