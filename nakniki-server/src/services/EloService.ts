@@ -7,7 +7,8 @@ export class EloService {
 
         // In case the parameters sent to the function are invalid
         if (playerElo == null || isNaN(playerElo) || opponentElo == null || isNaN(opponentElo)) {
-            console.warn("EloService Warning - Missing elo rating for player or opponent. Defaulting to 1200.");
+            console.warn("EloService Warning - Missing elo rating for player or opponent. Reseting Elo to default.");
+            // Changes the ELO to either be the previous one, or the default one if it was invalid
             playerElo = playerElo ?? ELO.DEFAULT_ELO;
             opponentElo = opponentElo ?? ELO.DEFAULT_ELO;
         }
