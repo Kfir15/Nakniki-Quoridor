@@ -8,18 +8,25 @@ export class EloService {
         // In case the parameters sent to the function are invalid
         if (playerElo == null || isNaN(playerElo) || opponentElo == null || isNaN(opponentElo)) {
             console.warn("EloService Warning - Missing elo rating for player or opponent. Reseting Elo to default.");
-            // Changes the ELO to either be the previous one, or the default one if it was invalid
-            playerElo = playerElo ?? ELO.DEFAULT_ELO;
-            opponentElo = opponentElo ?? ELO.DEFAULT_ELO;
+            // Changes the ELO to either be the previous one, or the default one if it was invalid;
+            return ELO.DEFAULT_ELO;
         }
 
         const winProbability = 1 / (1 + Math.pow(10, (opponentElo - playerElo) / ELO.WINPROBABILITYFACTOR));
         const score = win ? 1 : 0;
-        const newElo = Math.round(playerElo + ELO.ELOFACTOR * (score - winProbability));
+        const k = this.calculateDynamicEloFactor(playerElo, opponentElo);
+        const newElo = Math.round(playerElo + k * (score - winProbability));
         if (newElo < ELO.MIN_ELO) {
             return ELO.MIN_ELO;
         }
         return newElo;
+    }
+
+    // Dynamically adjusts the K-factor based on the difference between the two players' Elos.
+    private static calculateDynamicEloFactor(playerElo: number, opponentElo: number): number {
+        const eloDifference = Math.abs(playerElo - opponentElo);
+        const k = ELO.ELOFACTOR + (eloDifference/ELO.ELODIFFFACTOR);
+        return k;
     }
 
     public static async updateMatchStats(winnerId: string, loserId: string): Promise<void> {
