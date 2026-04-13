@@ -1,9 +1,8 @@
 import { Box } from '@radix-ui/themes';
 import { motion } from 'framer-motion';
-
 import quoridor_board_background from '../../../assets/quoridor_board_background.svg?url';
 
-export default function MatrixBackground() {
+export default function BoardBackground() {
     return (
         <Box style={{
             position: 'fixed',
@@ -14,6 +13,7 @@ export default function MatrixBackground() {
             pointerEvents: 'none',
             backgroundColor: '#0a0a0a'
         }}>
+            {/* move the board in the background */}
             <motion.div
                 animate={{
                     backgroundPositionY: ['0px', '250px'],
