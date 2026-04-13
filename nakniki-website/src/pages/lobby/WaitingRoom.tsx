@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Flex, Text, Box, Button } from '@radix-ui/themes';
-import { Copy, ArrowLeft, CheckCircle2, Wifi, Terminal } from 'lucide-react';
+import { Copy, ArrowLeft, CheckCircle2, Radar, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { socketManager } from '../../lib/socket.manager';
@@ -200,7 +200,7 @@ function RadarPulse() {
                 border: '1px solid var(--red-9)', boxShadow: '0 0 30px rgba(255,51,51,0.4)',
                 width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-                <Wifi size={24} color="var(--red-9)" />
+                <Radar size={24} color="var(--red-9)" />
             </Box>
         </Box>
     );
