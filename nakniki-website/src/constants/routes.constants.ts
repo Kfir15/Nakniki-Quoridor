@@ -5,5 +5,8 @@ export const ROUTES = {
     LOGIN: '/login',
     SIGNUP: '/signup',
     PROFILE: (username: string) => `/profile/${username}`,
-    PROFILE_BASE: '/profile/:username'
+    PROFILE_BASE: '/profile/:username',
+    MP_LOBBY: '/mp-lobby',
+    GAME: '/game/:gameId',
+    WAITING: '/waiting/:lobbyType/:gameId',
 } as const;
