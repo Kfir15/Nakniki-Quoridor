@@ -6,8 +6,11 @@ import { ROUTES as R } from '../../constants/routes.constants'
 const Footer = () => {
     // hisde the footer in this routes
     const location = useLocation();
-    const hiddenRoutes = [R.LOGIN, R.SIGNUP];
-    const shouldHide = hiddenRoutes.some(route => location.pathname.startsWith(route));
+    const hiddenRoutes = [R.LOGIN, R.SIGNUP, R.GAME, R.WAITING];
+    const shouldHide = hiddenRoutes.some(route => {
+        const basePath = route.split('/:')[0];
+        return location.pathname.startsWith(basePath);
+    });
     if (shouldHide) return null;
 
     return (

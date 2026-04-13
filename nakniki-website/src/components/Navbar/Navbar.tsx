@@ -10,8 +10,11 @@ export default function Navbar() {
     const { user, logOut, isLoading } = useUser();
 
     // hide navbar in this routes
-    const hiddenRoutes = [R.LOGIN, R.SIGNUP];
-    const shouldHide = hiddenRoutes.some(route => location.pathname.startsWith(route));
+    const hiddenRoutes = [R.LOGIN, R.SIGNUP, R.GAME, R.WAITING];
+    const shouldHide = hiddenRoutes.some(route => {
+        const basePath = route.split('/:')[0];
+        return location.pathname.startsWith(basePath);
+    });
     if (shouldHide) return null;
 
     if (isLoading) {
