@@ -29,7 +29,8 @@ export const SOCKET_EVENTS = {
     },
     // built in socket io events
     CORE: {
-        CONNECTION: 'connection',
+        CONNECTION: 'connect',
         DISCONNECT: 'disconnect',
+        CONNECTION_ERROR: 'connect_error',
     }
 } as const;

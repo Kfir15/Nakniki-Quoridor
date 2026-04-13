@@ -19,6 +19,11 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             // join the socket and send to client the lobby code
             socket.join(lobbyCode);
             socket.emit(S.SERVER.LOBBY_CREATED, { lobbyCode })
+
+            if (data.isPublic) {
+                const lobbies = multiplayerService.getPublicLobbies();
+                io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies });
+            }
         } catch (error) {
             socket.emit(S.SERVER.ERROR, { message: "Failed to create lobby." });
         }
@@ -41,6 +46,9 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
 
                 // broadcast to players - game start!
                 socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, { state });
+
+                const lobbies = multiplayerService.getPublicLobbies();
+                io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies });
             }
             else {
                 socket.emit(S.SERVER.LOBBY_ERROR, { message: "Lobby not found, full, or already started." })
@@ -133,6 +141,9 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             activeLobbyCode = null;
             socket.to(lobbyToQuit).emit(S.SERVER.GAME_ABANDONED);
             await multiplayerService.abandonGame(lobbyToQuit, userId);
+
+            const updatedLobbies = multiplayerService.getPublicLobbies();
+            io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies: updatedLobbies });
         }
     };
 
