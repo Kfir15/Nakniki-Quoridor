@@ -12,6 +12,10 @@ import {
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
 
+interface HeroBoardProps {
+    onReady: (ready: boolean) => void;
+}
+
 // define the tiles
 const Tile = ({ position }: { position: [number, number, number] }) => (
     <RoundedBox args={[0.9, 0.2, 0.9]} radius={0.05} smoothness={4} position={position} receiveShadow castShadow>
@@ -112,8 +116,14 @@ const QuoridorBoard = () => {
 };
 
 // return the complete board
-export default function HeroBoard() {
+export default function HeroBoard({ onReady }: HeroBoardProps) {
     const [isReady, setIsReady] = useState(false);
+
+    const handleCreated = () => {
+        setIsReady(true);
+        onReady(true);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -125,11 +135,10 @@ export default function HeroBoard() {
                 camera={{ position: [0, 16, 24], fov: 28, near: 0.1, far: 2000 }}
                 shadows
                 gl={{ alpha: true, antialias: true }}
-                onCreated={() => setIsReady(true)}
+                onCreated={handleCreated}
             >
                 <Environment preset="city" />
                 <PresentationControls
-                    global
                     cursor={true}
                     rotation={[0, Math.PI / 4, 0]}
                     polar={[-Math.PI / 5, Math.PI / 4]}
