@@ -6,6 +6,7 @@ import { ROUTES as R } from '../../constants/routes.constants';
 import FloatingError from '../../components/error/FloatingError';
 import NestedModeCard from '../../components/home/register-home/NestedModeCard';
 import { useAiGame } from '../../hooks/useAiGame';
+import MatrixBackground from '../../components/home/register-home/MatrixBackground';
 
 export default function RegisteredHome() {
     const navigate = useNavigate();
@@ -29,7 +30,9 @@ export default function RegisteredHome() {
             minHeight: '80vh',
             overflow: 'hidden',
         }}>
-            <Container size="3" p="4" style={{ width: '100%' }}>
+            <MatrixBackground />
+
+            <Container size="3" p="4" style={{ width: '100%', position: 'relative', zIndex: 10 }}>
 
                 <Flex direction="column" align="center" gap="2" mb="9">
                     <Text size="9" weight="bold" style={{
