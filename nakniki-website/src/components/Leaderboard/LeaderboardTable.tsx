@@ -37,7 +37,7 @@ export default function LeaderboardTable({ isLoading, topPlayers, onUserClick }:
                         <Table.ColumnHeaderCell align="center">Elo</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell align="center">Matches</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell align="center">Wins</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell align="center">Enlisted</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell align="center">Played Since</Table.ColumnHeaderCell>
                     </Table.Row>
                 </Table.Header>
 
