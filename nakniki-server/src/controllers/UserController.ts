@@ -3,6 +3,7 @@ import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import { UserRepository } from '../repositories/UserRepository';
 import { uploadAvatarToSupabase, deleteOldAvatar } from '../utils/storageHelper';
 import { DB_CONSTANTS as DB } from '../constants/db.constants';
+import { MatchRepository } from '../repositories/MatchRepository';
 
 export const UserController = {
     async getUser(req: Request, res: Response) {
@@ -89,6 +90,39 @@ export const UserController = {
             // get the players
             const players = await UserRepository.searchUsers(query);
             return res.status(StatusCodes.OK).json(players);
+        } catch (error) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+        }
+    },
+
+    async searchUserH2H(req: Request, res: Response) {
+        try {
+            // get the users id's
+            const userId = req.user?.id;
+            const opponentId = req.params.id as string;
+            if (!userId || !opponentId) {
+                return res.status(StatusCodes.BAD_REQUEST).json({ error: "IDs required" });
+            }
+
+            // get the stats
+            const stats = await MatchRepository.getH2HStats(userId, opponentId);
+            return res.status(StatusCodes.OK).json(stats);
+        } catch (error) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+        }
+    },
+
+    async getUserRank(req: Request, res: Response) {
+        try {
+            // get the user
+            const user = await UserRepository.getUserById(req.user!.id);
+            if (!user) {
+                return res.status(StatusCodes.NOT_FOUND).json({ error: "User not found" });
+            }
+
+            // get the user rank and return
+            const rankBucket = await UserRepository.getUserRankBucket(user.elo_rating);
+            return res.status(StatusCodes.OK).json({ rank: rankBucket });
         } catch (error) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
         }

@@ -1,5 +1,6 @@
 import { Flex, Button, Separator, Text } from '@radix-ui/themes';
 import { supabase } from '../../lib/supabase';
+import { AuthProvider, type AuthProviderType } from '../../constants/auth.constants';
 
 interface SocialAuthProps {
     onError: (message: string) => void;
@@ -7,7 +8,7 @@ interface SocialAuthProps {
 
 const SocialAuth = ({ onError }: SocialAuthProps) => {
 
-    const handleSocialLogin = async (provider: 'google' | 'github') => {
+    const handleSocialLogin = async (provider: AuthProviderType) => {
         try {
             // try to login using the provider
             const { error } = await supabase.auth.signInWithOAuth({
@@ -39,7 +40,7 @@ const SocialAuth = ({ onError }: SocialAuthProps) => {
                     variant="soft"
                     color="gray"
                     size="3"
-                    onClick={() => handleSocialLogin('google')}
+                    onClick={() => handleSocialLogin(AuthProvider.GOOGLE)}
                     style={{ cursor: 'pointer', flex: 1 }}
                 >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '6px' }}>
@@ -57,7 +58,7 @@ const SocialAuth = ({ onError }: SocialAuthProps) => {
                     variant="soft"
                     color="gray"
                     size="3"
-                    onClick={() => handleSocialLogin('github')}
+                    onClick={() => handleSocialLogin(AuthProvider.GITHUB)}
                     style={{ cursor: 'pointer', flex: 1 }}
                 >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '6px' }}>

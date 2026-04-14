@@ -1,10 +1,15 @@
 import { IconButton, Tooltip, Box } from "@radix-ui/themes";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const BackButton = () => {
+interface BackButtonProps {
+    onClick?: () => void;
+}
+
+const BackButton = ({ onClick }: BackButtonProps) => {
     const navigate = useNavigate();
+    const handleClick = onClick || (() => navigate(-1));
+
     return (
         <Box
             style={{
@@ -19,7 +24,7 @@ const BackButton = () => {
                 <IconButton
                     variant="ghost"
                     size="3"
-                    onClick={() => navigate(-1) /* go back */}
+                    onClick={handleClick}
                     style={{
                         cursor: 'pointer',
                         color: 'white'

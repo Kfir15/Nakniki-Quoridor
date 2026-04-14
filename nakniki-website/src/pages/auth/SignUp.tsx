@@ -9,6 +9,8 @@ import PrivacyPolicyModal from '../../components/auth/PrivacyPolicyModal';
 import SocialAuth from '../../components/auth/SocialAuth';
 import AnimatedButton from '../../components/AnimatedButton';
 import FormError from '../../components/error/FormError';
+import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { ROUTES as R } from '../../constants/routes.constants'
 
 export default function Signup() {
     // define the state variables
@@ -72,7 +74,7 @@ export default function Signup() {
             }
 
             // try to sign up
-            const response = await sendPost('/auth/signup', undefined, {}, formData);
+            const response = await sendPost(E.AUTH.SIGNUP, undefined, {}, formData);
 
             // create new session
             const { session } = response.data;
@@ -83,7 +85,7 @@ export default function Signup() {
                 });
                 if (sessionError) throw sessionError;
 
-                navigate('/');
+                navigate(R.HOME);
             } else {
                 setError("Account created! Please check your email for a confirmation link.");
             }
