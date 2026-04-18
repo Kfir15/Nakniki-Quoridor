@@ -1,7 +1,7 @@
 import random
 from .search_utils import get_path
 from .game_model_utils import get_state_values
-from .common.enums import PlayerRole
+from common.enums import PlayerRole
 
 
 def state_heuristic(state, maximizing_player_id, depth=0):

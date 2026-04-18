@@ -7,7 +7,7 @@ from .game_model_utils import (
     get_target_rows,
 )
 from .search_utils import has_path, get_path
-from .common.enums import ActionType, Orientation, GameStatus
+from common.enums import ActionType, Orientation, GameStatus
 
 
 def successors(state):
