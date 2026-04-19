@@ -48,6 +48,7 @@ export const AnalysisQueueRepository = {
             .from(DB.TABLES.ANALYSIS_QUEUE)
             .update({ priority: newPriority })
             .eq('match_id', matchId)
+            .eq('status', AnalysisStatus.PENDING);
 
         // check if success
         if (error) throw error;
