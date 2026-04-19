@@ -26,6 +26,20 @@ export const AnalysisQueueRepository = {
         return true;
     },
 
+    async insertBatchJobs(jobs: any[]) {
+        if (!jobs || jobs.length === 0) return false;
+
+        // insert all the jobs
+        const { data, error } = await supabase
+            .from(DB.TABLES.ANALYSIS_QUEUE)
+            .insert(jobs)
+
+        // check if success
+        if (error) throw error;
+
+        return true;
+    },
+
     async changePriority(matchId: string, newPriority: number) {
         if (!matchId || newPriority == null) return false;
 
