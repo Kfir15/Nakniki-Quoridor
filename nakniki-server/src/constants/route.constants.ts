@@ -17,5 +17,6 @@ export const ROUTE_CONSTANTS = {
     MATCHES: {
         ROOT: '/matches',
         HISTORY: '/history',
+        DETAILS: '/:id',
     }
 } as const;

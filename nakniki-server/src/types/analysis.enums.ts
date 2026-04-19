@@ -16,5 +16,5 @@ export enum MoveAccuracy {
 // lower number -> higher priority
 export enum QueuePriority {
     DEFAULT = 10,
-    ERGENT = 1,
+    URGENT = 1,
 }

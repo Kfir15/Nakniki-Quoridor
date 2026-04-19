@@ -6,5 +6,6 @@ import { ROUTE_CONSTANTS as R } from '../constants/route.constants';
 const router = Router();
 
 router.get(R.MATCHES.HISTORY, authenticateUser, MatchController.getMatchHistory);
+router.get(R.MATCHES.DETAILS, authenticateUser, MatchController.getMatchDetails)
 
 export default router;
