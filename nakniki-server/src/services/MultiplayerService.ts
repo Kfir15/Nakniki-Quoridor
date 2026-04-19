@@ -1,7 +1,7 @@
 import { GameManager, GameSession } from '../game_model/GameManager';
 import { MatchRepository } from '../repositories/MatchRepository';
 import { EloService } from './EloService';
-import { MatchActionRepository } from '../repositories/MatchActionRepository';
+import { ActionManager } from './ActionManager';
 import { PlayerRole, GameStatus, Orientation } from '../types/game.enums';
 import { GameState } from '../types/game.interfaces';
 import { Position } from '../game_model/Position';
@@ -98,6 +98,7 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // get the player session
         const role = this.getPlayerRole(session, userId);
@@ -108,7 +109,7 @@ export class MultiplayerService {
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, role, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c });
+        ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c }, true);
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -122,6 +123,7 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // get the player role and check that it is his turn
         const role = this.getPlayerRole(session, userId);
@@ -132,7 +134,7 @@ export class MultiplayerService {
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, role, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient });
+        ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient }, true);
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -146,6 +148,7 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // get the player role and check that it is his turn
         const role = this.getPlayerRole(session, userId);
@@ -156,7 +159,7 @@ export class MultiplayerService {
         if (!success) return null;
 
         // record the skip
-        this.recordAction(session, newState, role, G.ACTION_TYPES.SKIP, { reason: "timeout" });
+        ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
         return newState;
     }
 
@@ -172,9 +175,6 @@ export class MultiplayerService {
             return;
         }
 
-        const currentDbMatchId = session.dbMatchId;
-        session.dbMatchId = undefined;
-
         // get the role of the abandon player
         const quittingRole = this.getPlayerRole(session, quittingUserId);
         if (!quittingRole) return;
@@ -186,8 +186,8 @@ export class MultiplayerService {
 
         try {
             // insert the winner and the actions
-            await MatchRepository.abandonMatch(currentDbMatchId, winnerDbId);
-            await MatchActionRepository.insertActions(session.actionHistory);
+            await MatchRepository.abandonMatch(session.dbMatchId, winnerDbId);
+            await ActionManager.uploadActions(session);
 
             // update players stats after the game
             if (winnerDbId && loserDbId) {
@@ -196,6 +196,7 @@ export class MultiplayerService {
         } catch (error) {
             console.error("Failed to process abandoned game:", error);
         } finally {
+            session.dbMatchId = undefined;
             this.gameManager.deleteSession(gameId);
         }
     }
@@ -207,19 +208,6 @@ export class MultiplayerService {
         return null;
     }
 
-    private recordAction(session: GameSession, state: GameState, playerRole: PlayerRole, type: ActionType, data: any) {
-        if (!session.dbMatchId) return;
-
-        // insert the action
-        session.actionHistory.push({
-            match_id: session.dbMatchId,
-            turn_number: state.turnCount,
-            player_id: session.userIds[playerRole],
-            action_type: type,
-            action_data: data
-        });
-    }
-
     private async handleGameOver(session: GameSession, finalState: GameState) {
         if (!session.dbMatchId) return;
 
@@ -227,17 +215,14 @@ export class MultiplayerService {
         const winnerRole = finalState.winner === PlayerRole.P1 ? PlayerRole.P1 : PlayerRole.P2;
         const loserRole = winnerRole === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
 
-        const currentDbMatchId = session.dbMatchId;
-        session.dbMatchId = undefined;
-
         // get the ID's
         const winnerDbId = session.userIds[winnerRole] || null;
         const loserDbId = session.userIds[loserRole] || null;
 
         try {
             // finish the game in DB and also insert the actions
-            await MatchRepository.finishMatch(currentDbMatchId, winnerDbId);
-            await MatchActionRepository.insertActions(session.actionHistory);
+            await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
+            await ActionManager.uploadActions(session);
 
             // update players stats after the game
             if (winnerDbId && loserDbId) {
@@ -247,6 +232,7 @@ export class MultiplayerService {
             console.error("Failed to save Multiplayer game over stats to DB:", error);
         } finally {
             this.gameManager.deleteSession(finalState.id);
+            session.dbMatchId = undefined;
         }
     }
 }

@@ -1,19 +1,12 @@
 import { GameManager, GameSession } from '../game_model/GameManager';
 import { MatchRepository } from '../repositories/MatchRepository';
-import { MatchActionRepository } from '../repositories/MatchActionRepository';
+import { ActionManager } from './ActionManager';
 import { PlayerRole, GameStatus, Orientation } from '../types/game.enums';
 import { Position } from '../game_model/Position';
 import { GameState } from '../types/game.interfaces';
 import { AI_CONSTANTS as AI } from '../constants/ai.constants';
 import { GAME_CONSTANTS as G } from '../constants/game.constants';
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
-
-interface AIResponse {
-    actionType: ActionType;
-    targetRow: number;
-    targetCol: number;
-    orientation?: Orientation;
-}
 
 export class AIGameService {
     private gameManager: GameManager;
@@ -52,13 +45,14 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // try to move the pawn
         const [success, newState] = session.game.tryMovePawn(PlayerRole.P1, target);
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c });
+        ActionManager.recordAction(session, stateBefore, PlayerRole.P1, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c }, true);
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -72,13 +66,14 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // try to place the wall
         const [success, newState] = session.game.tryPlaceWall(PlayerRole.P1, pos, orient);
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient });
+        ActionManager.recordAction(session, stateBefore, PlayerRole.P1, G.ACTION_TYPES.WALL, { r: pos.r, c: pos.c, orient }, true);
 
         // if the game ended
         if (newState.status === GameStatus.FINISHED) {
@@ -92,13 +87,14 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
+        const stateBefore = session.game.getState();
 
         // skip the turn
         const [success, newState] = session.game.skipTurn();
         if (!success) return null;
 
         // record the action
-        this.recordAction(session, newState, PlayerRole.P1, G.ACTION_TYPES.SKIP, { reason: "timeout" });
+        ActionManager.recordAction(session, stateBefore, PlayerRole.P1, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
 
         return newState;
     }
@@ -130,7 +126,9 @@ export class AIGameService {
                 [success, newState] = session.game.tryMovePawn(PlayerRole.P2, targetPos);
 
                 // record the action
-                if (success) this.recordAction(session, newState, PlayerRole.P2, G.ACTION_TYPES.MOVE, { r: targetPos.r, c: targetPos.c });
+                if (success) {
+                    ActionManager.recordAction(session, currentState, PlayerRole.P2, G.ACTION_TYPES.MOVE, { r: targetPos.r, c: targetPos.c }, false);
+                }
             }
             // if this is wall placement action
             else if (actionType === G.ACTION_TYPES.WALL && orientation) {
@@ -138,7 +136,9 @@ export class AIGameService {
                 [success, newState] = session.game.tryPlaceWall(PlayerRole.P2, targetPos, orientation);
 
                 // record the action
-                if (success) this.recordAction(session, newState, PlayerRole.P2, G.ACTION_TYPES.WALL, { r, c, orient: orientation });
+                if (success) {
+                    ActionManager.recordAction(session, currentState, PlayerRole.P2, G.ACTION_TYPES.WALL, { r, c, orient: orientation }, false);
+                }
             }
 
             // if the ai win, handle game over
@@ -152,23 +152,8 @@ export class AIGameService {
         }
     }
 
-    private recordAction(session: GameSession, state: GameState, playerRole: PlayerRole, type: ActionType, data: any) {
-        if (!session.dbMatchId) return;
-
-        // insert the action
-        session.actionHistory.push({
-            match_id: session.dbMatchId,
-            turn_number: state.turnCount,
-            player_id: session.userIds[playerRole],
-            action_type: type,
-            action_data: data
-        });
-    }
-
     private async handleGameOver(session: GameSession, finalState: GameState) {
         if (!session.dbMatchId) return;
-        const currentDbMatchId = session.dbMatchId;
-        session.dbMatchId = undefined;
 
         // get the winner DB id
         const isHumanWon = finalState.winner === PlayerRole.P1;
@@ -176,11 +161,12 @@ export class AIGameService {
 
         try {
             // finish the game in DB and also insert the actions
-            await MatchRepository.finishMatch(currentDbMatchId, winnerDbId);
-            await MatchActionRepository.insertActions(session.actionHistory);
+            await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
+            await ActionManager.uploadActions(session);
         } catch (error) {
             console.error("Failed to save AI game over stats to DB:", error);
         } finally {
+            session.dbMatchId = undefined;
             this.gameManager.deleteSession(finalState.id);
         }
     }
@@ -190,16 +176,14 @@ export class AIGameService {
         const session = this.gameManager.getSession(gameId);
         if (!session || !session.dbMatchId) return;
 
-        const currentDbMatchId = session.dbMatchId;
-        session.dbMatchId = undefined;
-
         try {
             // make the winner null (this is ai game)
-            await MatchRepository.abandonMatch(currentDbMatchId, null);
-            await MatchActionRepository.insertActions(session.actionHistory);
+            await MatchRepository.abandonMatch(session.dbMatchId, null);
+            await ActionManager.uploadActions(session);
         } catch (error) {
             console.error("Failed to abandon AI game in DB:", error);
         } finally {
+            session.dbMatchId = undefined;
             this.gameManager.deleteSession(gameId);
         }
     }

@@ -3,17 +3,18 @@ import { DB_CONSTANTS as DB } from '../constants/db.constants';
 
 export const MatchActionRepository = {
     // insert game actions
-    async insertActions(actions: any[]): Promise<boolean> {
-        if (!actions || actions.length === 0) return false;
+    async insertActions(actions: any[]): Promise<any[]> {
+        if (!actions || actions.length === 0) return [];
 
         const { data, error } = await supabase
             .from(DB.TABLES.MATCH_ACTIONS)
             .insert(actions)
+            .select();
 
         // check if success
         if (error) throw error;
 
-        return true;
+        return data || [];
     },
 
     async getMatchActions(matchId: string) {
