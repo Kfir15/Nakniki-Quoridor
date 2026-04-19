@@ -61,7 +61,7 @@ class AnalysisWorker:
                     self.supabase.table(WorkerConstants.QUEUE_TABLE)
                     .select("*")
                     .eq("status", WorkerConstants.STATUS_PENDING)
-                    .order("priority", asc=True)
+                    .order("priority")
                     .order("created_at")
                     .limit(1)
                     .execute()
