@@ -12,6 +12,7 @@ if ! command -v python &> /dev/null; then error_exit "python is not installed.";
 if [ ! -f "config.json" ]; then error_exit "config.json not found."; fi
 if [ ! -f "ai-engine/server.py" ]; then error_exit "ai-engine/server.py not found."; fi
 if [ ! -f "proxy/proxy.py" ]; then error_exit "proxy/proxy.py not found."; fi
+if [ ! -f "ai-engine/analysis/worker.py" ]; then error_exit "ai-engine/analysis/worker.py not found."; fi
 if [ ! -f "requirements.txt" ]; then error_exit "requirements.txt not found in root directory."; fi
 echo "   ✅ All files found."
 
@@ -59,6 +60,16 @@ except Exception:
     pass
 ")
 
+# load the analysis workers count (defaults to 1 if not found)
+ANALYSIS_WORKERS_COUNT=$(python -c "
+import json
+try:
+    with open('config.json', encoding='utf-8-sig') as f:
+        print(json.load(f).get('analysis_workers_count', 1))
+except Exception:
+    print('1')
+")
+
 if [ -z "$WORKER_PORTS" ] || [ -z "$PROXY_PORT" ]; then
     error_exit "Failed to read ports from config.json. Check the JSON syntax."
 fi
@@ -71,6 +82,15 @@ for PORT in $WORKER_PORTS; do
     PID=$!
     PIDS="$PIDS $PID"
     echo "   ✅ Started AI worker on port $PORT (PID: $PID)"
+done
+
+# run the analysis background workers
+echo "🚀 Starting Analysis Workers..."
+for i in $(seq 1 $ANALYSIS_WORKERS_COUNT); do
+    python ai-engine/analysis/worker.py &
+    PID=$!
+    PIDS="$PIDS $PID"
+    echo "   ✅ Started Analysis Worker #$i (PID: $PID)"
 done
 
 # start the proxy
@@ -94,7 +114,7 @@ cleanup() {
 
     # shut down workers
     for PID in $PIDS; do
-        echo "   🛑 Shutting down AI Worker $PID"
+        echo "   🛑 Shutting down Worker $PID"
         kill $PID 2>/dev/null
     done
     

@@ -1,3 +1,5 @@
 Flask
 requests
 waitress
+python-dotenv
+supabase>=2.3.0
