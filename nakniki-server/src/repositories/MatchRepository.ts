@@ -25,6 +25,31 @@ export const MatchRepository = {
         return data.id;
     },
 
+    async getMatchById(matchId: string) {
+        // get the match info bu his id
+        const { data, error } = await supabase
+            .from(DB.TABLES.MATCHES)
+            .select(`
+                id, 
+                lobby_code, 
+                status, 
+                is_ai_match, 
+                created_at, 
+                finished_at, 
+                winner_id, 
+                player_1_id, 
+                player_2_id,
+                player_1:player_1_id(id, username, avatar_url, elo_rating),
+                player_2:player_2_id(id, username, avatar_url, elo_rating)
+            `)
+            .eq('id', matchId)
+            .single();
+
+        // check if success
+        if (error) throw error;
+        return data;
+    },
+
     async startMatch(id: string, p2Id: string) {
         // update game status
         const { data, error } = await supabase

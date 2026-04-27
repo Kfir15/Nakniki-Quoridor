@@ -10,6 +10,7 @@ export interface GameSession {
     tournamentMatchId?: string | undefined
     dbMatchId?: string | undefined;
     actionHistory: any[];
+    analysisBuffer: any[];
     sockets: {
         [PlayerRole.P1]: string | null;
         [PlayerRole.P2]: string | null;
@@ -65,6 +66,7 @@ export class GameManager {
             tournamentMatchId: tournamentMatchId,
             dbMatchId: undefined,
             actionHistory: [],
+            analysisBuffer: [],
             sockets: {
                 [PlayerRole.P1]: null,
                 [PlayerRole.P2]: null

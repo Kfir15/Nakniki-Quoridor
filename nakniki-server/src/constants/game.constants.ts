@@ -11,4 +11,5 @@ export const GAME_CONSTANTS = {
         WALL: 'wall',
         SKIP: 'skip'
     },
+    ACTION_THRESHOLD: 10,
 } as const;

@@ -1,5 +1,5 @@
 from .game_model_utils import get_current_player, check_game_over, fast_copy_state
-from .common.enums import ActionType, Orientation, GameStatus, PlayerRole
+from common.enums import ActionType, Orientation, GameStatus, PlayerRole
 
 
 def apply_transition(state, action) -> dict:

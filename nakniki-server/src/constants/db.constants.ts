@@ -3,6 +3,7 @@ export const DB_CONSTANTS = {
         USERS: 'users',
         MATCHES: 'matches',
         MATCH_ACTIONS: 'match_actions',
+        ANALYSIS_QUEUE: 'analysis_queue',
     },
     ERROR_CODES: {
         UNIQUE_VIOLATION: '23505',

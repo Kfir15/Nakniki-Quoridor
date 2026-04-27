@@ -27,3 +27,12 @@ class Orientation(str, Enum):
 class ActionType(str, Enum):
     MOVE = "move"
     WALL = "wall"
+
+
+class MoveAccuracy(str, Enum):
+    BEST = "Best Move"
+    EXCELLENT = "Excellent"
+    GOOD = "Good"
+    INACCURACY = "Inaccuracy"
+    MISTAKE = "Mistake"
+    BLUNDER = "Blunder"

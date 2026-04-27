@@ -1,6 +1,6 @@
 import copy
 from typing import Dict, Any, Tuple
-from .common.enums import CellType, PlayerRole
+from common.enums import CellType, PlayerRole
 
 
 def parse_state(game_state: Dict[str, Any]) -> Dict[str, Any]:

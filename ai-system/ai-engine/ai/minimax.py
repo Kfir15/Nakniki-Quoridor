@@ -3,10 +3,12 @@ from .rules import successors
 from .transitions import apply_transition
 from .game_model_utils import get_current_player, check_game_over
 from .heuristics import state_heuristic
-from .common.constants import Constants
+from common.minimax_constants import MinimaxConstants
 
 
-def get_action(state, max_time=Constants.MAX_TIME, max_depth=Constants.MAX_DEPTH):
+def get_action(
+    state, max_time=MinimaxConstants.MAX_TIME, max_depth=MinimaxConstants.MAX_DEPTH
+):
     """
     get state
     return best action
@@ -23,8 +25,8 @@ def get_action(state, max_time=Constants.MAX_TIME, max_depth=Constants.MAX_DEPTH
             value, action = minimax(
                 state,
                 depth,
-                Constants.NEG_INF,
-                Constants.INF,
+                MinimaxConstants.NEG_INF,
+                MinimaxConstants.INF,
                 curr_player["id"],
                 start_time,
                 max_time,
@@ -68,7 +70,7 @@ def minimax(state, depth, alpha, beta, maximizing_player_id, start_time, max_tim
 
     # if the current player is the maximizing player (alpha)
     if is_maximizing:
-        best_value = Constants.NEG_INF
+        best_value = MinimaxConstants.NEG_INF
 
         # for each possible action
         for action in actions:
@@ -101,7 +103,7 @@ def minimax(state, depth, alpha, beta, maximizing_player_id, start_time, max_tim
         return best_value, best_action
     # if this is the opponent (beta)
     else:
-        best_value = Constants.INF
+        best_value = MinimaxConstants.INF
 
         # for each possible action
         for action in actions:
