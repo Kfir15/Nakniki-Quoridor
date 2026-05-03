@@ -1,10 +1,8 @@
 import { MatchActionRepository } from '../repositories/MatchActionRepository';
 import { AnalysisQueueRepository } from '../repositories/AnalysisQueueRepository';
 import { GameSession } from '../game_model/GameManager';
-import { PlayerRole } from '../types/game.enums';
-import { GameState } from '../types/game.interfaces';
+import { PlayerRole, GameState, GAME_CONSTANTS as G } from '@nakniki/shared';
 import { AnalysisStatus, QueuePriority } from '../types/analysis.enums';
-import { GAME_CONSTANTS as G } from '../constants/game.constants';
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 export const ActionManager = {

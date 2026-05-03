@@ -1,8 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { MultiplayerService } from '../services/MultiplayerService';
-import { Position } from '../game_model/Position';
-import { Orientation, GameStatus } from '../types/game.enums';
-import { SOCKET_EVENTS as S } from '../constants/socket.constants';
+import { Position, Orientation, GameStatus, SOCKET_EVENTS as S } from '@nakniki/shared';
 
 export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerService: MultiplayerService) => {
     // get the user

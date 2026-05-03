@@ -1,6 +1,5 @@
 import { GameModel } from './GameModel';
-import { GAME_CONSTANTS as G } from '../constants/game.constants';
-import { PlayerRole } from '../types/game.enums';
+import { GAME_CONSTANTS as G, PlayerRole } from '@nakniki/shared';
 
 export interface GameSession {
     game: GameModel;

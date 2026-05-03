@@ -47,6 +47,8 @@
     "files": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "../nakniki-shared/src/models/Position.ts",
+    "../nakniki-shared/src/models/BoardManager.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import { Position } from "../game_model/Position";
+import { Position } from "../models/Position";
 
 const UP = new Position(-1, 0);
 const DOWN = new Position(1, 0);

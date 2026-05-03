@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { DB_CONSTANTS as DB } from '../constants/db.constants';
-import { GameState } from '../types/game.interfaces';
+import { GameState } from '@nakniki/shared';
 import { AnalysisStatus, QueuePriority } from '../types/analysis.enums';
 
 export const AnalysisQueueRepository = {

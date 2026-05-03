@@ -2,7 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import matchRoutes from './match.routes';
-import { ROUTE_CONSTANTS as R } from '../constants/route.constants';
+import { ROUTE_CONSTANTS as R } from '@nakniki/shared';
 
 const router = Router();
 

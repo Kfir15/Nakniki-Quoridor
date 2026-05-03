@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes.constants';
-import { SOCKET_EVENTS as S } from '../constants/socket.constants';
+import { SOCKET_EVENTS as S } from '@nakniki/shared';
 import { socketManager } from '../lib/socket.manager';
 import { useUser } from '../services/UserContext';
 

@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { DB_CONSTANTS as DB } from '../constants/db.constants';
-import { GameStatus } from '../types/game.enums';
+import { GameStatus } from '@nakniki/shared';
 
 export const MatchRepository = {
 

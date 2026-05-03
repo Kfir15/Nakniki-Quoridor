@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/UserController';
 import { authenticateUser } from '../middleware/authMiddleware';
 import { uploadAvatar } from '../middleware/uploadMiddleware';
-import { ROUTE_CONSTANTS as R } from '../constants/route.constants';
+import { ROUTE_CONSTANTS as R } from '@nakniki/shared';
 
 const router = Router();
 

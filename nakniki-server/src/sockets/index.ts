@@ -5,7 +5,7 @@ import { AIHandlers } from './ai.handler';
 import { socketAuthMiddleware } from '../middleware/socketAuthMiddleware';
 import { MultiplayerService } from '../services/MultiplayerService';
 import { MultiplayerHandlers } from './multiplayer.handler';
-import { SOCKET_EVENTS as S } from '../constants/socket.constants';
+import { SOCKET_EVENTS as S } from '@nakniki/shared';
 
 export const setupSockets = (io: Server) => {
     // initialize the manager and services

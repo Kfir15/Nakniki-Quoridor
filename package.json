@@ -1,0 +1,9 @@
+{
+    "name": "nakniki-quoridor",
+    "private": true,
+    "workspaces": [
+        "nakniki-shared",
+        "nakniki-server",
+        "nakniki-website"
+    ]
+}
