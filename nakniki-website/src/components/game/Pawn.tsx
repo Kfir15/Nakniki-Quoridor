@@ -4,11 +4,10 @@ import { motion } from 'framer-motion'
 interface PawnProps {
     player: PlayerRole;
     isCurrentTurn?: boolean;
-    onGrab?: () => void;
-    onRelease?: () => void;
+    onClick?: () => void;
 }
 
-export default function Pawn({ player, isCurrentTurn, onGrab, onRelease }: PawnProps) {
+export default function Pawn({ player, isCurrentTurn, onClick }: PawnProps) {
     
     // get the pawn color base on his role (ketchup vs mustard)
     const isP1 = player === PlayerRole.P1;
@@ -19,11 +18,13 @@ export default function Pawn({ player, isCurrentTurn, onGrab, onRelease }: PawnP
         <motion.div
             layoutId={`pawn-${player}`}
             
-            // triggers
-            onPointerDown={isCurrentTurn ? onGrab : undefined}
-            onPointerUp={isCurrentTurn ? onRelease : undefined}
-            onPointerLeave={isCurrentTurn ? onRelease : undefined}
-            onPointerCancel={isCurrentTurn ? onRelease : undefined}
+            // trigger
+            onPointerDown={(e) => {
+                e.stopPropagation();
+                if (isCurrentTurn && onClick) {
+                    onClick();
+                }
+            }}
             
             // animation 
             animate={{ 
