@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_EVENTS } from '../constants/socket.constants';
+import { SOCKET_EVENTS } from '@nakniki/shared';
 
 class SocketManager {
     private static instance: SocketManager;

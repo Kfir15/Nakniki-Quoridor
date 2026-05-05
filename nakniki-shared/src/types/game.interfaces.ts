@@ -1,4 +1,4 @@
-import { Position } from "../game_model/Position";
+import { Position } from "../models/Position";
 import { CellType, PlayerRole, GameStatus } from "./game.enums";
 
 export interface Player {

@@ -29,6 +29,10 @@ export class BoardManager {
         }
     }
 
+    public loadBoard(existingBoard: C[][]): void {
+        this.board = existingBoard.map(row => [...row]);
+    }
+
     // return the board
     public getBoard() {
         return this.board;

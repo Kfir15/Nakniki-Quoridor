@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { MatchController } from '../controllers/MatchController';
 import { authenticateUser } from '../middleware/authMiddleware';
-import { ROUTE_CONSTANTS as R } from '../constants/route.constants';
+import { ROUTE_CONSTANTS as R } from '@nakniki/shared';
 
 const router = Router();
 

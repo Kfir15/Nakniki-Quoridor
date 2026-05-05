@@ -1,8 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { AIGameService } from '../services/AIGameService';
-import { Position } from '../game_model/Position';
-import { Orientation, GameStatus } from '../types/game.enums';
-import { SOCKET_EVENTS as S } from '../constants/socket.constants';
+import { Position, Orientation, GameStatus, SOCKET_EVENTS as S } from '@nakniki/shared';
 
 export const AIHandlers = (io: Server, socket: Socket, aiService: AIGameService) => {
     // get the user

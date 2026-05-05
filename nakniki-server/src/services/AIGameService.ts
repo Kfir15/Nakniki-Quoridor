@@ -1,11 +1,8 @@
 import { GameManager, GameSession } from '../game_model/GameManager';
 import { MatchRepository } from '../repositories/MatchRepository';
 import { ActionManager } from './ActionManager';
-import { PlayerRole, GameStatus, Orientation } from '../types/game.enums';
-import { Position } from '../game_model/Position';
-import { GameState } from '../types/game.interfaces';
+import { PlayerRole, GameStatus, Orientation, Position, GameState, GAME_CONSTANTS as G } from '@nakniki/shared';
 import { AI_CONSTANTS as AI } from '../constants/ai.constants';
-import { GAME_CONSTANTS as G } from '../constants/game.constants';
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 export class AIGameService {

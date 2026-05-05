@@ -1,11 +1,11 @@
-// src/hooks/useGameSession.ts
 import { useState, useEffect, useCallback } from 'react';
 import { socketManager } from '../lib/socket.manager';
-import { SOCKET_EVENTS as S } from '../constants/socket.constants';
+import { SOCKET_EVENTS as S, type GameState, Orientation } from '@nakniki/shared';
+import { hydrateGameState } from '../utils/gameHelpers';
 
-export const useGameSession = (initialState: any, gameId: string, isAiGame: boolean) => {
+export const useGameSession = (initialState: GameState, gameId: string, isAiGame: boolean) => {
     // store the game state
-    const [gameState, setGameState] = useState(initialState);
+    const [gameState, setGameState] = useState<GameState>(() => hydrateGameState(initialState));
     const [error, setError] = useState<string | null>(null);
 
     const clearError = useCallback(() => setError(null), []);
@@ -20,7 +20,7 @@ export const useGameSession = (initialState: any, gameId: string, isAiGame: bool
 
         // update the game state
         const handleStateUpdate = (newState: any) => {
-            setGameState(newState);
+            setGameState(hydrateGameState(newState));
         };
 
         // handle invalid move
@@ -64,7 +64,7 @@ export const useGameSession = (initialState: any, gameId: string, isAiGame: bool
     };
 
     // place wall
-    const placeWall = (r: number, c: number, orient: 'h' | 'v') => {
+    const placeWall = (r: number, c: number, orient: Orientation) => {
         // get the socket
         const socket = socketManager.getSocket();
         if (!socket) {

@@ -5,7 +5,7 @@ import { Copy, ArrowLeft, CheckCircle2, Radar, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { socketManager } from '../../lib/socket.manager';
-import { SOCKET_EVENTS as S } from '../../constants/socket.constants';
+import { SOCKET_EVENTS as S } from '@nakniki/shared';
 import { ROUTES as R } from '../../constants/routes.constants';
 
 
