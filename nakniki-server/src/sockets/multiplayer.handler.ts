@@ -119,7 +119,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
     })
 
     // handle timeout
-    socket.on(S.CLIENT.MP_TURN_TIMEOUT, async (data: { gameId: string }) => {
+    socket.on(S.CLIENT.MP_GAME_TIMEOUT, async (data: { gameId: string }) => {
         try {
             // change turn
             const newState = await multiplayerService.processTimeout(data.gameId, userId);

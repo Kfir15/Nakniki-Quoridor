@@ -145,19 +145,22 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
 
         // get the player role and check that it is his turn
-        const role = this.getPlayerRole(session, userId);
-        if (!role || session.game.getState().turn !== role) return null;
+        const timeoutRole = this.getPlayerRole(session, userId);
+        if (!timeoutRole || session.game.getState().turn !== timeoutRole) return null;
+        const winnerRole = timeoutRole === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
 
-        // skip the turn
-        const [success, newState] = session.game.skipTurn();
-        if (!success) return null;
+        // end the game
+        session.game.status = GameStatus.FINISHED;
+        session.game.winner = winnerRole;
+        const finalState = session.game.getState();
 
-        // record the skip
-        ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
-        return newState;
+        // record the timeout
+        ActionManager.recordAction(session, finalState, timeoutRole, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
+
+        this.handleGameOver(session, finalState);
+        return finalState;
     }
 
     public async abandonGame(gameId: string, quittingUserId: string): Promise<void> {
