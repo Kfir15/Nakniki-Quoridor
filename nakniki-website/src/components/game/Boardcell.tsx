@@ -8,7 +8,7 @@ interface BoardCellProps {
 }
 
 export default function BoardCell({ isPossibleMove, onClick, children }: BoardCellProps) {
-    return (
+    return ( 
         <Box
             // If this is possible move, mark the cell
             onClick={isPossibleMove ? onClick : undefined}
