@@ -77,7 +77,10 @@ export class MultiplayerService {
             throw error;
         }
 
-        return session.game.getState();
+        return {
+            gameId: lobbyCode,
+            state: session.game.getState()
+        };
     }
 
     // find public lobbies

@@ -31,19 +31,24 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
     socket.on(S.CLIENT.JOIN_LOBBY, async (data: { lobbyCode: string }) => {
         try {
             // join the lobby
-            const state = await multiplayerService.joinLobby(userId, socket.id, data.lobbyCode);
+            const game = await multiplayerService.joinLobby(userId, socket.id, data.lobbyCode);
 
             // if success to join the lobby
-            if (state) {
+            if (game) {
                 // join the socket
                 activeLobbyCode = data.lobbyCode;
                 socket.join(data.lobbyCode);
 
+                const payload = {
+                    gameId: game.gameId,
+                    state: game.state
+                };
+
                 // send success to the player
-                socket.emit(S.SERVER.LOBBY_JOINED, { lobbyCode: data.lobbyCode, state });
+                socket.emit(S.SERVER.LOBBY_JOINED, payload);
 
                 // broadcast to players - game start!
-                socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, { state });
+                socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, payload);
 
                 const lobbies = multiplayerService.getPublicLobbies();
                 io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies });
