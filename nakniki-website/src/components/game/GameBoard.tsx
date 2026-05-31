@@ -29,17 +29,62 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
     };
 
     // --- Map 9x9 indices to 17x17 matrix slots ---
+    // --- FIXED: Case-Insensitive Strict Check to Prevent Rendering Mismatches ---
     const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
         if (!gameState.extendedBoard) return false;
-        
+
+        // Define a strict type for the unknown backend object to satisfy TypeScript
+        type WallConfig = { orientation?: string; type?: string; isPlaced?: boolean };
+
+        // 1. Get the primary gap slot
         const targetRow = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
         const targetCol = orientation === Orientation.VERTICAL ? (c * 2 + 1) : (c * 2);
 
-        const nodeValue = gameState.extendedBoard[targetRow]?.[targetCol];
-        if (!nodeValue) return false;
+        // 2. Get the specific intersection slot directly inside this anchor
+        const intRow = r * 2 + 1;
+        const intCol = c * 2 + 1;
 
-        const cellStr = String(nodeValue).toLowerCase();
-        return cellStr !== 'empty' && cellStr !== 'cell' && cellStr !== 'intersection';
+        const nodeValue = gameState.extendedBoard[targetRow]?.[targetCol];
+        const intValue = gameState.extendedBoard[intRow]?.[intCol];
+
+        if (nodeValue === undefined || nodeValue === null) return false;
+
+        // Helper to check if a matrix node is actively filled with a wall, using strict typing
+        const isFilled = (val: unknown, defaultType: string) => {
+            if (typeof val === 'boolean') return val === true;
+            
+            if (typeof val === 'object' && val !== null) {
+                const config = val as WallConfig;
+                return config.isPlaced === true || !!config.orientation;
+            }
+            
+            const str = String(val).toUpperCase();
+            return str !== 'EMPTY' && str !== defaultType && str !== 'FALSE';
+        };
+
+        // 3. Prevent the "double wall" 3-cell glitch
+        const gapFilled = isFilled(nodeValue, 'CELL');
+        const intFilled = isFilled(intValue, 'INTERSECTION');
+
+        if (!gapFilled || !intFilled) return false;
+
+        // 4. Handle object matching strictly without using 'any'
+        if (typeof nodeValue === 'object' && nodeValue !== null) {
+            const config = nodeValue as WallConfig;
+            const innerValue = String(config.orientation || config.type || '').toUpperCase();
+            const matchTarget = String(orientation).toUpperCase();
+            return innerValue === matchTarget || innerValue === matchTarget.charAt(0) || config.isPlaced === true;
+        }
+
+        // 5. Handle string and enum structures
+        const cellStr = String(nodeValue).toUpperCase();
+        const targetOrientation = String(orientation).toUpperCase();
+
+        return (
+            cellStr === targetOrientation || 
+            cellStr === targetOrientation.charAt(0) ||
+            (cellStr !== 'EMPTY' && cellStr !== 'CELL' && cellStr !== 'INTERSECTION')
+        );
     };
 
     const isValidMoveTarget = (r: number, c: number): boolean => {
