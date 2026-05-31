@@ -30,7 +30,7 @@ export default function GamePage() {
     // 2. Local Terminal Move Logging State
 
     // 3. Connect safely to your live hook component with exact configuration bounds
-    const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned } = useGameSession(
+    const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo } = useGameSession(
         initialState,
         gameId!,
         isAiGame
@@ -75,18 +75,18 @@ export default function GamePage() {
     const metadata = user?.user_metadata;
 
     const p1Data: SidebarPlayerData = {
-        username: isHost ? (metadata?.username || "Player 1") : "Opponent",
-        avatar_url: isHost ? metadata?.avatar_url : undefined,
-        elo_rating: isHost ? (Number(metadata?.elo_rating) || 1200) : 1200,
-        total_wins: isHost ? (Number(metadata?.total_wins) || 0) : 0,
+        username: playersInfo?.p1?.username || (isHost ? (metadata?.username || "Player 1") : "Opponent"),
+        avatar_url: playersInfo?.p1?.avatar_url || (isHost ? metadata?.avatar_url : undefined),
+        elo_rating: playersInfo?.p1?.elo_rating || (isHost ? (Number(metadata?.elo_rating) || 1200) : 1200),
+        total_wins: playersInfo?.p1?.total_wins || (isHost ? (Number(metadata?.total_wins) || 0) : 0),
         isAi: false
     };
 
     const p2Data: SidebarPlayerData = {
-        username: isAiGame ? "NAKNIKI BOT" : (!isHost ? (metadata?.username || "Player 2") : "Opponent"),
-        avatar_url: !isHost ? metadata?.avatar_url : undefined,
-        elo_rating: isAiGame ? 9999 : (!isHost ? (Number(metadata?.elo_rating) || 1200) : 1200),
-        total_wins: isAiGame ? 9999 : (!isHost ? (Number(metadata?.total_wins) || 0) : 0),
+        username: isAiGame ? "NAKNIKI BOT" : (playersInfo?.p2?.username || (!isHost ? (metadata?.username || "Player 2") : "Waiting...")),
+        avatar_url: playersInfo?.p2?.avatar_url || (!isHost ? metadata?.avatar_url : undefined),
+        elo_rating: isAiGame ? 9999 : (playersInfo?.p2?.elo_rating || (!isHost ? (Number(metadata?.elo_rating) || 1200) : 1200)),
+        total_wins: isAiGame ? 9999 : (playersInfo?.p2?.total_wins || (!isHost ? (Number(metadata?.total_wins) || 0) : 0)),
         isAi: isAiGame
     };
 

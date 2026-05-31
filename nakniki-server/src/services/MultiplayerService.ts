@@ -3,6 +3,7 @@ import { MatchRepository } from '../repositories/MatchRepository';
 import { EloService } from './EloService';
 import { ActionManager } from './ActionManager';
 import { PlayerRole, GameStatus, Orientation, GameState, Position, GAME_CONSTANTS as G } from '@nakniki/shared';
+import { UserRepository } from '../repositories/UserRepository';
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 export class MultiplayerService {
@@ -94,74 +95,46 @@ export class MultiplayerService {
         }));
     }
 
-    // public async processMovePawn(gameId: string, userId: string, socketId: string, target: Position): Promise<GameState | null> {
-    //     // get the session
-    //     const session = this.gameManager.getSession(gameId);
-    //     if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-    //     const stateBefore = session.game.getState();
-
-    //     // get the player session
-    //     const role = this.getPlayerRole(session, userId, socketId);
-    //     if (!role || session.game.getState().turn !== role) return null;
-
-    //     // try to move the pawn
-    //     const [success, newState] = session.game.tryMovePawn(role, target);
-    //     if (!success) return null;
-
-    //     // record the action
-    //     ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c }, true);
-
-    //     // if the game ended
-    //     if (newState.status === GameStatus.FINISHED) {
-    //         await this.handleGameOver(session, newState);
-    //     }
-
-    //     return newState;
-    // }
-
     public async processMovePawn(gameId: string, userId: string, socketId: string, target: Position): Promise<GameState | null> {
-        console.log(`\n--- [DEBUG] MOVE REQUEST RECEIVED ---`);
-        console.log(`Targeting: row ${target.r}, col ${target.c}`);
-        
+        // get the session
         const session = this.gameManager.getSession(gameId);
-        if (!session) {
-            console.log(`[FAIL] Session ${gameId} not found.`);
-            return null;
-        }
-        if (session.game.status !== GameStatus.IN_PROGRESS) {
-            console.log(`[FAIL] Game status is ${session.game.status}, not IN_PROGRESS.`);
-            return null;
-        }
-
+        if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
         const stateBefore = session.game.getState();
+
+        // get the player session
         const role = this.getPlayerRole(session, userId, socketId);
-        
-        console.log(`[DEBUG] getPlayerRole resolved as: ${role}`);
-        console.log(`[DEBUG] Current turn is: ${stateBefore.turn}`);
-        
-        if (!role) {
-            console.log(`[FAIL] Could not resolve PlayerRole for socket ${socketId}`);
-            return null;
-        }
-        
-        if (stateBefore.turn !== role) {
-            console.log(`[FAIL] Out of turn! It is ${stateBefore.turn}'s turn, but ${role} tried to move.`);
-            return null;
-        }
+        if (!role || session.game.getState().turn !== role) return null;
 
-        console.log(`[DEBUG] Authorization passed. Asking GameModel to validate the move...`);
+        // try to move the pawn
         const [success, newState] = session.game.tryMovePawn(role, target);
-        
-        if (!success) {
-            console.log(`[FAIL] ActionsValidator rejected the move rules.`);
-            return null;
-        }
+        if (!success) return null;
 
-        console.log(`[SUCCESS] Move accepted!`);
+        // record the action
         ActionManager.recordAction(session, stateBefore, role, G.ACTION_TYPES.MOVE, { r: target.r, c: target.c }, true);
 
-        if (newState.status === GameStatus.FINISHED) await this.handleGameOver(session, newState);
+        // if the game ended
+        if (newState.status === GameStatus.FINISHED) {
+            await this.handleGameOver(session, newState);
+        }
+
         return newState;
+    }
+
+    public async getLobbyPlayers(gameId: string) {
+        const session = this.gameManager.getSession(gameId);
+        if (!session) return null;
+
+        let p1 = null;
+        let p2 = null;
+
+        if (session.userIds[PlayerRole.P1]) {
+            p1 = await UserRepository.getUserById(session.userIds[PlayerRole.P1]!);
+        }
+        if (session.userIds[PlayerRole.P2]) {
+            p2 = await UserRepository.getUserById(session.userIds[PlayerRole.P2]!);
+        }
+
+        return { p1, p2 };
     }
 
     public async processPlaceWall(gameId: string, userId: string, socketId: string, pos: Position, orient: Orientation): Promise<GameState | null> {

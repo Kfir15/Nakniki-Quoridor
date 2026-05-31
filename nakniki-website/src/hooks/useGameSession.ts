@@ -8,6 +8,7 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
     const [gameState, setGameState] = useState<GameState>(() => hydrateGameState(initialState));
     const [error, setError] = useState<string | null>(null);
     const [opponentAbandoned, setOpponentAbandoned] = useState<boolean>(false);
+    const [playersInfo, setPlayersInfo] = useState<{p1: any, p2: any} | null>(null);
 
     const clearError = useCallback(() => setError(null), []);
 
@@ -37,19 +38,27 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
             setOpponentAbandoned(true);
         };
 
+        const handlePlayersInfo = (data: any) => setPlayersInfo(data);
+
         // listeners for events
         socket.on(S.SERVER.STATE_UPDATE, handleStateUpdate);
         socket.on(S.SERVER.INVALID_MOVE, handleInvalidMove);
         socket.on(S.SERVER.ERROR, handleGeneralError);
         socket.on(S.SERVER.GAME_ABANDONED, handleGameAbandoned);
+        socket.on(S.SERVER.players_info_update, handlePlayersInfo);
+
+        if (!isAiGame) {
+            socket.emit(S.CLIENT.request_players_info, { gameId });
+        }
 
         return () => {
             socket.off(S.SERVER.STATE_UPDATE, handleStateUpdate);
             socket.off(S.SERVER.INVALID_MOVE, handleInvalidMove);
             socket.off(S.SERVER.ERROR, handleGeneralError);
             socket.off(S.SERVER.GAME_ABANDONED, handleGameAbandoned);
+            socket.off(S.SERVER.players_info_update, handlePlayersInfo);
         };
-    }, []);
+    }, [gameId, isAiGame]);
 
     // move pawn 
     const movePawn = (r: number, c: number) => {
@@ -97,5 +106,5 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
         }
     }, [isAiGame]);
 
-    return { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned };
+    return { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo };
 };

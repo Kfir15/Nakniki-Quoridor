@@ -51,6 +51,10 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
                 // broadcast to players - game start!
                 socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, payload);
 
+                // send the players info
+                const players = await multiplayerService.getLobbyPlayers(data.lobbyCode);
+                io.to(data.lobbyCode).emit(S.SERVER.players_info_update, players);
+
                 const lobbies = multiplayerService.getPublicLobbies();
                 io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies });
             }
@@ -62,6 +66,18 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             socket.emit(S.SERVER.ERROR, { message: "Failed to join lobby." });
         }
     })
+
+    // send players info
+    socket.on(S.CLIENT.request_players_info, async (data: { gameId: string }) => {
+        try {
+            const players = await multiplayerService.getLobbyPlayers(data.gameId);
+            if (players) {
+                socket.emit('players_info_update', players);
+            }
+        } catch (error) {
+            console.error("Failed to fetch player info:", error);
+        }
+    });
 
     // return all the public lobbies
     socket.on(S.CLIENT.GET_PUBLIC_LOBBIES, () => {
