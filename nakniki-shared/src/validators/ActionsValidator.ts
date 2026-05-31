@@ -1,7 +1,7 @@
 import { PlayerRole, Orientation, GameStatus } from '../types/game.enums';
 import { Position } from '../models/Position';
 import { BoardManager } from '../models/BoardManager';
-import { GameState } from '../types/game.interfaces';
+import { type GameState } from '../types/game.interfaces';
 
 export class ActionsValidator {
 
@@ -20,10 +20,14 @@ export class ActionsValidator {
         const currentPos = playerId === PlayerRole.P1 ? state.player1.position : state.player2.position;
         const opponentId = playerId === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
         const opponentPos = opponentId === PlayerRole.P1 ? state.player1.position : state.player2.position;
+        
+        // --- THE CORE FIX: Convert differences to absolute numbers so P2 can move downwards! ---
         const { rowDiff, colDiff } = currentPos.getDiff(target);
+        const absRow = Math.abs(rowDiff);
+        const absCol = Math.abs(colDiff);
 
         // regular move
-        if (rowDiff + colDiff == 1) {
+        if (absRow + absCol === 1) {
             // check if the target is the opponent
             if (target.equals(opponentPos)) {
                 return false;
@@ -34,11 +38,10 @@ export class ActionsValidator {
                 return false;
             }
 
-            // return true
             return true;
         }
         // jump above opponent
-        else if ((rowDiff == 2 && colDiff == 0) || (rowDiff == 0 && colDiff == 2)) {
+        else if ((absRow === 2 && absCol === 0) || (absRow === 0 && absCol === 2)) {
             // check if the oppenent is in the way
             const avgPos = new Position((currentPos.r + target.r) / 2, (currentPos.c + target.c) / 2);
             if (!opponentPos.equals(avgPos)) {
@@ -50,18 +53,17 @@ export class ActionsValidator {
                 return false;
             }
 
-            // return true
             return true;
         }
         // Opponent in front and blocked by wall behind them (diagonal move)
-        else if (rowDiff == 1 && colDiff == 1) {
+        else if (absRow === 1 && absCol === 1) {
             const { rowDiff: oppRowDiff, colDiff: oppColDiff } = currentPos.getDiff(opponentPos);
 
             // Checking if the opponent is one tile away from the player
             if (Math.abs(oppRowDiff) + Math.abs(oppColDiff) != 1) {
                 return false;
             }
-            // Check if there is a wall blocking the jump over the opponent
+            
             // First saves the true value diff (positive or negative) to calculate the position behind the opponent
             const { rowDiff: oppRowTrueDiff, colDiff: oppColTrueDiff } = opponentPos.getTrueValueDiff(currentPos);
             const opponentFrontPos = new Position(opponentPos.r + oppRowTrueDiff, opponentPos.c + oppColTrueDiff);
@@ -79,8 +81,6 @@ export class ActionsValidator {
             }
 
             // Check if the target is in a diagonal position, and goes through the opponent
-            // First we check whether the opponent is in the same row or column as the player.
-            // Then we check if the target is in the correct diagonal position (relative to the opponent)
             if ((oppRowDiff == 0)) {
                 // Opponent is in the same row, so the target should in a different row than the opponent, and the same col
                 if (target.c != opponentPos.c || Math.abs(target.r - opponentPos.r) != 1) {
@@ -102,7 +102,6 @@ export class ActionsValidator {
                 if (boardManager.isMoveBlocked(opponentPos, target)) {
                     return false;
                 }
-                // If we passed all checks, the mvoe is legal, so we move the pawn
                 return true;
             }
         }
@@ -111,26 +110,20 @@ export class ActionsValidator {
     }
 
     public static isValidWallPlacement(state: GameState, playerId: PlayerRole, wallPosition: Position, orientation: Orientation, boardManager: BoardManager): boolean {
+        // ... (Keep your existing wall validation logic here)
         const player = playerId === PlayerRole.P1 ? state.player1 : state.player2;
 
-        // check if player is allowed to place wall
         if (state.status !== GameStatus.IN_PROGRESS || playerId !== state.turn || player.wallsLeft <= 0) {
             return false;
         }
 
-        // check if the wall can be placed in the desired position
         if (!boardManager.canPlaceWall(wallPosition, orientation)) {
             return false;
         }
 
-        // place the wall
         boardManager.placeWall(wallPosition, orientation);
-
-        // Check there is paths
         const hasPathP1 = boardManager.hasPath(state.player1.position, state.player1.targetRow);
         const hasPathP2 = boardManager.hasPath(state.player2.position, state.player2.targetRow);
-
-        // remove the wall
         boardManager.removeWall(wallPosition, orientation);
 
         return hasPathP1 && hasPathP2;

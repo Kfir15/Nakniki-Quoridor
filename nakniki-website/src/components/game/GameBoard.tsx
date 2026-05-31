@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Flex, Box } from '@radix-ui/themes';
 import { PlayerRole, Orientation, type GameState } from '@nakniki/shared';
 import BoardCell from './BoardCell';
 import CellGap from './CellGap';
 import Pawn from './Pawn';
+import { getValidMoves } from '../../utils/gameHelpers'; // Import our new engine!
 
 interface GameBoardProps {
     gameState: GameState;
@@ -17,6 +18,13 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
     const gridIndices = Array.from({ length: size }, (_, i) => i);
     
     const [isPawnSelected, setIsPawnSelected] = useState<boolean>(false);
+    const isP2 = myRole === PlayerRole.P2;
+
+    // --- NEW: Calculate the array of valid positions once per turn ---
+    const validMovesArray = useMemo(() => {
+        if (!isPawnSelected || gameState.turn !== myRole) return [];
+        return getValidMoves(gameState, myRole);
+    }, [isPawnSelected, gameState, myRole]);
     
     const getPlayerAt = (r: number, c: number): PlayerRole | null => {
         if (gameState.player1.position.r === r && gameState.player1.position.c === c) {
@@ -28,19 +36,13 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
         return null;
     };
 
-    // --- Map 9x9 indices to 17x17 matrix slots ---
-    // --- FIXED: Case-Insensitive Strict Check to Prevent Rendering Mismatches ---
     const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
         if (!gameState.extendedBoard) return false;
 
-        // Define a strict type for the unknown backend object to satisfy TypeScript
         type WallConfig = { orientation?: string; type?: string; isPlaced?: boolean };
 
-        // 1. Get the primary gap slot
         const targetRow = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
         const targetCol = orientation === Orientation.VERTICAL ? (c * 2 + 1) : (c * 2);
-
-        // 2. Get the specific intersection slot directly inside this anchor
         const intRow = r * 2 + 1;
         const intCol = c * 2 + 1;
 
@@ -49,26 +51,21 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
 
         if (nodeValue === undefined || nodeValue === null) return false;
 
-        // Helper to check if a matrix node is actively filled with a wall, using strict typing
         const isFilled = (val: unknown, defaultType: string) => {
             if (typeof val === 'boolean') return val === true;
-            
             if (typeof val === 'object' && val !== null) {
                 const config = val as WallConfig;
                 return config.isPlaced === true || !!config.orientation;
             }
-            
             const str = String(val).toUpperCase();
             return str !== 'EMPTY' && str !== defaultType && str !== 'FALSE';
         };
 
-        // 3. Prevent the "double wall" 3-cell glitch
         const gapFilled = isFilled(nodeValue, 'CELL');
         const intFilled = isFilled(intValue, 'INTERSECTION');
 
         if (!gapFilled || !intFilled) return false;
 
-        // 4. Handle object matching strictly without using 'any'
         if (typeof nodeValue === 'object' && nodeValue !== null) {
             const config = nodeValue as WallConfig;
             const innerValue = String(config.orientation || config.type || '').toUpperCase();
@@ -76,7 +73,6 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
             return innerValue === matchTarget || innerValue === matchTarget.charAt(0) || config.isPlaced === true;
         }
 
-        // 5. Handle string and enum structures
         const cellStr = String(nodeValue).toUpperCase();
         const targetOrientation = String(orientation).toUpperCase();
 
@@ -87,19 +83,9 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
         );
     };
 
+    // --- NEW: Simply check if the current cell (r, c) is inside our calculated array! ---
     const isValidMoveTarget = (r: number, c: number): boolean => {
-        if (!isPawnSelected) return false;
-        if (gameState.turn !== myRole) return false;
-
-        const activePlayer = myRole === PlayerRole.P1 ? gameState.player1 : gameState.player2;
-        const currentPos = activePlayer.position;
-
-        const isAdjacent = (Math.abs(currentPos.r - r) === 1 && currentPos.c === c) ||
-                           (Math.abs(currentPos.c - c) === 1 && currentPos.r === r);
-
-        const isOccupied = getPlayerAt(r, c) !== null;
-
-        return isAdjacent && !isOccupied;
+        return validMovesArray.some(pos => pos.r === r && pos.c === c);
     };
 
     const handleCellClick = (r: number, c: number) => {
@@ -127,10 +113,11 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '24px',
-            boxShadow: `0 0 125px ${getShadowColor()}, inset 0 6px 20px rgba(255,255,255,0.02)`,
+            boxShadow: `0 0 125px ${getShadowColor()}, inset 0 ${isP2 ? '-6px' : '6px'} 20px rgba(255,255,255,0.02)`,
             position: 'relative',
             display: 'inline-block',
-            transition: 'box-shadow 0.6s ease'
+            transform: isP2 ? 'rotate(180deg)' : 'none',
+            transition: 'box-shadow 0.6s ease, transform 0.8s ease'
         }}>
             <Flex direction="column" gap="0">
                 {gridIndices.map((r) => (
@@ -179,7 +166,6 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
                             <Flex direction="row" gap="0">
                                 {gridIndices.map((c) => (
                                     <Flex key={`horiz-gap-wrapper-${r}-${c}`} direction="row" gap="0">
-                                        {/* FIX: Keep container exactly 60px wide so the board stays perfectly square */}
                                         <Box style={{ width: '60px', height: '10px', position: 'relative', zIndex: 10 }}>
                                             {c < size - 1 ? (
                                                 <CellGap 
@@ -194,7 +180,6 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
                                             )}
                                         </Box>
                                         
-                                        {/* Intersection anchor node point */}
                                         {c < size - 1 && (
                                             <Box style={{ width: '10px', height: '10px', backgroundColor: 'transparent' }} />
                                         )}

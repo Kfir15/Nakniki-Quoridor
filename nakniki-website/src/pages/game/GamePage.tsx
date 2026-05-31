@@ -30,11 +30,18 @@ export default function GamePage() {
     // 2. Local Terminal Move Logging State
 
     // 3. Connect safely to your live hook component with exact configuration bounds
-    const { gameState, movePawn, placeWall, error, clearError } = useGameSession(
+    const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned } = useGameSession(
         initialState,
         gameId!,
         isAiGame
     );
+
+    const handleLeaveGame = () => {
+        if (gameState && gameState.status === GameStatus.IN_PROGRESS) {
+            abandonGame();
+        }
+        navigate(R.HOME);
+    };
 
     // 5. Hard Safeguard Boundary Check
     if (!initialState || !gameId) {
@@ -83,51 +90,34 @@ export default function GamePage() {
         isAi: isAiGame
     };
 
+    const isFinished = gameState.status === GameStatus.FINISHED || opponentAbandoned;
+    const actualWinner = opponentAbandoned ? myRole : gameState.winner;
+    const actualReason = opponentAbandoned ? "OPPONENT_LEFT" : (gameState.winner ? "PATH_REACHED" : "TIMEOUT");
+
     return (
-        <Box style={{ 
-            position: 'relative', 
-            height: '100vh', 
-            backgroundColor: '#050505', 
-            overflow: 'hidden' 
-        }}>
-            {/* Upper Escape Hatch */}
+        <Box style={{ position: 'relative', height: '100vh', backgroundColor: '#050505', overflow: 'hidden' }}>
+            
+            {/* The Escape Hatch now securely abandons the game! */}
             <Box style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 200 }}>
-                <BackButton onClick={() => navigate(R.HOME)} />
+                <BackButton onClick={handleLeaveGame} />
             </Box>
 
-            {/* LEFT HUD: Dynamic Clock Timers & Stats tracking */}
-            <GameSideBar 
-                state={gameState}
-                myRole={myRole}
-                p1Data={p1Data}
-                p2Data={p2Data}
-                initialTimeSeconds={300} 
-            />
+            <GameSideBar state={gameState} myRole={myRole} p1Data={p1Data} p2Data={p2Data} initialTimeSeconds={300} />
 
-            {/* RIGHT HUD: Action History Logging Panel */}
-
-
-            {/* MAIN CORE STAGE: 17x17 Grid Matrix Render Switch */}
             <Flex align="center" justify="center" style={{ width: '100%', height: '100%' }}>
-                <GameBoard 
-                    gameState={gameState}
-                    myRole={myRole}
-                    movePawn={movePawn}
-                    placeWall={placeWall}
-                />
+                <GameBoard gameState={gameState} myRole={myRole} movePawn={movePawn} placeWall={placeWall} />
             </Flex>
 
-            {/* OVERLAY PANEL MODAL: Activated upon matching victory state conditions */}
+            {/* The End Game Modal will automatically pop up with "You Won" if the opponent leaves! */}
+            {/* The End Game Modal */}
             <GameOverModal 
-                isOpen={gameState.status === GameStatus.FINISHED}
-                winner={gameState.winner}
+                isOpen={isFinished}
+                winner={actualWinner}
                 myRole={myRole}
-                reason={gameState.winner ? "PATH_REACHED" : "TIMEOUT"}
-                eloChange={gameState.winner === myRole ? 25 : -20}
+                reason={actualReason}
                 onReturnHome={() => navigate(R.HOME)} 
             />
 
-            {/* FLOATING ALERTS: Socket error alerts display layout fallback banner */}
             <FloatingError message={error || ''} onClose={clearError} />
         </Box>
     );

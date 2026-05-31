@@ -39,9 +39,10 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
                 activeLobbyCode = data.lobbyCode;
                 socket.join(data.lobbyCode);
 
-                const payload = {
-                    gameId: game.gameId,
-                    state: game.state
+                const payload = { 
+                    lobbyCode: game.gameId, 
+                    gameId: game.gameId, 
+                    state: game.state 
                 };
 
                 // send success to the player
@@ -78,7 +79,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
         try {
             // try to move the pawn
             const targetPos = new Position(data.target.r, data.target.c);
-            const newState = await multiplayerService.processMovePawn(data.gameId, userId, targetPos);
+            const newState = await multiplayerService.processMovePawn(data.gameId, userId, socket.id, targetPos);
 
             // if success
             if (newState) {
@@ -103,7 +104,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
         try {
             // try to place the wall
             const wallPos = new Position(data.pos.r, data.pos.c);
-            const newState = await multiplayerService.processPlaceWall(data.gameId, userId, wallPos, data.orient);
+            const newState = await multiplayerService.processPlaceWall(data.gameId, userId, socket.id, wallPos, data.orient);
 
             // if success
             if (newState) {
@@ -127,7 +128,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
     socket.on(S.CLIENT.MP_GAME_TIMEOUT, async (data: { gameId: string }) => {
         try {
             // change turn
-            const newState = await multiplayerService.processTimeout(data.gameId, userId);
+            const newState = await multiplayerService.processTimeout(data.gameId, userId, socket.id);
 
             // if success, broadcast new state
             if (newState) {
@@ -143,7 +144,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             const lobbyToQuit = activeLobbyCode;
             activeLobbyCode = null;
             socket.to(lobbyToQuit).emit(S.SERVER.GAME_ABANDONED);
-            await multiplayerService.abandonGame(lobbyToQuit, userId);
+            await multiplayerService.abandonGame(lobbyToQuit, userId, socket.id);
 
             const updatedLobbies = multiplayerService.getPublicLobbies();
             io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies: updatedLobbies });
