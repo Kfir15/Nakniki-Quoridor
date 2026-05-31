@@ -14,6 +14,7 @@ import MultiplayerLobby from './pages/lobby/MultiplayerLobby';
 import Home from './pages/home/Home';
 import WaitingRoom from './pages/lobby/WaitingRoom';
 import RoutesRequireAuth from './components/RoutesRequireAuth';
+import GamePage from './pages/game/GamePage';
 
 export default function App() {
   const { user } = useUser();
@@ -50,11 +51,7 @@ export default function App() {
             <Route path={R.MP_LOBBY} element={<MultiplayerLobby />} />
             <Route path={R.WAITING} element={<WaitingRoom />} />
 
-            <Route path={R.GAME} element={
-              <div style={{ padding: '50px', textAlign: 'center', color: 'white', fontSize: '24px' }}>
-                Game Board Rendering Here!
-              </div>
-            } />
+            <Route path={R.GAME} element={<GamePage />} />
           </Route>
 
         </Routes>

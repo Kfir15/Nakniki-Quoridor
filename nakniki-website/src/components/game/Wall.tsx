@@ -10,8 +10,8 @@ interface WallProps {
 export default function Wall({ orientation, isPreview = false }: WallProps) {
     const isHorizontal = orientation === Orientation.HORIZONTAL;
 
-    const width = isHorizontal ? '136px' : '10px';
-    const height = isHorizontal ? '10px' : '136px';
+    const width = isHorizontal ? '130px' : '10px';
+    const height = isHorizontal ? '10px' : '130px';
 
     return (
         <motion.div
