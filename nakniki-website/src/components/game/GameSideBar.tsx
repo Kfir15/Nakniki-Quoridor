@@ -10,6 +10,7 @@ interface GameSideBarProps {
     p1Data: SidebarPlayerData;
     p2Data: SidebarPlayerData;
     initialTimeSeconds: number;
+    isTimerActive?: boolean;
 }
 
 export default function GameSideBar({
@@ -17,7 +18,8 @@ export default function GameSideBar({
     myRole,
     p1Data,
     p2Data,
-    initialTimeSeconds
+    initialTimeSeconds,
+    isTimerActive = true
 }: GameSideBarProps) {
     const [p1Time, setP1Time] = useState<number>(initialTimeSeconds);
     const [p2Time, setP2Time] = useState<number>(initialTimeSeconds);
@@ -36,7 +38,7 @@ export default function GameSideBar({
         let interval: number | undefined;
         
         // handle the timer countdown 
-        if (state.status === GameStatus.IN_PROGRESS) {
+        if (state.status === GameStatus.IN_PROGRESS && isTimerActive) {
             interval = window.setInterval(() => {
                 // timer for player 1
                 if (state.turn === PlayerRole.P1 && !p1Data.isAi) {
@@ -64,7 +66,7 @@ export default function GameSideBar({
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [state.turn, state.status, p1Data.isAi, p2Data.isAi, handleGameTimeout]);
+    }, [state.turn, state.status, p1Data.isAi, p2Data.isAi, handleGameTimeout, isTimerActive]);
 
     // timer format
     const formatTime = (seconds: number): string => {

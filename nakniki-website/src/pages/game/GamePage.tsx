@@ -11,6 +11,8 @@ import { GameOverModal } from '../../components/game/GameOverModal';
 import FloatingError from '../../components/error/FloatingError';
 import BackButton from '../../components/BackButton';
 import type { SidebarPlayerData } from '../../components/game/PlayerCard';
+import GameIntroOverlay from '../../components/game/GameIntroOverlay';
+import { useState } from 'react';
 
 export default function GamePage() {
     const { gameId } = useParams<{ gameId: string }>();
@@ -24,6 +26,7 @@ export default function GamePage() {
     const isAiGame = location.state?.isAiGame ?? false;
     const myRole = isHost ? PlayerRole.P1 : PlayerRole.P2;
     const opponentRole = isHost ? PlayerRole.P2 : PlayerRole.P1;
+    const [isIntroPlaying, setIsIntroPlaying] = useState(!isAiGame);
 
     // use the custom hooks
     const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo } = useGameSession(
@@ -96,14 +99,25 @@ export default function GamePage() {
 
     return (
         <Box style={{ position: 'relative', height: '100vh', backgroundColor: '#050505', overflow: 'hidden' }}>
-            
+
+            {!isAiGame && isIntroPlaying && (
+                <GameIntroOverlay onComplete={() => setIsIntroPlaying(false)} />
+            )}
+
             {/* go back btn (abondan the game) */}
             <Box style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 200 }}>
                 <BackButton onClick={handleLeaveGame} />
             </Box>
 
             {/* show side bar */}
-            <GameSideBar state={gameState} myRole={myRole} p1Data={p1Data} p2Data={p2Data} initialTimeSeconds={300} />
+            <GameSideBar 
+                state={gameState} 
+                myRole={myRole} 
+                p1Data={p1Data} 
+                p2Data={p2Data} 
+                initialTimeSeconds={300} 
+                isTimerActive={isAiGame ? true : !isIntroPlaying} 
+            />
 
             <Flex direction="column" gap="6" align="center" justify="center" style={{ width: '100%', height: '100%' }}>
                 
