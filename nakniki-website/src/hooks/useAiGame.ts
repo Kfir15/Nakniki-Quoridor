@@ -50,7 +50,7 @@ export const useAiGame = () => {
             // navigate to the game screen
             setIsInitializing(false);
             const gamePath = ROUTES.GAME.replace(':gameId', data.gameId);
-            navigate(gamePath, { state: { initialState: data.state, isHost: true } });
+            navigate(gamePath, { state: { initialState: data.state, isHost: true, isAiGame: true } });
         };
 
         // handle error

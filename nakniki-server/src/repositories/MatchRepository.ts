@@ -14,7 +14,7 @@ export const MatchRepository = {
                 player_1_id: p1Id,
                 player_2_id: p2Id,
                 is_ai_match: isAI,
-                status: isAI ? GameStatus.IN_PROGRESS : GameStatus.WAITING
+                status: (isAI || p2Id !== null) ? GameStatus.IN_PROGRESS : GameStatus.WAITING
             })
             .select('id')
             .single();

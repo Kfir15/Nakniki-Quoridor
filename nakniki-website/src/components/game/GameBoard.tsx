@@ -39,48 +39,34 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
     const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
         if (!gameState.extendedBoard) return false;
 
-        type WallConfig = { orientation?: string; type?: string; isPlaced?: boolean };
+        // 1. Get the exact 3 matrix coordinates that make up this specific wall
+        const r1 = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
+        const c1 = orientation === Orientation.HORIZONTAL ? (c * 2) : (c * 2 + 1);
+        
+        const r2 = r * 2 + 1; // Intersection is always in the middle
+        const c2 = c * 2 + 1;
 
-        const targetRow = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
-        const targetCol = orientation === Orientation.VERTICAL ? (c * 2 + 1) : (c * 2);
-        const intRow = r * 2 + 1;
-        const intCol = c * 2 + 1;
+        const r3 = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2 + 2);
+        const c3 = orientation === Orientation.HORIZONTAL ? (c * 2 + 2) : (c * 2 + 1);
 
-        const nodeValue = gameState.extendedBoard[targetRow]?.[targetCol];
-        const intValue = gameState.extendedBoard[intRow]?.[intCol];
+        const v1 = gameState.extendedBoard[r1]?.[c1];
+        const v2 = gameState.extendedBoard[r2]?.[c2];
+        const v3 = gameState.extendedBoard[r3]?.[c3];
 
-        if (nodeValue === undefined || nodeValue === null) return false;
-
-        const isFilled = (val: unknown, defaultType: string) => {
+        // 2. Helper to check if a single matrix node actively contains a wall
+        const isFilled = (val: unknown) => {
+            if (val === undefined || val === null) return false;
             if (typeof val === 'boolean') return val === true;
             if (typeof val === 'object' && val !== null) {
-                const config = val as WallConfig;
-                return config.isPlaced === true || !!config.orientation;
+                return (val as any).isPlaced === true || !!(val as any).orientation;
             }
             const str = String(val).toUpperCase();
-            return str !== 'EMPTY' && str !== defaultType && str !== 'FALSE';
+            return str !== 'EMPTY' && str !== 'CELL' && str !== 'INTERSECTION' && str !== 'FALSE';
         };
 
-        const gapFilled = isFilled(nodeValue, 'CELL');
-        const intFilled = isFilled(intValue, 'INTERSECTION');
-
-        if (!gapFilled || !intFilled) return false;
-
-        if (typeof nodeValue === 'object' && nodeValue !== null) {
-            const config = nodeValue as WallConfig;
-            const innerValue = String(config.orientation || config.type || '').toUpperCase();
-            const matchTarget = String(orientation).toUpperCase();
-            return innerValue === matchTarget || innerValue === matchTarget.charAt(0) || config.isPlaced === true;
-        }
-
-        const cellStr = String(nodeValue).toUpperCase();
-        const targetOrientation = String(orientation).toUpperCase();
-
-        return (
-            cellStr === targetOrientation || 
-            cellStr === targetOrientation.charAt(0) ||
-            (cellStr !== 'EMPTY' && cellStr !== 'CELL' && cellStr !== 'INTERSECTION')
-        );
+        // 3. We strictly check that ALL 3 individual segments of the wall are filled.
+        // If it's a T-Junction, v3 (the tail end) will be empty, and the phantom wall will NOT render!
+        return isFilled(v1) && isFilled(v2) && isFilled(v3);
     };
 
     // --- NEW: Simply check if the current cell (r, c) is inside our calculated array! ---
