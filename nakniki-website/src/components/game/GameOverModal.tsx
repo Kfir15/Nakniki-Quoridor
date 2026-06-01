@@ -15,24 +15,21 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
     const isWinner = winner === myRole;
     const isTie = winner === null;
 
-    // Default to Tie styling
     let titleText = "MATCH OVER";
-    let glowColor = "rgba(100, 100, 100, 0.4)"; // Gray
+    let glowColor = "rgba(100, 100, 100, 0.4)";
     let mainColor = "#888888";
+    const formattedReason = reason.replace(/_/g, ' ');
 
-    // Dynamic theming based on game result
+    // dynamic colors based on win/loss
     if (isWinner) {
         titleText = "VICTORY";
-        glowColor = "rgba(45, 230, 100, 0.35)"; // Neon Green
+        glowColor = "rgba(45, 230, 100, 0.35)";
         mainColor = "#4ade80";
     } else if (!isTie) {
         titleText = "DEFEAT";
-        glowColor = "rgba(230, 45, 45, 0.35)"; // Neon Red
+        glowColor = "rgba(230, 45, 45, 0.35)";
         mainColor = "#f87171";
     }
-
-    // Format the reason text to look like a clean system broadcast (e.g., "OPPONENT_LEFT" -> "OPPONENT LEFT")
-    const formattedReason = reason.replace(/_/g, ' ');
 
     return (
         <Box style={{
@@ -58,7 +55,7 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
                 animation: 'slideUpModal 0.7s cubic-bezier(0.16, 1, 0.3, 1)'
             }}>
                 <Flex direction="column" align="center" gap="4">
-                    {/* SUBTITLE: REASON */}
+                    {/* show reason */}
                     <Text size="2" style={{ 
                         color: mainColor, 
                         letterSpacing: '5px', 
@@ -69,7 +66,7 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
                         {formattedReason}
                     </Text>
 
-                    {/* MAIN TITLE TEXT */}
+                    {/* VICTORY / DEFEAT text */} 
                     <Text size="9" weight="bold" style={{
                         color: '#ffffff',
                         letterSpacing: '10px',
@@ -80,7 +77,6 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
                         {titleText}
                     </Text>
 
-                    {/* GLOWING DIVIDER LINE */}
                     <Box style={{ 
                         width: '70%', 
                         height: '2px', 
@@ -89,7 +85,7 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
                         opacity: 0.6
                     }} />
 
-                    {/* INTERACTIVE RETURN BUTTON */}
+                    {/* back to home btn */}
                     <Button 
                         size="4" 
                         variant="surface"
@@ -121,7 +117,6 @@ export function GameOverModal({ isOpen, winner, myRole, reason, onReturnHome }: 
                 </Flex>
             </Box>
 
-            {/* KEYFRAME ANIMATIONS INJECTED DIRECTLY */}
             <style>{`
                 @keyframes fadeInOverlay {
                     from { opacity: 0; backdrop-filter: blur(0px); }
