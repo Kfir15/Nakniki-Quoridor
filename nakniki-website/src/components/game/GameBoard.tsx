@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Flex, Box } from '@radix-ui/themes';
-import { PlayerRole, Orientation, type GameState } from '@nakniki/shared';
+import { PlayerRole, Orientation, type GameState, CellType } from '@nakniki/shared';
 import BoardCell from './BoardCell';
 import CellGap from './CellGap';
 import Pawn from './Pawn';
-import { getValidMoves } from '../../utils/gameHelpers'; // Import our new engine!
+import { getValidMoves } from '../../utils/gameHelpers';
 
 interface GameBoardProps {
     gameState: GameState;
@@ -14,83 +14,89 @@ interface GameBoardProps {
 }
 
 export default function GameBoard({ gameState, myRole, movePawn, placeWall }: GameBoardProps) {
-    const size = gameState.size; // 9
-    const gridIndices = Array.from({ length: size }, (_, i) => i);
+    const size = gameState.size;
+    
+    const isP2 = myRole === PlayerRole.P2;
+    const baseIndices = Array.from({ length: size }, (_, i) => i);
+    const renderRows = isP2 ? [...baseIndices].reverse() : baseIndices;
+    const renderCols = isP2 ? [...baseIndices].reverse() : baseIndices;
     
     const [isPawnSelected, setIsPawnSelected] = useState<boolean>(false);
-    const isP2 = myRole === PlayerRole.P2;
 
-    // --- NEW: Calculate the array of valid positions once per turn ---
     const validMovesArray = useMemo(() => {
         if (!isPawnSelected || gameState.turn !== myRole) return [];
         return getValidMoves(gameState, myRole);
     }, [isPawnSelected, gameState, myRole]);
     
     const getPlayerAt = (r: number, c: number): PlayerRole | null => {
-        if (gameState.player1.position.r === r && gameState.player1.position.c === c) {
-            return PlayerRole.P1;
-        }
-        if (gameState.player2.position.r === r && gameState.player2.position.c === c) {
-            return PlayerRole.P2;
-        }
+        if (gameState.player1.position.r === r && gameState.player1.position.c === c) return PlayerRole.P1;
+        if (gameState.player2.position.r === r && gameState.player2.position.c === c) return PlayerRole.P2;
         return null;
     };
 
-    const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
-        if (!gameState.extendedBoard) return false;
+    // --- THE FIX: Universal checker to see if a specific matrix node contains a wall! ---
+    const isWallNode = (val: unknown) => {
+        if (val === undefined || val === null) return false;
+        if (typeof val === 'boolean') return val === true;
+        if (typeof val === 'object' && val !== null) {
+            return (val as any).isPlaced === true || !!(val as any).orientation;
+        }
+        const str = String(val).toUpperCase();
+        return str !== 'EMPTY' && str !== 'CELL' && str !== 'INTERSECTION' && str !== 'FALSE';
+    };
 
-        // 1. Get the exact 3 matrix coordinates that make up this specific wall
+    // --- THE FIX: Universal coordinate grabber for the 3 segments of a wall ---
+    const getWallSegments = (r: number, c: number, orientation: Orientation) => {
         const r1 = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
         const c1 = orientation === Orientation.HORIZONTAL ? (c * 2) : (c * 2 + 1);
-        
-        const r2 = r * 2 + 1; // Intersection is always in the middle
+        const r2 = r * 2 + 1; 
         const c2 = c * 2 + 1;
-
         const r3 = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2 + 2);
         const c3 = orientation === Orientation.HORIZONTAL ? (c * 2 + 2) : (c * 2 + 1);
 
-        const v1 = gameState.extendedBoard[r1]?.[c1];
-        const v2 = gameState.extendedBoard[r2]?.[c2];
-        const v3 = gameState.extendedBoard[r3]?.[c3];
+        if (!gameState.extendedBoard) return [null, null, null];
 
-        // 2. Helper to check if a single matrix node actively contains a wall
-        const isFilled = (val: unknown) => {
-            if (val === undefined || val === null) return false;
-            if (typeof val === 'boolean') return val === true;
-            if (typeof val === 'object' && val !== null) {
-                return (val as any).isPlaced === true || !!(val as any).orientation;
-            }
-            const str = String(val).toUpperCase();
-            return str !== 'EMPTY' && str !== 'CELL' && str !== 'INTERSECTION' && str !== 'FALSE';
-        };
-
-        // 3. We strictly check that ALL 3 individual segments of the wall are filled.
-        // If it's a T-Junction, v3 (the tail end) will be empty, and the phantom wall will NOT render!
-        return isFilled(v1) && isFilled(v2) && isFilled(v3);
+        return [
+            gameState.extendedBoard[r1]?.[c1],
+            gameState.extendedBoard[r2]?.[c2],
+            gameState.extendedBoard[r3]?.[c3]
+        ];
     };
 
-    // --- NEW: Simply check if the current cell (r, c) is inside our calculated array! ---
+    // Checks if all 3 segments are ALREADY placed 
+    const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
+        if (r < 0 || r >= size - 1 || c < 0 || c >= size - 1) return false;
+        const [v1, v2, v3] = getWallSegments(r, c, orientation);
+        return isWallNode(v1) && isWallNode(v2) && isWallNode(v3);
+    };
+
+    // --- THE FIX: Strictly blocks previews that hang off edges or overlap existing walls! ---
+    const canPlaceWallPreview = (r: number, c: number, orientation: Orientation): boolean => {
+        if (r < 0 || r >= size - 1 || c < 0 || c >= size - 1) return false;
+        
+        const [v1, v2, v3] = getWallSegments(r, c, orientation);
+        
+        // For a preview to be legal, NONE of the 3 required matrix slots can be occupied!
+        return !isWallNode(v1) && !isWallNode(v2) && !isWallNode(v3);
+    };
+
     const isValidMoveTarget = (r: number, c: number): boolean => {
         return validMovesArray.some(pos => pos.r === r && pos.c === c);
     };
 
     const handleCellClick = (r: number, c: number) => {
         const playerOnCell = getPlayerAt(r, c);
-
         if (playerOnCell === myRole && gameState.turn === myRole) {
             setIsPawnSelected(prev => !prev);
             return;
         }
-
         if (isValidMoveTarget(r, c)) {
             movePawn(r, c);
             setIsPawnSelected(false);
         }
     };
 
-    const getShadowColor = (): string => {
-        return gameState.turn === PlayerRole.P1 ? 'rgba(230, 45, 45, 0.4)' : 'rgba(225, 213, 45, 0.4)';
-    };
+    const getShadowColor = (): string => gameState.turn === PlayerRole.P1 ? 'rgba(230, 45, 45, 0.4)' : 'rgba(225, 213, 45, 0.4)';
     
     return (
         <Box style={{
@@ -99,82 +105,88 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '24px',
-            boxShadow: `0 0 125px ${getShadowColor()}, inset 0 ${isP2 ? '-6px' : '6px'} 20px rgba(255,255,255,0.02)`,
+            boxShadow: `0 0 125px ${getShadowColor()}, inset 0 6px 20px rgba(255,255,255,0.02)`,
             position: 'relative',
             display: 'inline-block',
-            transform: isP2 ? 'rotate(180deg)' : 'none',
-            transition: 'box-shadow 0.6s ease, transform 0.8s ease'
+            transition: 'box-shadow 0.6s ease' 
         }}>
             <Flex direction="column" gap="0">
-                {gridIndices.map((r) => (
-                    <Flex key={`row-${r}`} direction="column" gap="0">
-                        {/* MAIN ROW CELLS & VERTICAL GAPS */}
-                        <Flex direction="row" gap="0" align="center">
-                            {gridIndices.map((c) => (
-                                <Flex key={`cell-wrapper-${r}-${c}`} direction="row" gap="0" align="center">
-                                    <Box style={{ width: '60px', height: '60px' }}>
-                                        <BoardCell 
-                                            isPossibleMove={isValidMoveTarget(r, c)}
-                                            onClick={() => handleCellClick(r, c)}
-                                        >
-                                            {getPlayerAt(r, c) && (
-                                                <Pawn 
-                                                    player={getPlayerAt(r, c)!}
-                                                    isCurrentTurn={gameState.turn === getPlayerAt(r, c)}
+                {renderRows.map((r, rIdx) => {
+                    return (
+                        <Flex key={`row-${r}`} direction="column" gap="0">
+                            {/* MAIN ROW CELLS & VERTICAL GAPS */}
+                            <Flex direction="row" gap="0" align="center">
+                                {renderCols.map((c, cIdx) => {
+                                    const gapR = isP2 ? r - 1 : r;
+                                    const gapC = isP2 ? c - 1 : c;
+
+                                    return (
+                                        <Flex key={`cell-wrapper-${r}-${c}`} direction="row" gap="0" align="center">
+                                            <Box style={{ width: '60px', height: '60px' }}>
+                                                <BoardCell 
+                                                    isPossibleMove={isValidMoveTarget(r, c)}
                                                     onClick={() => handleCellClick(r, c)}
-                                                />
-                                            )}
-                                        </BoardCell>
-                                    </Box>
+                                                >
+                                                    {getPlayerAt(r, c) && (
+                                                        <Pawn 
+                                                            player={getPlayerAt(r, c)!}
+                                                            isCurrentTurn={gameState.turn === getPlayerAt(r, c)}
+                                                            onClick={() => handleCellClick(r, c)}
+                                                        />
+                                                    )}
+                                                </BoardCell>
+                                            </Box>
 
-                                    {/* Vertical Gaps slot */}
-                                    {c < size - 1 && (
-                                        <Box style={{ width: '10px', height: '60px', position: 'relative' }}>
-                                            {r < size - 1 ? (
-                                                <CellGap 
-                                                    orientation={Orientation.VERTICAL}
-                                                    isPlaced={isWallPlacedAt(r, c, Orientation.VERTICAL)}
-                                                    isValidPreview={true}
-                                                    isActiveTurn={gameState.turn === myRole}
-                                                    onClick={() => placeWall(r, c, Orientation.VERTICAL)}
-                                                />
-                                            ) : (
-                                                <Box style={{ width: '10px', height: '60px', backgroundColor: 'transparent' }} />
+                                            {/* Vertical Gaps */}
+                                            {cIdx < size - 1 && (
+                                                <Box style={{ width: '10px', height: '60px', position: 'relative' }}>
+                                                    {rIdx < size - 1 ? (
+                                                        <CellGap 
+                                                            orientation={Orientation.VERTICAL}
+                                                            isPlaced={isWallPlacedAt(gapR, gapC, Orientation.VERTICAL)}
+                                                            isValidPreview={canPlaceWallPreview(gapR, gapC, Orientation.VERTICAL)}
+                                                            isActiveTurn={gameState.turn === myRole}
+                                                            onClick={() => placeWall(gapR, gapC, Orientation.VERTICAL)}
+                                                        />
+                                                    ) : (
+                                                        <Box style={{ width: '10px', height: '60px', backgroundColor: 'transparent' }} />
+                                                    )}
+                                                </Box>
                                             )}
-                                        </Box>
-                                    )}
-                                </Flex>
-                            ))}
-                        </Flex>
-
-                        {/* INTERSTITIAL HORIZONTAL ROW GAP */}
-                        {r < size - 1 && (
-                            <Flex direction="row" gap="0">
-                                {gridIndices.map((c) => (
-                                    <Flex key={`horiz-gap-wrapper-${r}-${c}`} direction="row" gap="0">
-                                        <Box style={{ width: '60px', height: '10px', position: 'relative', zIndex: 10 }}>
-                                            {c < size - 1 ? (
-                                                <CellGap 
-                                                    orientation={Orientation.HORIZONTAL}
-                                                    isPlaced={isWallPlacedAt(r, c, Orientation.HORIZONTAL)}
-                                                    isValidPreview={true}
-                                                    isActiveTurn={gameState.turn === myRole}
-                                                    onClick={() => placeWall(r, c, Orientation.HORIZONTAL)}
-                                                />
-                                            ) : (
-                                                <Box style={{ width: '60px', height: '10px', backgroundColor: 'transparent' }} />
-                                            )}
-                                        </Box>
-                                        
-                                        {c < size - 1 && (
-                                            <Box style={{ width: '10px', height: '10px', backgroundColor: 'transparent' }} />
-                                        )}
-                                    </Flex>
-                                ))}
+                                        </Flex>
+                                    );
+                                })}
                             </Flex>
-                        )}
-                    </Flex>
-                ))}
+
+                            {/* HORIZONTAL ROW GAPS */}
+                            {rIdx < size - 1 && (
+                                <Flex direction="row" gap="0">
+                                    {renderCols.map((c, cIdx) => {
+                                        const gapR = isP2 ? r - 1 : r;
+                                        const gapC = isP2 ? c - 1 : c;
+
+                                        return (
+                                            <Flex key={`horiz-gap-wrapper-${r}-${c}`} direction="row" gap="0">
+                                                <Box style={{ width: '60px', height: '10px', position: 'relative', zIndex: 10 }}>
+                                                    <CellGap 
+                                                        orientation={Orientation.HORIZONTAL}
+                                                        isPlaced={isWallPlacedAt(gapR, gapC, Orientation.HORIZONTAL)}
+                                                        isValidPreview={canPlaceWallPreview(gapR, gapC, Orientation.HORIZONTAL)}
+                                                        isActiveTurn={gameState.turn === myRole}
+                                                        onClick={() => placeWall(gapR, gapC, Orientation.HORIZONTAL)}
+                                                    />
+                                                </Box>
+                                                {cIdx < size - 1 && (
+                                                    <Box style={{ width: '10px', height: '10px', backgroundColor: 'transparent' }} />
+                                                )}
+                                            </Flex>
+                                        );
+                                    })}
+                                </Flex>
+                            )}
+                        </Flex>
+                    );
+                })}
             </Flex>
         </Box>
     );

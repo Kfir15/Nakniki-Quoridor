@@ -12,13 +12,14 @@ interface CellGapProps {
 }
 
 export default function CellGap({ orientation, isPlaced = false, isValidPreview = false, isActiveTurn = false, onClick }: CellGapProps) {
-    // variables of the gap
     const [isHovered, setIsHovered] = useState(false);
     const isHorizontal = orientation === Orientation.HORIZONTAL;
 
+    // --- THE FIX: We always anchor Left/Top! The reversed array map handles the rest natively! ---
+    const anchorCSS = isHorizontal ? { left: 0 } : { top: 0 };
+
     return (
         <Box
-            // show wall preview
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={(e) => {
@@ -32,19 +33,18 @@ export default function CellGap({ orientation, isPlaced = false, isValidPreview 
                 width: '100%',
                 height: '100%',
                 position: 'relative',
-                backgroundColor: 'transparent', // STRICTLY invisible
+                backgroundColor: 'transparent',
                 cursor: (isActiveTurn && !isPlaced && isValidPreview) ? 'pointer' : 'default',
             }}
         >
-            {/* if wall placed, show him */}
             {isPlaced && (
-                <Box style={{ position: 'absolute', [isHorizontal ? 'left' : 'top']: 0, zIndex: 15 }}>
+                <Box style={{ position: 'absolute', ...anchorCSS, zIndex: 15 }}>
                     <Wall orientation={orientation} isPreview={false} />
                 </Box>
             )}
 
             {isHovered && !isPlaced && isValidPreview && isActiveTurn && (
-                <Box style={{ position: 'absolute', [isHorizontal ? 'left' : 'top']: 0, zIndex: 30 }}>
+                <Box style={{ position: 'absolute', ...anchorCSS, zIndex: 30 }}>
                     <Wall orientation={orientation} isPreview={true} />
                 </Box>
             )}
