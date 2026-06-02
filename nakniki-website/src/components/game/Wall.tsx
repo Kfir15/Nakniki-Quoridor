@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Orientation } from '@nakniki/shared';
 import { Box } from '@radix-ui/themes';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface WallProps {
     orientation: Orientation;
@@ -10,8 +11,8 @@ interface WallProps {
 export default function Wall({ orientation, isPreview = false }: WallProps) {
     const isHorizontal = orientation === Orientation.HORIZONTAL;
 
-    const width = isHorizontal ? '130px' : '10px';
-    const height = isHorizontal ? '10px' : '130px';
+    const width = isHorizontal ? UI.DIMENSIONS.WALL_LENGTH : UI.DIMENSIONS.GAP_SIZE;
+    const height = isHorizontal ? UI.DIMENSIONS.GAP_SIZE : UI.DIMENSIONS.WALL_LENGTH;
 
     return (
         <motion.div

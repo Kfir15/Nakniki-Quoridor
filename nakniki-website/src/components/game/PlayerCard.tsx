@@ -1,6 +1,7 @@
 import { Flex, Text, Box, Avatar } from '@radix-ui/themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Trophy, Cpu } from 'lucide-react';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 export interface SidebarPlayerData {
     username: string;
@@ -15,16 +16,17 @@ interface PlayerCardProps {
     data: SidebarPlayerData;
     time: string;
     isActive: boolean;
+    accentColor: string;
 }
 
-export default function PlayerCard({ label, data, time, isActive }: PlayerCardProps) {
+export default function PlayerCard({ label, data, time, isActive, accentColor }: PlayerCardProps) {
     
     // if this is ai, change his data
     const finalData = data.isAi ? {
-        username: "NAKNIKI BOT",     
-        elo_rating: 9999,                
-        avatar_url: "/bot-avatar.png",
-        total_wins: 9999,
+        username: UI.DEFAULTS.BOT.NAME,     
+        elo_rating: UI.DEFAULTS.BOT.ELO,                
+        avatar_url: UI.DEFAULTS.BOT.AVATAR,
+        total_wins: UI.DEFAULTS.BOT.WINS,
         isAi: true
     } : data;
 
@@ -37,7 +39,7 @@ export default function PlayerCard({ label, data, time, isActive }: PlayerCardPr
                 : 'transparent',
             // Unified red border
             borderLeft: isActive 
-                ? '3px solid #ef4444' 
+                ? accentColor
                 : '3px solid transparent',
             transition: 'all 0.4s ease'
         }}>
@@ -54,7 +56,7 @@ export default function PlayerCard({ label, data, time, isActive }: PlayerCardPr
                         radius="full" 
                         size="5" 
                         style={{ 
-                            border: `1px solid ${isActive ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                            border: `1px solid ${isActive ? accentColor : 'rgba(255,255,255,0.1)'}`,
                             boxShadow: isActive ? '0 0 20px rgba(239, 68, 68, 0.3)' : 'none',
                         }}
                     />
@@ -64,7 +66,7 @@ export default function PlayerCard({ label, data, time, isActive }: PlayerCardPr
                             transition={{ repeat: Infinity, duration: 2 }}
                             style={{
                                 position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px',
-                                backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid #0a0a0a'
+                                backgroundColor: accentColor, borderRadius: '50%', border: '2px solid #0a0a0a'
                             }}
                         />
                     )}
@@ -78,7 +80,7 @@ export default function PlayerCard({ label, data, time, isActive }: PlayerCardPr
                     </Text>
                     <Flex gap="3">
                         <Flex align="center" gap="1">
-                            <Shield size={12} color="#ef4444" />
+                            <Shield size={12} color={accentColor} />
                             <Text size="1" color="gray">ELO {finalData.elo_rating}</Text>
                         </Flex>
                         <Flex align="center" gap="1">
@@ -97,8 +99,8 @@ export default function PlayerCard({ label, data, time, isActive }: PlayerCardPr
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                             >
-                                <Cpu size={14} color="#ef4444" className="animate-spin" />
-                                <Text size="1" weight="bold" style={{ color: '#ef4444', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                                <Cpu size={14} color={accentColor} className="animate-spin" />
+                                <Text size="1" weight="bold" style={{ color: accentColor, letterSpacing: '1px', fontFamily: 'monospace' }}>
                                     THINKING...
                                 </Text>
                             </motion.div>

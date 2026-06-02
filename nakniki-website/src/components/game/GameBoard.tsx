@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Flex, Box } from '@radix-ui/themes';
-import { PlayerRole, Orientation, type GameState, CellType } from '@nakniki/shared';
+import { PlayerRole, Orientation, type GameState } from '@nakniki/shared';
 import BoardCell from './BoardCell';
 import CellGap from './CellGap';
 import Pawn from './Pawn';
 import { getValidMoves } from '../../utils/gameHelpers';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface GameBoardProps {
     gameState: GameState;
@@ -103,7 +104,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
     
     return (
         <Box style={{
-            padding: '36px',
+            padding: UI.DIMENSIONS.BOARD_PADDING,
             backgroundColor: 'rgba(15, 15, 15, 0.6)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -125,7 +126,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
 
                                     return (
                                         <Flex key={`cell-wrapper-${r}-${c}`} direction="row" gap="0" align="center">
-                                            <Box style={{ width: '60px', height: '60px' }}>
+                                            <Box style={{ width: UI.DIMENSIONS.CELL_SIZE, height: UI.DIMENSIONS.CELL_SIZE }}>
                                                 <BoardCell 
                                                     isPossibleMove={isValidMoveTarget(r, c)}
                                                     onClick={() => handleCellClick(r, c)}
@@ -142,7 +143,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
 
                                             {/* Vertical Gaps */}
                                             {cIdx < size - 1 && (
-                                                <Box style={{ width: '10px', height: '60px', position: 'relative' }}>
+                                                <Box style={{ width: UI.DIMENSIONS.GAP_SIZE, height: UI.DIMENSIONS.CELL_SIZE, position: 'relative' }}>
                                                     {rIdx < size - 1 ? (
                                                         <CellGap 
                                                             orientation={Orientation.VERTICAL}
@@ -170,7 +171,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
 
                                         return (
                                             <Flex key={`horiz-gap-wrapper-${r}-${c}`} direction="row" gap="0">
-                                                <Box style={{ width: '60px', height: '10px', position: 'relative', zIndex: 10 }}>
+                                                <Box style={{ width: UI.DIMENSIONS.CELL_SIZE, height: UI.DIMENSIONS.GAP_SIZE, position: 'relative', zIndex: 10 }}>
                                                     <CellGap 
                                                         orientation={Orientation.HORIZONTAL}
                                                         isPlaced={isWallPlacedAt(gapR, gapC, Orientation.HORIZONTAL)}
@@ -180,7 +181,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
                                                     />
                                                 </Box>
                                                 {cIdx < size - 1 && (
-                                                    <Box style={{ width: '10px', height: '10px', backgroundColor: 'transparent' }} />
+                                                    <Box style={{ width: UI.DIMENSIONS.GAP_SIZE, height: UI.DIMENSIONS.GAP_SIZE, backgroundColor: 'transparent' }} />
                                                 )}
                                             </Flex>
                                         );

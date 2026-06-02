@@ -1,5 +1,6 @@
 import { PlayerRole } from '@nakniki/shared';
 import { motion } from 'framer-motion'
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface PawnProps {
     player: PlayerRole;
@@ -9,10 +10,8 @@ interface PawnProps {
 
 export default function Pawn({ player, isCurrentTurn, onClick }: PawnProps) {
     
-    // get the pawn color base on his role (ketchup vs mustard)
-    const isP1 = player === PlayerRole.P1;
-    const baseColor = isP1 ? 'rgba(139,0,0,1.0)' : 'rgba(218,165,32,1.0)';
-    const glowColor = isP1 ? 'rgba(230, 45, 45, 0.4)' : 'rgba(225, 213, 45, 0.4)';
+    // get the pawn theme base on his role (ketchup vs mustard)
+    const theme = player === PlayerRole.P1 ? UI.COLORS.P1 : UI.COLORS.P2;
 
     return (
         <motion.div
@@ -30,7 +29,7 @@ export default function Pawn({ player, isCurrentTurn, onClick }: PawnProps) {
             animate={{ 
                 scale: 1,
                 boxShadow: isCurrentTurn 
-                    ? `0 0 20px ${glowColor}, inset 0 -4px 8px rgba(0,0,0,0.2)` 
+                    ? `0 0 20px ${theme.GLOW}, inset 0 -4px 8px rgba(0,0,0,0.2)` 
                     : `0 4px 8px rgba(0,0,0,0.4), inset 0 -4px 8px rgba(0,0,0,0.2)`
             }}
             whileHover={isCurrentTurn ? { scale: 1.05 } : {}}
@@ -43,10 +42,10 @@ export default function Pawn({ player, isCurrentTurn, onClick }: PawnProps) {
             }}
             
             style={{
-                width: '65%',
-                height: '65%',
+                width: UI.DIMENSIONS.PAWN_SIZE,
+                height: UI.DIMENSIONS.PAWN_SIZE,
                 borderRadius: '50%',
-                background: `radial-gradient(circle at 35% 25%, ${baseColor} 0%`,
+                background: `radial-gradient(circle at 35% 25%, ${theme.BASE} 0%`,
                 zIndex: 10,
                 position: 'relative',
                 display: 'flex',

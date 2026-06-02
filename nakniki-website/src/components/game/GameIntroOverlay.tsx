@@ -1,6 +1,7 @@
 import { Box, Text } from '@radix-ui/themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface GameIntroOverlayProps {
     onComplete?: () => void;
@@ -12,15 +13,15 @@ export default function GameIntroOverlay({ onComplete }: GameIntroOverlayProps) 
 
     useEffect(() => {
         // phase 1 - show "NAKNIKI QUORIDOR"
-        const t1 = setTimeout(() => setPhase(2), 1000);
+        const t1 = setTimeout(() => setPhase(2), UI.TIMINGS.INTRO_PHASE_1);
         
         // phase 2 - BEGIN text
-        const t2 = setTimeout(() => setIsVisible(false), 2500);
+        const t2 = setTimeout(() => setIsVisible(false), UI.TIMINGS.INTRO_PHASE_2);
 
         // phase 3 - doors
         const t3 = setTimeout(() => {
             if (onComplete) onComplete();
-        }, 3800);
+        }, UI.TIMINGS.INTRO_PHASE_3);
         
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }, [onComplete]);

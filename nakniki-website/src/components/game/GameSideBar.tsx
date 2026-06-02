@@ -3,6 +3,7 @@ import { socketManager } from "../../lib/socket.manager"; //
 import { useCallback, useEffect, useState } from "react";
 import { Flex, Text, Box } from '@radix-ui/themes';
 import PlayerCard, { type SidebarPlayerData } from './PlayerCard';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface GameSideBarProps {
     state: GameState;
@@ -91,7 +92,13 @@ export default function GameSideBar({
             flexDirection: 'column',
             overflow: 'hidden',
         }}>
-            <PlayerCard label="OPPONENT" data={opponent} time={formatTime(isP1 ? p2Time : p1Time)} isActive={state.turn !== myRole} />
+            <PlayerCard 
+                label="OPPONENT" 
+                data={opponent} 
+                time={formatTime(isP1 ? p2Time : p1Time)} 
+                isActive={state.turn !== myRole}
+                accentColor={isP1 ? UI.COLORS.P2.SOLID : UI.COLORS.P1.SOLID}
+            />
 
             <Flex direction="column" align="center" justify="center" style={{ 
                 padding: '20px 0', backgroundColor: 'rgba(0,0,0,0.3)',
@@ -103,7 +110,13 @@ export default function GameSideBar({
                 </Text>
             </Flex>
 
-            <PlayerCard label="YOU" data={me} time={formatTime(isP1 ? p1Time : p2Time)} isActive={state.turn === myRole} />
+            <PlayerCard 
+                label="YOU" 
+                data={me} 
+                time={formatTime(isP1 ? p1Time : p2Time)} 
+                isActive={state.turn === myRole} 
+                accentColor={isP1 ? UI.COLORS.P1.SOLID : UI.COLORS.P2.SOLID}
+            />
         </Box>
     );
 }

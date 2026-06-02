@@ -14,6 +14,7 @@ import type { SidebarPlayerData } from '../../components/game/PlayerCard';
 import GameIntroOverlay from '../../components/game/GameIntroOverlay';
 import ActionPanel from '../../components/game/ActionPanel';
 import { useState, useEffect } from 'react';
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 export default function GamePage() {
     const { gameId } = useParams<{ gameId: string }>();
@@ -48,17 +49,14 @@ export default function GamePage() {
             const panelWidth = Math.min(320, Math.max(240, window.innerWidth * 0.22));
             
             // subtract both panels and the 40px screen padding on each side
-            const reservedWidth = (panelWidth * 2) + 80; 
+            const reservedWidth = (panelWidth * 2) + 80;
             
             const availableWidth = window.innerWidth - reservedWidth;
-            const availableHeight = window.innerHeight - 40; 
+            const availableHeight = window.innerHeight - UI.LAYOUT.TOP_BAR_RESERVED;
 
-            // the size of the board component
-            const BOARD_PHYSICAL_WIDTH = 750;
-            const BOARD_PHYSICAL_HEIGHT = 850;
-
-            const scaleX = availableWidth / BOARD_PHYSICAL_WIDTH;
-            const scaleY = availableHeight / BOARD_PHYSICAL_HEIGHT;
+            // scale based on the smaller ratio
+            const scaleX = availableWidth / UI.LAYOUT.BOARD_PHYSICAL_WIDTH;
+            const scaleY = availableHeight / UI.LAYOUT.BOARD_PHYSICAL_HEIGHT;
 
             setBoardScale(Math.min(scaleX, scaleY, 1));
         };
@@ -71,17 +69,18 @@ export default function GamePage() {
     // get the players info
     const metadata = user?.user_metadata;
     const p1Data: SidebarPlayerData = {
-        username: playersInfo?.p1?.username || (isHost ? (metadata?.username || "Player 1") : "Opponent"),
+        username: playersInfo?.p1?.username || (isHost ? (metadata?.username || UI.DEFAULTS.PLAYER.NAME_P1) : UI.DEFAULTS.PLAYER.NAME_OPPONENT),
         avatar_url: playersInfo?.p1?.avatar_url || (isHost ? metadata?.avatar_url : undefined),
-        elo_rating: playersInfo?.p1?.elo_rating || (isHost ? (Number(metadata?.elo_rating) || 1200) : 1200),
-        total_wins: playersInfo?.p1?.total_wins || (isHost ? (Number(metadata?.total_wins) || 0) : 0),
+        elo_rating: playersInfo?.p1?.elo_rating || (isHost ? (Number(metadata?.elo_rating) || UI.DEFAULTS.PLAYER.ELO) : UI.DEFAULTS.PLAYER.ELO),
+        total_wins: playersInfo?.p1?.total_wins || (isHost ? (Number(metadata?.total_wins) || UI.DEFAULTS.PLAYER.WINS) : UI.DEFAULTS.PLAYER.WINS),
         isAi: false
     };
+
     const p2Data: SidebarPlayerData = {
-        username: isAiGame ? "NAKNIKI BOT" : (playersInfo?.p2?.username || (!isHost ? (metadata?.username || "Player 2") : "Waiting...")),
+        username: isAiGame ? UI.DEFAULTS.BOT.NAME : (playersInfo?.p2?.username || (!isHost ? (metadata?.username || UI.DEFAULTS.PLAYER.NAME_P2) : UI.DEFAULTS.PLAYER.NAME_WAITING)),
         avatar_url: playersInfo?.p2?.avatar_url || (!isHost ? metadata?.avatar_url : undefined),
-        elo_rating: isAiGame ? 9999 : (playersInfo?.p2?.elo_rating || (!isHost ? (Number(metadata?.elo_rating) || 1200) : 1200)),
-        total_wins: isAiGame ? 9999 : (playersInfo?.p2?.total_wins || (!isHost ? (Number(metadata?.total_wins) || 0) : 0)),
+        elo_rating: isAiGame ? UI.DEFAULTS.BOT.ELO : (playersInfo?.p2?.elo_rating || (!isHost ? (Number(metadata?.elo_rating) || UI.DEFAULTS.PLAYER.ELO) : UI.DEFAULTS.PLAYER.ELO)),
+        total_wins: isAiGame ? UI.DEFAULTS.BOT.WINS : (playersInfo?.p2?.total_wins || (!isHost ? (Number(metadata?.total_wins) || UI.DEFAULTS.PLAYER.WINS) : UI.DEFAULTS.PLAYER.WINS)),
         isAi: isAiGame
     };
 
@@ -119,10 +118,10 @@ export default function GamePage() {
     const p2ReachedGoal = gameState.player2.position.r === gameState.player2.targetRow;
     const someoneReachedGoal = p1ReachedGoal || p2ReachedGoal;
     const actualReason = opponentAbandoned 
-        ? "OPPONENT_LEFT" 
+        ? UI.END_REASON.OPPONENT_LEFT
         : (gameState.status === GameStatus.FINISHED && !someoneReachedGoal)
-            ? "TIMEOUT"
-            : "PATH_REACHED";
+            ? UI.END_REASON.TIMEOUT
+            : UI.END_REASON.PATH_REACHED;
 
     // track wall count
     const isMyTurnP1 = myRole === PlayerRole.P1;
@@ -159,7 +158,7 @@ export default function GamePage() {
                         myRole={myRole} 
                         p1Data={p1Data} 
                         p2Data={p2Data} 
-                        initialTimeSeconds={300} 
+                        initialTimeSeconds={UI.TIMERS.DEFAULT_MATCH_SECONDS}
                         isTimerActive={isAiGame ? true : !isIntroPlaying} 
                     />
                 </Box>
