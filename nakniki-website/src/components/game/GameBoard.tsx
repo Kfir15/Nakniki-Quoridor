@@ -14,27 +14,28 @@ interface GameBoardProps {
 }
 
 export default function GameBoard({ gameState, myRole, movePawn, placeWall }: GameBoardProps) {
+    // get game variables
     const size = gameState.size;
-    
     const isP2 = myRole === PlayerRole.P2;
     const baseIndices = Array.from({ length: size }, (_, i) => i);
     const renderRows = isP2 ? [...baseIndices].reverse() : baseIndices;
     const renderCols = isP2 ? [...baseIndices].reverse() : baseIndices;
-    
     const [isPawnSelected, setIsPawnSelected] = useState<boolean>(false);
 
+    // memoize valid moves to avoid recalculations on every render
     const validMovesArray = useMemo(() => {
         if (!isPawnSelected || gameState.turn !== myRole) return [];
         return getValidMoves(gameState, myRole);
     }, [isPawnSelected, gameState, myRole]);
     
+    // return the player role based on his position
     const getPlayerAt = (r: number, c: number): PlayerRole | null => {
         if (gameState.player1.position.r === r && gameState.player1.position.c === c) return PlayerRole.P1;
         if (gameState.player2.position.r === r && gameState.player2.position.c === c) return PlayerRole.P2;
         return null;
     };
 
-    // --- THE FIX: Universal checker to see if a specific matrix node contains a wall! ---
+    // check if a cell contain a wall
     const isWallNode = (val: unknown) => {
         if (val === undefined || val === null) return false;
         if (typeof val === 'boolean') return val === true;
@@ -45,7 +46,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
         return str !== 'EMPTY' && str !== 'CELL' && str !== 'INTERSECTION' && str !== 'FALSE';
     };
 
-    // --- THE FIX: Universal coordinate grabber for the 3 segments of a wall ---
+    // return the cell values for the wall
     const getWallSegments = (r: number, c: number, orientation: Orientation) => {
         const r1 = orientation === Orientation.HORIZONTAL ? (r * 2 + 1) : (r * 2);
         const c1 = orientation === Orientation.HORIZONTAL ? (c * 2) : (c * 2 + 1);
@@ -63,33 +64,35 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
         ];
     };
 
-    // Checks if all 3 segments are ALREADY placed 
+    // checks if all 3 cells are already placed 
     const isWallPlacedAt = (r: number, c: number, orientation: Orientation): boolean => {
         if (r < 0 || r >= size - 1 || c < 0 || c >= size - 1) return false;
         const [v1, v2, v3] = getWallSegments(r, c, orientation);
         return isWallNode(v1) && isWallNode(v2) && isWallNode(v3);
     };
 
-    // --- THE FIX: Strictly blocks previews that hang off edges or overlap existing walls! ---
+    // check if can show wall preview (if any of the 3 cells are occupied, then it's not a valid preview)
     const canPlaceWallPreview = (r: number, c: number, orientation: Orientation): boolean => {
-        if (r < 0 || r >= size - 1 || c < 0 || c >= size - 1) return false;
-        
+        if (r < 0 || r >= size - 1 || c < 0 || c >= size - 1) return false;  
         const [v1, v2, v3] = getWallSegments(r, c, orientation);
-        
-        // For a preview to be legal, NONE of the 3 required matrix slots can be occupied!
         return !isWallNode(v1) && !isWallNode(v2) && !isWallNode(v3);
     };
 
+    // check if the move is valid
     const isValidMoveTarget = (r: number, c: number): boolean => {
         return validMovesArray.some(pos => pos.r === r && pos.c === c);
     };
 
+    // handle cell click 
     const handleCellClick = (r: number, c: number) => {
+        // mark the pawn as selected
         const playerOnCell = getPlayerAt(r, c);
         if (playerOnCell === myRole && gameState.turn === myRole) {
             setIsPawnSelected(prev => !prev);
             return;
         }
+
+        // move if valid
         if (isValidMoveTarget(r, c)) {
             movePawn(r, c);
             setIsPawnSelected(false);

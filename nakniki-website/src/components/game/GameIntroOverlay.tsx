@@ -12,15 +12,15 @@ export default function GameIntroOverlay({ onComplete }: GameIntroOverlayProps) 
 
     useEffect(() => {
         // phase 1 - show "NAKNIKI QUORIDOR"
-        const t1 = setTimeout(() => setPhase(2), 1600);
+        const t1 = setTimeout(() => setPhase(2), 1000);
         
         // phase 2 - BEGIN text
-        const t2 = setTimeout(() => setIsVisible(false), 3600);
+        const t2 = setTimeout(() => setIsVisible(false), 2500);
 
         // phase 3 - doors
         const t3 = setTimeout(() => {
             if (onComplete) onComplete();
-        }, 4500);
+        }, 3800);
         
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }, [onComplete]);
