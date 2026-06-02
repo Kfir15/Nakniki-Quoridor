@@ -9,7 +9,7 @@ export const UserController = {
     async getUser(req: Request, res: Response) {
         try {
             // get the user id from the request
-            const userId = req.user?.id;
+            const userId = (req.query.id as string) || req.user?.id;
             if (!userId) {
                 return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
             }
