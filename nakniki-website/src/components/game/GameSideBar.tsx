@@ -81,53 +81,29 @@ export default function GameSideBar({
 
     return (
         <Box style={{
-            position: 'absolute',
-            left: '40px', 
-            top: '50%',
-            transform: 'translateY(-50%)', 
-            width: '320px',
+            width: '100%',
             backgroundColor: 'rgba(15, 15, 15, 0.75)', 
             backdropFilter: 'blur(24px)', 
-            WebkitBackdropFilter: 'blur(24px)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px', 
             boxShadow: '0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            zIndex: 50 
         }}>
-            
-            {/* show the opponent card */}
-            <PlayerCard 
-                label="OPPONENT"
-                data={opponent}
-                time={formatTime(isP1 ? p2Time : p1Time)}
-                isActive={state.turn !== myRole}
-            />
+            <PlayerCard label="OPPONENT" data={opponent} time={formatTime(isP1 ? p2Time : p1Time)} isActive={state.turn !== myRole} />
 
             <Flex direction="column" align="center" justify="center" style={{ 
-                padding: '20px 0', 
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                padding: '20px 0', backgroundColor: 'rgba(0,0,0,0.3)',
+                borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)'
             }}>
-                <Text size="1" color="gray" weight="bold" style={{ letterSpacing: '3px', opacity: 0.6 }}>
-                    TURN {state.turnCount}
-                </Text>
+                <Text size="1" color="gray" weight="bold" style={{ letterSpacing: '3px', opacity: 0.6 }}>TURN {state.turnCount}</Text>
                 <Text size="2" weight="bold" style={{ color: state.turn === myRole ? '#ef4444' : 'gray', marginTop: '4px', display: 'block' }}>
                     {state.turn === myRole ? "YOUR MOVE" : "WAITING FOR OPPONENT"}
                 </Text>
             </Flex>
 
-            {/* show the player card */}
-            <PlayerCard 
-                label="YOU"
-                data={me}
-                time={formatTime(isP1 ? p1Time : p2Time)}
-                isActive={state.turn === myRole}
-            />
-            
+            <PlayerCard label="YOU" data={me} time={formatTime(isP1 ? p1Time : p2Time)} isActive={state.turn === myRole} />
         </Box>
     );
 }

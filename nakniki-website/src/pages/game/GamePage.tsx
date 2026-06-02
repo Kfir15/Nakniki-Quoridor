@@ -12,7 +12,8 @@ import FloatingError from '../../components/error/FloatingError';
 import BackButton from '../../components/BackButton';
 import type { SidebarPlayerData } from '../../components/game/PlayerCard';
 import GameIntroOverlay from '../../components/game/GameIntroOverlay';
-import { useState } from 'react';
+import ActionPanel from '../../components/game/ActionPanel';
+import { useState, useEffect } from 'react';
 
 export default function GamePage() {
     const { gameId } = useParams<{ gameId: string }>();
@@ -20,7 +21,6 @@ export default function GamePage() {
     const navigate = useNavigate();
     const { user } = useUser();
 
-    // get the game params
     const initialState = location.state?.initialState;
     const isHost = location.state?.isHost ?? true;
     const isAiGame = location.state?.isAiGame ?? false;
@@ -28,48 +28,45 @@ export default function GamePage() {
     const opponentRole = isHost ? PlayerRole.P2 : PlayerRole.P1;
     const [isIntroPlaying, setIsIntroPlaying] = useState(!isAiGame);
 
-    // use the custom hooks
     const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo } = useGameSession(
         initialState,
         gameId!,
         isAiGame
     );
 
-    // handle leaving the game
     const handleLeaveGame = () => {
         if (gameState && gameState.status === GameStatus.IN_PROGRESS) {
-            // active abordon game logic and nav to home
             abandonGame();
         }
         navigate(R.HOME);
     };
 
-    // if we have problem, show error and nav options
-    if (!initialState || !gameId) {
-        return (
-            <Flex align="center" justify="center" direction="column" gap="4" style={{ height: '100vh', backgroundColor: '#050505' }}>
-                <Text color="red" weight="bold" size="5" style={{ letterSpacing: '2px', fontFamily: 'monospace' }}>
-                    CRITICAL LINK FAILURE
-                </Text>
-                <Text color="gray" size="2">No active game coordinates or matching session targets found.</Text>
-                <Button onClick={() => navigate(R.HOME)} size="3" variant="soft" color="red" style={{ cursor: 'pointer' }}>
-                    Return to Hub
-                </Button>
-            </Flex>
-        );
-    }
+    // dynamic window scayling
+    const [boardScale, setBoardScale] = useState(1);
+    useEffect(() => {
+        const calculateScale = () => {
+            const panelWidth = Math.min(320, Math.max(240, window.innerWidth * 0.22));
+            
+            // subtract both panels and the 40px screen padding on each side
+            const reservedWidth = (panelWidth * 2) + 80; 
+            
+            const availableWidth = window.innerWidth - reservedWidth;
+            const availableHeight = window.innerHeight - 40; 
 
-    // while loading the game state, show a spinner
-    if (!gameState) {
-        return (
-            <Flex align="center" justify="center" style={{ height: '100vh', backgroundColor: '#050505' }}>
-                <Spinner size="3" style={{ color: '#ef4444' }} />
-                <Text ml="3" color="gray" style={{ letterSpacing: '2px', fontFamily: 'monospace' }}>
-                    INITIALIZING MATCH ENGINE GATEWAYS...
-                </Text>
-            </Flex>
-        );
-    }
+            // the size of the board component
+            const BOARD_PHYSICAL_WIDTH = 750;
+            const BOARD_PHYSICAL_HEIGHT = 850;
+
+            const scaleX = availableWidth / BOARD_PHYSICAL_WIDTH;
+            const scaleY = availableHeight / BOARD_PHYSICAL_HEIGHT;
+
+            setBoardScale(Math.min(scaleX, scaleY, 1));
+        };
+
+        calculateScale();
+        window.addEventListener('resize', calculateScale);
+        return () => window.removeEventListener('resize', calculateScale);
+    }, []);
 
     // get the players info
     const metadata = user?.user_metadata;
@@ -88,62 +85,121 @@ export default function GamePage() {
         isAi: isAiGame
     };
 
+    // if no initial state, return to home
+    if (!initialState || !gameId) {
+        return (
+            <Flex align="center" justify="center" direction="column" gap="4" style={{ height: '100vh', backgroundColor: '#050505' }}>
+                <Text color="red" weight="bold" size="5" style={{ letterSpacing: '2px', fontFamily: 'monospace' }}>
+                    CRITICAL LINK FAILURE
+                </Text>
+                <Text color="gray" size="2">No active game coordinates or matching session targets found.</Text>
+                <Button onClick={() => navigate(R.HOME)} size="3" variant="soft" color="red" style={{ cursor: 'pointer' }}>
+                    Return to Hub
+                </Button>
+            </Flex>
+        );
+    }
+
+    // if game state is not loaded yet, show loading screen
+    if (!gameState) {
+        return (
+            <Flex align="center" justify="center" style={{ height: '100vh', backgroundColor: '#050505' }}>
+                <Spinner size="3" style={{ color: '#ef4444' }} />
+                <Text ml="3" color="gray" style={{ letterSpacing: '2px', fontFamily: 'monospace' }}>
+                    INITIALIZING MATCH ENGINE GATEWAYS...
+                </Text>
+            </Flex>
+        );
+    }
+
+    // if game finished, get the winner and reason
     const isFinished = gameState.status === GameStatus.FINISHED || opponentAbandoned;
     const actualWinner = opponentAbandoned ? myRole : gameState.winner;
-
-    // check if someone reached goal
     const p1ReachedGoal = gameState.player1.position.r === gameState.player1.targetRow;
     const p2ReachedGoal = gameState.player2.position.r === gameState.player2.targetRow;
     const someoneReachedGoal = p1ReachedGoal || p2ReachedGoal;
-
-    // find the reason for game end
     const actualReason = opponentAbandoned 
         ? "OPPONENT_LEFT" 
         : (gameState.status === GameStatus.FINISHED && !someoneReachedGoal)
             ? "TIMEOUT"
             : "PATH_REACHED";
 
-    // wall count for each player
+    // track wall count
     const isMyTurnP1 = myRole === PlayerRole.P1;
     const myWallsCount = isMyTurnP1 ? gameState.player1.wallsLeft : gameState.player2.wallsLeft;
     const opponentWallsCount = isMyTurnP1 ? gameState.player2.wallsLeft : gameState.player1.wallsLeft;
 
     return (
-        <Box style={{ position: 'relative', height: '100vh', backgroundColor: '#050505', overflow: 'hidden' }}>
-
+        <Box style={{ 
+            position: 'relative', 
+            height: '100vh', 
+            width: '100vw', 
+            backgroundColor: '#050505', 
+            overflow: 'hidden'
+        }}>
+            {/* show intro only if this is not ai game */}
             {!isAiGame && isIntroPlaying && (
                 <GameIntroOverlay onComplete={() => setIsIntroPlaying(false)} />
             )}
 
-            {/* go back btn (abondan the game) */}
             <Box style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 200 }}>
                 <BackButton onClick={handleLeaveGame} />
             </Box>
 
-            {/* show side bar */}
-            <GameSideBar 
-                state={gameState} 
-                myRole={myRole} 
-                p1Data={p1Data} 
-                p2Data={p2Data} 
-                initialTimeSeconds={300} 
-                isTimerActive={isAiGame ? true : !isIntroPlaying} 
-            />
+    
+            <Flex 
+                align="center" 
+                style={{ width: '100%', height: '100%', padding: '0 40px' }}
+            >
+                
+                {/* show side bar */}
+                <Box style={{ width: 'clamp(240px, 22vw, 320px)', zIndex: 50 }}>
+                    <GameSideBar 
+                        state={gameState} 
+                        myRole={myRole} 
+                        p1Data={p1Data} 
+                        p2Data={p2Data} 
+                        initialTimeSeconds={300} 
+                        isTimerActive={isAiGame ? true : !isIntroPlaying} 
+                    />
+                </Box>
 
-            <Flex direction="column" gap="6" align="center" justify="center" style={{ width: '100%', height: '100%' }}>
-                
-                {/* opponent wall counter */}
-                <WallCounter count={opponentWallsCount} role={opponentRole} />
-                
-                {/* show game board */}
-                <GameBoard gameState={gameState} myRole={myRole} movePawn={movePawn} placeWall={placeWall} />
-                
-                {/* my wall counter */}
-                <WallCounter count={myWallsCount} role={myRole} />
+                {/* show board */}
+                <Box style={{ flex: 1, height: '100%', position: 'relative' }}>
+                    
+                    <Box style={{ 
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: `translate(-50%, -50%) scale(${boardScale})`, 
+                        transformOrigin: 'center center',
+                        transition: 'transform 0.1s ease-out',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center'
+                    }}>
+                        <Flex direction="column" gap="5" align="center" justify="center">
+                            <WallCounter count={opponentWallsCount} role={opponentRole} />
+                            <GameBoard gameState={gameState} myRole={myRole} movePawn={movePawn} placeWall={placeWall} />
+                            <WallCounter count={myWallsCount} role={myRole} />
+                        </Flex>
+                    </Box>
+
+                </Box>
+
+                {/* show action history */}
+                <Box style={{ width: 'clamp(240px, 22vw, 320px)', height: '60%', maxHeight: '720px', zIndex: 50 }}>
+                    <ActionPanel 
+                        gameState={gameState} 
+                        myRole={myRole} 
+                        p1Name={p1Data.username} 
+                        p2Name={p2Data.username} 
+                    />
+                </Box>
 
             </Flex>
 
-            {/* end game screen */}
+            {/* when the game is over show msg and return to home */}
             <GameOverModal 
                 isOpen={isFinished}
                 winner={actualWinner}

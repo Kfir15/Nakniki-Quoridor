@@ -30,7 +30,7 @@ export default function GameIntroOverlay({ onComplete }: GameIntroOverlayProps) 
             {isVisible && (
                 <Box
                     style={{
-                        position: 'absolute',
+                        position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
                         display: 'flex',
