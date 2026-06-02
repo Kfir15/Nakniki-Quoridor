@@ -90,7 +90,18 @@ export default function GamePage() {
 
     const isFinished = gameState.status === GameStatus.FINISHED || opponentAbandoned;
     const actualWinner = opponentAbandoned ? myRole : gameState.winner;
-    const actualReason = opponentAbandoned ? "OPPONENT_LEFT" : (gameState.winner ? "PATH_REACHED" : "TIMEOUT");
+
+    // check if someone reached goal
+    const p1ReachedGoal = gameState.player1.position.r === gameState.player1.targetRow;
+    const p2ReachedGoal = gameState.player2.position.r === gameState.player2.targetRow;
+    const someoneReachedGoal = p1ReachedGoal || p2ReachedGoal;
+
+    // find the reason for game end
+    const actualReason = opponentAbandoned 
+        ? "OPPONENT_LEFT" 
+        : (gameState.status === GameStatus.FINISHED && !someoneReachedGoal)
+            ? "TIMEOUT"
+            : "PATH_REACHED";
 
     // wall count for each player
     const isMyTurnP1 = myRole === PlayerRole.P1;
