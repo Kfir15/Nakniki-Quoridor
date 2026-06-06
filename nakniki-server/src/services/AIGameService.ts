@@ -84,16 +84,16 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
 
-        // skip the turn
-        const [success, newState] = session.game.skipTurn();
-        if (!success) return null;
+        // end the game
+        session.game.status = GameStatus.FINISHED;
+        session.game.winner = PlayerRole.P2;
+        const finalState = session.game.getState(); 
 
         // record the action
-        ActionManager.recordAction(session, stateBefore, PlayerRole.P1, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
-
-        return newState;
+        ActionManager.recordAction(session, finalState, PlayerRole.P1, G.ACTION_TYPES.SKIP, { reason: "timeout" }, false);
+        this.handleGameOver(session, finalState);
+        return finalState;
     }
 
     public async triggerAITurn(gameId: string): Promise<GameState | null> {

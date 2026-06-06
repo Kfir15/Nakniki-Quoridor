@@ -31,19 +31,29 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
     socket.on(S.CLIENT.JOIN_LOBBY, async (data: { lobbyCode: string }) => {
         try {
             // join the lobby
-            const state = await multiplayerService.joinLobby(userId, socket.id, data.lobbyCode);
+            const game = await multiplayerService.joinLobby(userId, socket.id, data.lobbyCode);
 
             // if success to join the lobby
-            if (state) {
+            if (game) {
                 // join the socket
                 activeLobbyCode = data.lobbyCode;
                 socket.join(data.lobbyCode);
 
+                const payload = { 
+                    lobbyCode: game.gameId, 
+                    gameId: game.gameId, 
+                    state: game.state 
+                };
+
                 // send success to the player
-                socket.emit(S.SERVER.LOBBY_JOINED, { lobbyCode: data.lobbyCode, state });
+                socket.emit(S.SERVER.LOBBY_JOINED, payload);
 
                 // broadcast to players - game start!
-                socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, { state });
+                socket.to(data.lobbyCode).emit(S.SERVER.OPPONENT_JOINED, payload);
+
+                // send the players info
+                const players = await multiplayerService.getLobbyPlayers(data.lobbyCode);
+                io.to(data.lobbyCode).emit(S.SERVER.players_info_update, players);
 
                 const lobbies = multiplayerService.getPublicLobbies();
                 io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies });
@@ -56,6 +66,18 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             socket.emit(S.SERVER.ERROR, { message: "Failed to join lobby." });
         }
     })
+
+    // send players info
+    socket.on(S.CLIENT.request_players_info, async (data: { gameId: string }) => {
+        try {
+            const players = await multiplayerService.getLobbyPlayers(data.gameId);
+            if (players) {
+                socket.emit('players_info_update', players);
+            }
+        } catch (error) {
+            console.error("Failed to fetch player info:", error);
+        }
+    });
 
     // return all the public lobbies
     socket.on(S.CLIENT.GET_PUBLIC_LOBBIES, () => {
@@ -73,7 +95,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
         try {
             // try to move the pawn
             const targetPos = new Position(data.target.r, data.target.c);
-            const newState = await multiplayerService.processMovePawn(data.gameId, userId, targetPos);
+            const newState = await multiplayerService.processMovePawn(data.gameId, userId, socket.id, targetPos);
 
             // if success
             if (newState) {
@@ -98,7 +120,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
         try {
             // try to place the wall
             const wallPos = new Position(data.pos.r, data.pos.c);
-            const newState = await multiplayerService.processPlaceWall(data.gameId, userId, wallPos, data.orient);
+            const newState = await multiplayerService.processPlaceWall(data.gameId, userId, socket.id, wallPos, data.orient);
 
             // if success
             if (newState) {
@@ -119,10 +141,10 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
     })
 
     // handle timeout
-    socket.on(S.CLIENT.MP_TURN_TIMEOUT, async (data: { gameId: string }) => {
+    socket.on(S.CLIENT.MP_GAME_TIMEOUT, async (data: { gameId: string }) => {
         try {
             // change turn
-            const newState = await multiplayerService.processTimeout(data.gameId, userId);
+            const newState = await multiplayerService.processTimeout(data.gameId, userId, socket.id);
 
             // if success, broadcast new state
             if (newState) {
@@ -138,7 +160,7 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
             const lobbyToQuit = activeLobbyCode;
             activeLobbyCode = null;
             socket.to(lobbyToQuit).emit(S.SERVER.GAME_ABANDONED);
-            await multiplayerService.abandonGame(lobbyToQuit, userId);
+            await multiplayerService.abandonGame(lobbyToQuit, userId, socket.id);
 
             const updatedLobbies = multiplayerService.getPublicLobbies();
             io.emit(S.SERVER.PUBLIC_LOBBIES_LIST, { lobbies: updatedLobbies });
