@@ -5,12 +5,13 @@ import { TournamentStatus } from '@nakniki/shared';
 export const TournamentRepository = {
 
     // create new tournament and return its id
-    async createTournament(tSize: number): Promise<string> {
+    async createTournament(tSize: number, tName: string): Promise<string> {
         // create tournament
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENTS)
             .insert({
-                size: tSize
+                size: tSize,
+                name: tName
             })
             .select('id')
             .single();
@@ -25,14 +26,7 @@ export const TournamentRepository = {
         // get the tournament info by its id
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENTS)
-            .select(`
-                id, 
-                status, 
-                size,
-                created_at, 
-                finished_at, 
-                winner_id, 
-            `)
+            .select()
             .eq('id', tournamentId)
             .single();
 
@@ -85,4 +79,42 @@ export const TournamentRepository = {
         // check if success
         if (error) throw error;
     },
+
+    async getAllTournamentParticipants(tournamentId: string) {
+        // Get the tournament participants
+        const { data, error } = await supabase
+            .from(DB.TABLES.TOURNAMENT_PARTICIPANTS)
+            .select('user_id')
+            .eq('tournament_id', tournamentId);
+
+        // check if success
+        if (error) throw error;
+        return data;
+    },
+
+    async getAllTournamentMatches(tournamentId: string) {
+        // Get the tournament matches
+        const { data, error } = await supabase
+            .from(DB.TABLES.TOURNAMENT_MATCHES)
+            .select('id')
+            .eq('tournament_id', tournamentId);
+        
+        // check if success
+        if (error) throw error;
+
+        return data;
+    },
+
+    async getAllOpenTournaments() {
+        // Get all tournaments that can be joined
+        const { data, error } = await supabase
+            .from(DB.TABLES.TOURNAMENTS)
+            .select('id, name')
+            .eq('status', TournamentStatus.WAITING_FOR_PLAYERS);
+        
+        // check if success
+        if (error) throw error;
+        
+        return data;
+    }
 }
