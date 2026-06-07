@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 import { DB_CONSTANTS as DB } from '../constants/db.constants';
-import { TournamentStatus } from '@nakniki/shared';
 
 export const TournamentParticipantRepository = {
 
@@ -13,8 +12,6 @@ export const TournamentParticipantRepository = {
                 tournament_id: tournamentId,
                 user_id: userId
             })
-            .select()
-            .single();
 
         // check if success
         if (error) throw error;

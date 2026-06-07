@@ -110,11 +110,11 @@ export const TournamentRepository = {
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENTS)
             .select('id, name')
-            .eq('status', TournamentStatus.WAITING_FOR_PLAYERS);
+            .eq('status', TournamentStatus.REGISTERING);
         
         // check if success
         if (error) throw error;
-        
+
         return data;
     }
 }
