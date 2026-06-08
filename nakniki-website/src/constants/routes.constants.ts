@@ -1,5 +1,6 @@
 export const ROUTES = {
     HOME: '/',
+    NOT_FOUND: '/*',
     LEADERBOARD: '/leaderboard',
     HOW_TO_PLAY: '/how-to-play',
     LOGIN: '/login',
