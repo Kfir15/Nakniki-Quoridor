@@ -15,6 +15,7 @@ import Home from './pages/home/Home';
 import WaitingRoom from './pages/lobby/WaitingRoom';
 import RoutesRequireAuth from './components/RoutesRequireAuth';
 import GamePage from './pages/game/GamePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   const { user } = useUser();
@@ -38,6 +39,7 @@ export default function App() {
 
           {/* public routes */}
           <Route path={R.HOME} element={<Home />} />
+          <Route path={R.NOT_FOUND} element={<NotFoundPage />}/>
           <Route element={<AuthLayout />}>
             <Route path={R.LOGIN} element={<Login />} />
             <Route path={R.SIGNUP} element={<SignUp />} />
