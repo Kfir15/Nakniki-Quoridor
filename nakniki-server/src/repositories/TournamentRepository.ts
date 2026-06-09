@@ -28,7 +28,7 @@ export const TournamentRepository = {
             .from(DB.TABLES.TOURNAMENTS)
             .select()
             .eq('id', tournamentId)
-            .single();
+            .maybeSingle();
 
         // check if success
         if (error) throw error;

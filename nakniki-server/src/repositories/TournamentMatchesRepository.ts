@@ -72,7 +72,7 @@ export const TournamentMatchesRepository = {
         if (error) throw error;
     },
 
-    async setTournamentMatchPlayer(tournamentMatchId: string, slot: number, playerId: string) {
+    async setTournamentMatchParticipant(tournamentMatchId: string, slot: number, playerId: string) {
         // sets the player in the given slot (1 or 2) in the tournament match
         const column = slot === 1 ? 'player_1_id' : 'player_2_id';
         const { error } = await supabase
