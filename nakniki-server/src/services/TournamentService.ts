@@ -92,12 +92,36 @@ export class TournamentService {
         await TournamentRepository.startTournament(tournamentId);
     }
 
-    static async advancePlayer(matchId: string, winnerId: string) {
-        // TODO: get the winner and the match id from MatchRepository database
-        // Set the winner in the tournament_matches table
+    static async advancePlayer(tMatchId: string, winnerId: string) {
+        // Set the winner in the tournament_matches table and End tournament match in the tournament_matches table
+        const tournamentMatch = await TournamentMatchesRepository.getTournamentMatchById(tMatchId);
+        await TournamentMatchesRepository.endTournamentMatch(tMatchId, winnerId);
+
         // Eliminate the loser from the tournament
+        const loserId = tournamentMatch.player_1_id === winnerId ? tournamentMatch.player_2_id : tournamentMatch.player_1_id;
+        if (loserId) await TournamentParticipantRepository.eliminateParticipant(tournamentMatch.tournament_id, loserId);
+        
+        // Calculate the placement of the eliminated player and place them accordingly
+        const tournament = await TournamentRepository.getTournamentById(tournamentMatch.tournament_id);
+        const placement = (tournament.size / 2 ** tournamentMatch.round_number) + 1;
+        await TournamentParticipantRepository.setParticipantPlacement(tournamentMatch.tournament_id, loserId, placement);
+
         // Check if the tournament_match has a subsequent match, if no - set the winner as the tournament winner and end the tournament
+        if (!tournamentMatch.next_tournament_match_id) {
+            await TournamentParticipantRepository.setParticipantPlacement(tournamentMatch.tournament_id, winnerId, 1);
+            await TournamentRepository.endTournament(tournamentMatch.tournament_id, winnerId);
+        }
         // If yes, set the winner as a player in the subsequent match, in their correct seed position
+        else {
+            await TournamentMatchesRepository.setTournamentMatchParticipant(
+            tournamentMatch.next_tournament_match_id, tournamentMatch.next_slot, winnerId);
+
+            // check if the next match now has both players, start the match if yes
+            const nextMatch = await TournamentMatchesRepository.getTournamentMatchById(tournamentMatch.next_tournament_match_id);
+            if (nextMatch.player_1_id && nextMatch.player_2_id) {
+                await TournamentService.startTournamentMatch(tournamentMatch.next_tournament_match_id);
+            }
+        }     
     }
 
     static async startTournamentMatch(tMatchId: string) {

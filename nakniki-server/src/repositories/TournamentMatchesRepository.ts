@@ -31,12 +31,12 @@ export const TournamentMatchesRepository = {
         return data.id;
     },
 
-    async getTournamentMatchById(matchId: string) {
+    async getTournamentMatchById(tMatchId: string) {
         // get the tournament match info by its id
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENT_MATCHES)
             .select()
-            .eq('id', matchId)
+            .eq('id', tMatchId)
             .single();
 
         // check if success
