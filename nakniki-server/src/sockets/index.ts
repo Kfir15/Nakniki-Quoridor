@@ -4,6 +4,7 @@ import { AIGameService } from '../services/AIGameService';
 import { AIHandlers } from './ai.handler';
 import { socketAuthMiddleware } from '../middleware/socketAuthMiddleware';
 import { MultiplayerService } from '../services/MultiplayerService';
+import { TournamentService } from '../services/TournamentService';
 import { MultiplayerHandlers } from './multiplayer.handler';
 import { SOCKET_EVENTS as S } from '@nakniki/shared';
 
@@ -12,6 +13,7 @@ export const setupSockets = (io: Server) => {
     const gameManager = new GameManager();
     const aiService = new AIGameService(gameManager);
     const multiplayerService = new MultiplayerService(gameManager);
+    const tournamentService = new TournamentService(gameManager);
 
     // add auth middleware
     io.use(socketAuthMiddleware);

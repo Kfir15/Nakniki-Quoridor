@@ -5,16 +5,22 @@ import { TournamentParticipantRepository } from '../repositories/TournamentParti
 import { TournamentMatchesRepository } from '../repositories/TournamentMatchesRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { supabase } from '../lib/supabase';
-import { TournamentStatus } from '@nakniki/shared';
+import { TournamentStatus, GAME_CONSTANTS as G, PlayerRole } from '@nakniki/shared';
 
 export class TournamentService {
+    private gameManager: GameManager;
+
+    constructor(gameManager: GameManager) {
+        this.gameManager = gameManager;
+    }
+
     // create a new tournament and return its id
-    static async createTournament(tSize: number, tName: string): Promise<string> {
+    async createTournament(tSize: number, tName: string): Promise<string> {
         return await TournamentRepository.createTournament(tSize, tName);
     }
 
     // join a tournament as a participant
-    static async joinTournament(tournamentId: string, userId: string) {
+    async joinTournament(tournamentId: string, userId: string) {
     // using the atomic join_tournament function from the database
     const { error } = await supabase.rpc('join_tournament', {
         p_tournament: tournamentId,
@@ -23,12 +29,12 @@ export class TournamentService {
     if (error) throw error;
 }
 
-    static async getAllOpenTournaments() {
+    async getAllOpenTournaments() {
         // get all tournaments that are open for joining
         return await TournamentRepository.getAllOpenTournaments();
     }
 
-    static async startTournament(tournamentId: string) {
+    async startTournament(tournamentId: string) {
         // getting the tournament and every participant in it, throwing errors upon failure
         const tournament = await TournamentRepository.getTournamentById(tournamentId);
         if (!tournament) throw new Error('Tournament not found');
@@ -62,7 +68,7 @@ export class TournamentService {
                     slot,                                                                           // the match's number in the round
                     round === 1 ? tournamentUsers[slot].id : null,                                  // we can only apply participants for the first round of the tournament
                     round === 1 ? tournamentUsers[tournamentUsers.length - slot - 1].id : null,     // same here
-                    slot % 2 - 1                                                              // the position the winner will play from (player 1 or player 2)
+                    slot % 2 + 1                                                              // the position the winner will play from (player 1 or player 2)
                 );
                 roundMatches.push(id); 
             }
@@ -92,19 +98,20 @@ export class TournamentService {
         await TournamentRepository.startTournament(tournamentId);
     }
 
-    static async advancePlayer(tMatchId: string, winnerId: string) {
+    async advancePlayer(tMatchId: string, winnerId: string) {
         // Set the winner in the tournament_matches table and End tournament match in the tournament_matches table
         const tournamentMatch = await TournamentMatchesRepository.getTournamentMatchById(tMatchId);
         await TournamentMatchesRepository.endTournamentMatch(tMatchId, winnerId);
 
         // Eliminate the loser from the tournament
         const loserId = tournamentMatch.player_1_id === winnerId ? tournamentMatch.player_2_id : tournamentMatch.player_1_id;
-        if (loserId) await TournamentParticipantRepository.eliminateParticipant(tournamentMatch.tournament_id, loserId);
-        
-        // Calculate the placement of the eliminated player and place them accordingly
-        const tournament = await TournamentRepository.getTournamentById(tournamentMatch.tournament_id);
-        const placement = (tournament.size / 2 ** tournamentMatch.round_number) + 1;
-        await TournamentParticipantRepository.setParticipantPlacement(tournamentMatch.tournament_id, loserId, placement);
+        if (loserId) {
+            await TournamentParticipantRepository.eliminateParticipant(tournamentMatch.tournament_id, loserId);
+            // Calculate the placement of the eliminated player and place them accordingly
+            const tournament = await TournamentRepository.getTournamentById(tournamentMatch.tournament_id);
+            const placement = (tournament.size / 2 ** tournamentMatch.round_number) + 1;
+            await TournamentParticipantRepository.setParticipantPlacement(tournamentMatch.tournament_id, loserId, placement);
+        }
 
         // Check if the tournament_match has a subsequent match, if no - set the winner as the tournament winner and end the tournament
         if (!tournamentMatch.next_tournament_match_id) {
@@ -119,16 +126,26 @@ export class TournamentService {
             // check if the next match now has both players, start the match if yes
             const nextMatch = await TournamentMatchesRepository.getTournamentMatchById(tournamentMatch.next_tournament_match_id);
             if (nextMatch.player_1_id && nextMatch.player_2_id) {
-                await TournamentService.startTournamentMatch(tournamentMatch.next_tournament_match_id);
+                await this.startTournamentMatch(tournamentMatch.next_tournament_match_id);
             }
         }     
     }
 
-    static async startTournamentMatch(tMatchId: string) {
-        // TODO: get the match info from the tournament_matches table, specifically player IDs
-        // Create new match through the MatchRepository and get the ID of it
+    async startTournamentMatch(tMatchId: string) {
+        // get the match info from the tournament_matches table, specifically player IDs
+        const tournamentMatch = await TournamentMatchesRepository.getTournamentMatchById(tMatchId);
+        if (!tournamentMatch) throw new Error('Tournament match not found');
+        if (!tournamentMatch.player_1_id || !tournamentMatch.player_2_id) throw new Error('Tournament match does not have both players yet');
+
         // Create a new game session in the GameManager for the match, with the player IDs and tournament match ID
+        const { gameId, session } = this.gameManager.createSession(false, false, tMatchId);
+        session.userIds[PlayerRole.P1] = tournamentMatch.player_1_id;
+        session.userIds[PlayerRole.P2] = tournamentMatch.player_2_id;
+
+        // Create new match through the MatchRepository and get the ID of it  
+        session.dbMatchId = await MatchRepository.createMatch( gameId, tournamentMatch.player_1_id, tournamentMatch.player_2_id, false);    
         // Update the tournament_matches table with the game session ID
+        await TournamentMatchesRepository.startTournamentMatch(tMatchId, session.dbMatchId);
     }
 }
     

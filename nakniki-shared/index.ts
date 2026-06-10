@@ -2,6 +2,7 @@ export * from './src/constants/game.constants';
 export * from './src/constants/socket.constants';
 export * from './src/constants/route.constants';
 export * from './src/types/game.enums';
+export * from './src/types/tournament.enums';
 export * from './src/types/game.interfaces';
 export * from './src/types/game.directions';
 export * from './src/validators/ActionsValidator';
