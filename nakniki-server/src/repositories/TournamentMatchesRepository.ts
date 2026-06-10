@@ -94,6 +94,26 @@ export const TournamentMatchesRepository = {
 
         // check if success
         if (error) throw error;
-        }
+        },
+
+    async getBracket(tournamentId: string) {
+        // Gets all necessary information about the users to visualize the brackets
+        const { data, error } = await supabase
+            .from(DB.TABLES.TOURNAMENT_MATCHES)
+            .select(`
+                id, round_number, slot_in_round, status, match_id, winner_id,
+                next_tournament_match_id, next_slot, player_1_id, player_2_id,
+                player_1:player_1_id(username, avatar_url, elo_rating),
+                player_2:player_2_id(username, avatar_url, elo_rating)
+            `)
+            .eq('tournament_id', tournamentId)
+            .order('round_number', { ascending: true })
+            .order('slot_in_round', { ascending: true });
+
+        // check if success
+        if (error) throw error;
+
+        return data as any[];
+    }
 }
 

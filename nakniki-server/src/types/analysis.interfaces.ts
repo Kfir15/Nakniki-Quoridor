@@ -1,4 +1,4 @@
-import { GameState } from './game.interfaces';
+import { GameState } from '@nakniki/shared';
 import { AnalysisStatus, MoveAccuracy } from './analysis.enums';
 
 export interface AnalysisQueueItem {

@@ -27,7 +27,12 @@ export class TournamentService {
         p_user: userId,
     });
     if (error) throw error;
-}
+
+    const tournament = await TournamentRepository.getTournamentById(tournamentId);
+    const participants = await TournamentRepository.getAllTournamentParticipants(tournamentId);
+    // automatically starting tournament once enough participants are in the tourney
+    if (tournament.size == participants.length) await this.startTournament(tournamentId);
+    }
 
     async getAllOpenTournaments() {
         // get all tournaments that are open for joining
@@ -147,5 +152,14 @@ export class TournamentService {
         // Update the tournament_matches table with the game session ID
         await TournamentMatchesRepository.startTournamentMatch(tMatchId, session.dbMatchId);
     }
+
+    async getTournamentDetails(tournamentId: string) {
+        const [tournament, participants, matches] = await Promise.all([
+            TournamentRepository.getTournamentById(tournamentId),
+            TournamentRepository.getAllTournamentParticipants(tournamentId),
+            TournamentMatchesRepository.getBracket(tournamentId),
+        ]);
+        if (!tournament) throw new Error('Tournament not found');
+        return { tournament, participants, matches };
+    }
 }
-    
