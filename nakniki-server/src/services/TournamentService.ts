@@ -101,6 +101,17 @@ export class TournamentService {
 
         // set tournament status to in progress
         await TournamentRepository.startTournament(tournamentId);
+
+        // kicking off round 1 of the tournament, starting all R1 matches
+        const currentRound = matchIds[0];
+        if (currentRound) {
+            for (let i = 0; i < tournament.size / 2; i++) {
+            const thisMatch = currentRound[i];
+                if (thisMatch) {
+                    await this.startTournamentMatch(thisMatch);
+                }
+            }
+        }
     }
 
     async advancePlayer(tMatchId: string, winnerId: string) {
