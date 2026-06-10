@@ -4,13 +4,16 @@ import { EloService } from './EloService';
 import { ActionManager } from './ActionManager';
 import { PlayerRole, GameStatus, Orientation, GameState, Position, GAME_CONSTANTS as G } from '@nakniki/shared';
 import { UserRepository } from '../repositories/UserRepository';
+import { TournamentService } from '../services/TournamentService'
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 export class MultiplayerService {
     private gameManager: GameManager;
+    private ts: TournamentService;
 
     constructor(gameManager: GameManager) {
         this.gameManager = gameManager;
+        this.ts = new TournamentService(gameManager)
     }
 
     // craete new lobby
@@ -256,10 +259,13 @@ export class MultiplayerService {
         try {
             // finish the game in DB and also insert the actions
             await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
+            if (session.tournamentMatchId && winnerDbId) {
+                await this.ts.advancePlayer(session.tournamentMatchId, winnerDbId);
+            }
             await ActionManager.uploadActions(session);
 
-            // update players stats after the game
-            if (winnerDbId && loserDbId) {
+            // update players stats after the game, only if not a tournament match
+            if (winnerDbId && loserDbId && !session.tournamentMatchId) {
                 await EloService.updateMatchStats(winnerDbId, loserDbId);
             }
         } catch (error) {
