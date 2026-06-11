@@ -84,7 +84,7 @@ export const TournamentRepository = {
         // Get the tournament participants
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENT_PARTICIPANTS)
-            .select('user_id')
+            .select('user_id, seed, placement, eliminated, user:user_id(username, avatar_url, elo_rating)')
             .eq('tournament_id', tournamentId);
 
         // check if success

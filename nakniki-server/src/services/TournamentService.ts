@@ -5,13 +5,19 @@ import { TournamentParticipantRepository } from '../repositories/TournamentParti
 import { TournamentMatchesRepository } from '../repositories/TournamentMatchesRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { supabase } from '../lib/supabase';
-import { TournamentStatus, GAME_CONSTANTS as G, PlayerRole } from '@nakniki/shared';
+import { TournamentStatus, GameStatus, SOCKET_EVENTS as S,  PlayerRole, GAME_CONSTANTS as G } from '@nakniki/shared';
+import { Server } from 'socket.io';
 
 export class TournamentService {
     private gameManager: GameManager;
+    private io: Server | null = null;
 
     constructor(gameManager: GameManager) {
         this.gameManager = gameManager;
+    }
+    
+    setIo(io: Server) {
+        this.io = io;
     }
 
     // create a new tournament and return its id
@@ -162,6 +168,31 @@ export class TournamentService {
         session.dbMatchId = await MatchRepository.createMatch( gameId, tournamentMatch.player_1_id, tournamentMatch.player_2_id, false);    
         // Update the tournament_matches table with the game session ID
         await TournamentMatchesRepository.startTournamentMatch(tMatchId, session.dbMatchId);
+        // tell both players their match exists and where to go
+        this.io?.to(tournamentMatch.player_1_id).to(tournamentMatch.player_2_id)
+        .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId });
+
+        // forfeit the match if both players haven't checked in within the time limit
+        session.lobbyTimeout = setTimeout(async () => {
+            const checkSession = this.gameManager.getSession(gameId);
+            if (!checkSession || checkSession.game.status !== GameStatus.WAITING) return;
+
+            // whoever showed up wins; if neither did, player 1 advances arbitrarily
+            const p1Here = checkSession.sockets[PlayerRole.P1] !== null;
+            const p2Here = checkSession.sockets[PlayerRole.P2] !== null;
+            const winnerId = p2Here && !p1Here ? tournamentMatch.player_2_id : tournamentMatch.player_1_id;
+
+            try {
+                // close the real match as abandoned and advance the bracket
+                await MatchRepository.abandonMatch(checkSession.dbMatchId!, winnerId);
+                await this.advancePlayer(tMatchId, winnerId);
+                this.io?.to(gameId).emit(S.SERVER.GAME_ABANDONED);
+            } catch (error) {
+                console.error("Failed to forfeit unstarted tournament match:", error);
+            } finally {
+                this.gameManager.deleteSession(gameId);
+            }
+        }, G.LOBBY_TIMEOUT);
     }
 
     async getTournamentDetails(tournamentId: string) {

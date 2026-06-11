@@ -3,11 +3,12 @@ import { AIHandlers } from './ai.handler';
 import { socketAuthMiddleware } from '../middleware/socketAuthMiddleware';
 import { MultiplayerHandlers } from './multiplayer.handler';
 import { SOCKET_EVENTS as S } from '@nakniki/shared';
-import { multiplayerService, aiService} from '../services';
+import { multiplayerService, aiService, tournamentService } from '../services';
 
 
 export const setupSockets = (io: Server) => {
 
+    tournamentService.setIo(io);
     // add auth middleware
     io.use(socketAuthMiddleware);
 
@@ -16,6 +17,9 @@ export const setupSockets = (io: Server) => {
         // connect the user
         const username = socket.data.user?.user_metadata?.username || "Player";
         console.log(`Connected: ${username} (${socket.id})`);
+
+        const userId = socket.data.user?.id;
+        if (userId) socket.join(userId);
 
         AIHandlers(io, socket, aiService);
         MultiplayerHandlers(io, socket, multiplayerService);
