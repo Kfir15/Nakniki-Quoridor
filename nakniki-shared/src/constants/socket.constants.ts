@@ -14,6 +14,7 @@ export const SOCKET_EVENTS = {
         MP_GAME_TIMEOUT: 'mp_game_timeout',
         MP_ABANDON_GAME: 'mp_abandon_game',
         request_players_info: 'request_players_info',
+        JOIN_TOURNAMENT_MATCH: 'join_tournament_match',
     },
     // events sent from server to client
     SERVER: {
@@ -28,6 +29,7 @@ export const SOCKET_EVENTS = {
         LOBBY_ERROR: 'lobby_error',
         PUBLIC_LOBBIES_LIST: 'public_lobbies_list',
         players_info_update: 'players_info_update',
+        TOURNAMENT_MATCH_READY: 'tournament_match_ready',
     },
     // built in socket io events
     CORE: {

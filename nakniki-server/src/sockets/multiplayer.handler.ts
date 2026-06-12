@@ -67,6 +67,36 @@ export const MultiplayerHandlers = (io: Server, socket: Socket, multiplayerServi
         }
     })
 
+    // check in to a tournament game
+    socket.on(S.CLIENT.JOIN_TOURNAMENT_MATCH, async (data: { gameId: string }) => {
+        try {
+            const game = await multiplayerService.joinTournamentGame(userId, socket.id, data.gameId);
+            if (!game) {
+                socket.emit(S.SERVER.LOBBY_ERROR, { message: "Tournament match not found, or you are not a player in it." });
+                return;
+            }
+
+            // wire this connection into the game's room + the quit logic
+            activeLobbyCode = data.gameId;
+            socket.join(data.gameId);
+
+            // confirm to the player who just checked in
+            socket.emit(S.SERVER.LOBBY_JOINED, { lobbyCode: data.gameId, gameId: data.gameId, state: game.state });
+
+            // if that was the second player, the game is now live — tell both
+            if (game.started) {
+                io.to(data.gameId).emit(S.SERVER.GAME_STARTED, { gameId: data.gameId, state: game.state });
+            }
+
+            // send player profiles to everyone in the game
+            const players = await multiplayerService.getLobbyPlayers(data.gameId);
+            io.to(data.gameId).emit(S.SERVER.players_info_update, players);
+
+        } catch (error) {
+            socket.emit(S.SERVER.ERROR, { message: "Failed to join tournament match." });
+        }
+    });
+
     // send players info
     socket.on(S.CLIENT.request_players_info, async (data: { gameId: string }) => {
         try {

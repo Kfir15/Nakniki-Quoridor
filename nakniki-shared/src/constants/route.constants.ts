@@ -18,5 +18,12 @@ export const ROUTE_CONSTANTS = {
         ROOT: '/matches',
         HISTORY: '/history',
         DETAILS: '/:id',
+    },
+    TOURNAMENTS: {
+        ROOT: '/tournaments',
+        LIST: '/',
+        CREATE: '/',
+        DETAILS: '/:id',
+        JOIN: '/:id/join',
     }
 } as const;

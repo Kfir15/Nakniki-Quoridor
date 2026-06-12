@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import matchRoutes from './match.routes';
+import tournamentRoutes from './tournament.routes'
 import { ROUTE_CONSTANTS as R } from '@nakniki/shared';
 
 const router = Router();
@@ -9,5 +10,6 @@ const router = Router();
 router.use(R.AUTH.ROOT, authRoutes);
 router.use(R.USERS.ROOT, userRoutes);
 router.use(R.MATCHES.ROOT, matchRoutes);
+router.use(R.TOURNAMENTS.ROOT, tournamentRoutes);
 
 export default router;

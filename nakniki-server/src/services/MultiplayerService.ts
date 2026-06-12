@@ -4,13 +4,16 @@ import { EloService } from './EloService';
 import { ActionManager } from './ActionManager';
 import { PlayerRole, GameStatus, Orientation, GameState, Position, GAME_CONSTANTS as G } from '@nakniki/shared';
 import { UserRepository } from '../repositories/UserRepository';
+import { TournamentService } from '../services/TournamentService'
 type ActionType = typeof G.ACTION_TYPES[keyof typeof G.ACTION_TYPES];
 
 export class MultiplayerService {
     private gameManager: GameManager;
+    private tournamentService: TournamentService;
 
-    constructor(gameManager: GameManager) {
+    constructor(gameManager: GameManager, tournamentService: TournamentService) {
         this.gameManager = gameManager;
+        this.tournamentService = tournamentService;
     }
 
     // craete new lobby
@@ -82,6 +85,37 @@ export class MultiplayerService {
             gameId: lobbyCode,
             state: session.game.getState()
         };
+    }
+
+    
+    // A function to add a player to a tournament game (not just a tournament_match instance)
+    async joinTournamentGame(userId: string, socketId: string, gameId: string) {
+        const session = this.gameManager.getSession(gameId);
+        // must exist and actually be a tournament game
+        if (!session || !session.tournamentMatchId) return null;
+
+        // checking which player is this user, if none then kick the user from the match
+        let role: PlayerRole | null = null;
+        if (session.userIds[PlayerRole.P1] === userId) role = PlayerRole.P1;
+        else if (session.userIds[PlayerRole.P2] === userId) role = PlayerRole.P2;
+        if (!role) return null;
+
+        // attach this connection to the session
+        session.sockets[role] = socketId;
+
+        // start the clock only when both players have checked in
+        const bothPresent =
+            session.sockets[PlayerRole.P1] !== null &&
+            session.sockets[PlayerRole.P2] !== null;
+        if (bothPresent && session.game.status === GameStatus.WAITING) {
+            // both players showed up — cancel the no-show forfeit
+            if (session.lobbyTimeout) {
+                clearTimeout(session.lobbyTimeout);
+                session.lobbyTimeout = undefined;
+            }
+            session.game.startGame();
+        }
+    return { state: session.game.getState(), started: bothPresent };
     }
 
     // find public lobbies
@@ -209,9 +243,12 @@ export class MultiplayerService {
             // insert the winner and the actions
             await MatchRepository.abandonMatch(session.dbMatchId, winnerDbId);
             await ActionManager.uploadActions(session);
+            if (session.tournamentMatchId && winnerDbId) {
+                await this.tournamentService.advancePlayer(session.tournamentMatchId, winnerDbId);
+            }
 
-            // update players stats after the game
-            if (winnerDbId && loserDbId) {
+            // update players stats after the game, only if not a tournament match
+            if (winnerDbId && loserDbId && !session.tournamentMatchId) {
                 await EloService.updateMatchStats(winnerDbId, loserDbId);
             }
         } catch (error) {
@@ -257,9 +294,12 @@ export class MultiplayerService {
             // finish the game in DB and also insert the actions
             await MatchRepository.finishMatch(session.dbMatchId, winnerDbId);
             await ActionManager.uploadActions(session);
+            if (session.tournamentMatchId && winnerDbId) {
+                await this.tournamentService.advancePlayer(session.tournamentMatchId, winnerDbId);
+            }
 
-            // update players stats after the game
-            if (winnerDbId && loserDbId) {
+            // update players stats after the game, only if not a tournament match
+            if (winnerDbId && loserDbId && !session.tournamentMatchId) {
                 await EloService.updateMatchStats(winnerDbId, loserDbId);
             }
         } catch (error) {
