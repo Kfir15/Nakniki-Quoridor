@@ -23,7 +23,7 @@ export default function RegisteredNavbar({ user, logOut }: Props) {
         >
             <div className="rn-top-line" />
 
-            <Flex align="center" justify="between" px="6" style={{ width: '100%', maxWidth: '1800px', position: 'relative' }}>
+            <Flex align="center" justify="between" px="6" style={{ width: '100%', position: 'relative' }}>
 
                 {/* nakiniki logo */}
                 <BrandLogo />
