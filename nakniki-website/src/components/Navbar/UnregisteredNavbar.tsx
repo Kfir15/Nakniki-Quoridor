@@ -18,7 +18,7 @@ export default function UnregisteredNavbar() {
         >
             <div className="un-top-line" />
 
-            <Flex align="center" justify="between" px="6" style={{ width: '100%', maxWidth: '1800px' }}>
+            <Flex align="center" justify="between" px="6" style={{ width: '100%' }}>
 
                 {/* nakniki logo */}
                 <BrandLogo />
