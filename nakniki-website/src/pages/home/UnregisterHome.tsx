@@ -60,11 +60,17 @@ export default function UnregisterHome() {
     const handleSignUpClick = () => navigate(R.SIGNUP);
 
     return (
-        <Box className="uh-root">
+        <Box style={{
+            width: '100%',
+            minHeight: '85vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+        }}>
             <BoardBackground />
 
             <Container size="3" style={{ position: 'relative', zIndex: 10 }}>
-                {/* whole hero fades up on load */}
                 <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -74,7 +80,6 @@ export default function UnregisterHome() {
 
                         <img src="/nakniki-logo.png" alt="Nakniki" className="uh-logo" />
 
-                        {/* NAKNIKI (white) QUORIDOR (red LED) */}
                         <Text size="9" weight="bold" className="uh-title">
                             <span className="uh-title-white">NAKNIKI</span>{' '}
                             <span className="uh-title-red">QUORIDOR</span>
