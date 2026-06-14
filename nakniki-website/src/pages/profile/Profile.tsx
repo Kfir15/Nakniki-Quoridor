@@ -4,10 +4,10 @@ import ProfileHeader from '../../components/profile/ProfileHeader';
 // TEMPORARY mock data so we can see the header while building it.
 // Replace with real fetched data (getUser / getUserRank) once the visuals look right.
 const MOCK = {
-    name: 'kfir',
-    email: 'kfir@nakniki.test',
+    name: 'Tyrone',
+    email: 'Tyrone@Tyrone.Tyrone',
     date: '2026',
-    rankData: { isTop: false, rank: '37' },
+    rankData: { isTop: false, rank: '100' },
     avatarURL: null,
 };
 

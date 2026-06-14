@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 import RankBadge from '../RankBadge';
 import AnimatedButton from '../AnimatedButton';
+import { GearIcon } from "@radix-ui/react-icons";
 import { IconButton, Box, Avatar, Flex, Text } from "@radix-ui/themes";
 
 interface HeaderProps {
@@ -37,8 +38,12 @@ export default function ProfileHeader( {name, email, date, rankData, hero = true
                                 </Text>
                             
                         </Flex>
-                        <Flex direction="column" gap="4">
-                            <AnimatedButton onClick={onClick}> Edit Profile </AnimatedButton>
+                        <Flex direction="column" gap="4" align="center">
+                            <AnimatedButton onClick={onClick} size="3"> 
+                                <Flex align="center" gap="4" style={{color: "white"}}>
+                                    <GearIcon></GearIcon>
+                                    Edit Profile </Flex>
+                                </AnimatedButton>
                             <RankBadge rankData={rankData} hero={hero}></RankBadge>
                         </Flex>
                         
