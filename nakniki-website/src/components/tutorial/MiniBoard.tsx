@@ -1,4 +1,4 @@
-import { PlayerRole, Orientation } from '@nakniki/shared';
+import { PlayerRole, Orientation } from '../../constants/tutorial.constants';
 import Pawn from '../game/Pawn';
 
 // a small, static, declarative board for the tutorial.

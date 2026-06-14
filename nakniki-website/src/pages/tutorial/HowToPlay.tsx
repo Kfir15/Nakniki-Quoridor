@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlayerRole, Orientation } from '@nakniki/shared';
+import { PlayerRole, Orientation } from '../../constants/tutorial.constants';
 import BoardBackground from '../../components/home/register-home/BoardBackground';
 import MiniBoard from '../../components/tutorial/MiniBoard';
 import { ROUTES as R } from '../../constants/routes.constants';
