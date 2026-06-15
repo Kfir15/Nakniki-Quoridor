@@ -22,7 +22,9 @@ const MOCK_STATS = {
     p1Wins: 12,
     p2Games: 17,
     p2Wins: 8,
-    nemesis: { pfp: undefined, name: 'Kfir', wins: 2, losses: 6 },
+    results: ['W', 'L', 'W', 'W', 'L'] as ('W' | 'L')[],   // oldest -> newest
+    // set this to `null` to test the "no rival yet" empty state
+    nemesis: { name: 'Marinus Maximus', wins: 2, losses: 6 },
 };
 
 export default function Profile() {
@@ -41,13 +43,13 @@ export default function Profile() {
 
             <Flex mt="5" justify="center">
                 <ProfileStats
-                    ELO={MOCK_STATS.ELO}
                     totalGames={MOCK_STATS.totalGames}
                     totalWins={MOCK_STATS.totalWins}
                     p1Games={MOCK_STATS.p1Games}
                     p1Wins={MOCK_STATS.p1Wins}
                     p2Games={MOCK_STATS.p2Games}
                     p2Wins={MOCK_STATS.p2Wins}
+                    results={MOCK_STATS.results}
                     nemesis={MOCK_STATS.nemesis}
                 />
             </Flex>
