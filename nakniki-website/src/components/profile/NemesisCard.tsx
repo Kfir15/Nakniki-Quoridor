@@ -16,7 +16,7 @@ export default function NemesisCard({ nemesis }: { nemesis: NemesisData | null }
         return (
             <Flex direction="column" align="center" gap="1" style={{ padding: '24px 32px' }}>
                 <Text size="3" weight="bold" color="gray">No rival yet</Text>
-                <Text size="2" color="gray">Go lose a some games, Nakniki-noob 🌭</Text>
+                <Text size="2" color="gray">Go lose some games, Nakniki-noob 🌭</Text>
             </Flex>
         );
     }
