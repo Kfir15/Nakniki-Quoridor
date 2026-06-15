@@ -34,6 +34,7 @@ export const UI_CONSTANTS = {
             WIN: '#22c55e',
             LOSE: '#ef4444',
             DRAW: '#9ca3af',
+            GOLD: '#eadf41',
         }
     },
 

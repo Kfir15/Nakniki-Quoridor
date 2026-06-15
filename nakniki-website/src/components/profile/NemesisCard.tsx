@@ -8,10 +8,10 @@ export interface NemesisData {
     losses: number;
 }
 
-const ORANGE = '#f97316';   // the Nakniki-God orange — fitting for a rival
+const ORANGE = '#f97316';
 
 export default function NemesisCard({ nemesis }: { nemesis: NemesisData | null }) {
-    // empty state — no rival yet
+    // empty state in case of no rival
     if (!nemesis) {
         return (
             <Flex direction="column" align="center" gap="1" style={{ padding: '24px 32px' }}>
@@ -32,7 +32,7 @@ export default function NemesisCard({ nemesis }: { nemesis: NemesisData | null }
                 background: `radial-gradient(circle at 28% 30%, ${ORANGE}1f, transparent 70%)`,
             }}
         >
-            {/* big glowing avatar */}
+            {/* glowing avatar */}
             <Avatar
                 src={nemesis.pfp || undefined}
                 fallback={nemesis.name.charAt(0).toUpperCase()}
@@ -41,7 +41,7 @@ export default function NemesisCard({ nemesis }: { nemesis: NemesisData | null }
                 style={{ boxShadow: `0 0 28px ${ORANGE}aa`, border: `2px solid ${ORANGE}` }}
             />
 
-            {/* name column — grandiose, flame-flickering */}
+            {/* glowing name column */}
             <Flex direction="column" gap="1">
                 <Text size="1" weight="bold" style={{ color: ORANGE, opacity: 0.7, letterSpacing: '3px' }}>
                     YOUR NEMESIS
@@ -67,7 +67,7 @@ export default function NemesisCard({ nemesis }: { nemesis: NemesisData | null }
                 </motion.div>
             </Flex>
 
-            {/* record — its own column */}
+            {/* column for record */}
             <Flex direction="column" align="center" gap="1" style={{ marginLeft: '8px' }}>
                 <Text style={{ fontSize: '30px', fontWeight: 900, color: 'white', lineHeight: 1 }}>
                     {nemesis.wins}-{nemesis.losses}

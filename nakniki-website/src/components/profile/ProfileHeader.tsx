@@ -19,6 +19,7 @@ interface HeaderProps {
 export default function ProfileHeader( {name, email, date, rankData, elo, hero = true, avatarURL, onClick}: HeaderProps ) {
     return (
        <Box style={{
+            width: '100%',
             backgroundColor: 'rgba(15, 15, 15, 0.6)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -50,8 +51,8 @@ export default function ProfileHeader( {name, email, date, rankData, elo, hero =
                                 
                             </Flex>
                             <Flex direction="column" gap="4" align="center">
-                                <EloBadge elo={elo} hero={hero} showLabel={false}></EloBadge>
                                 <RankBadge rankData={rankData} hero={hero}></RankBadge>
+                                <EloBadge elo={elo} hero={hero} showLabel={false}></EloBadge>   
                             </Flex>
                             <Flex>
                                 <AnimatedButton onClick={onClick} size="3"> 
@@ -67,4 +68,3 @@ export default function ProfileHeader( {name, email, date, rankData, elo, hero =
         
     );
 }
-// Need: profile picture, name, email, date joined, rank, edit button

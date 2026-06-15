@@ -1,9 +1,8 @@
-//needed: ELO, W/L ratio, W/L for P1, W/L for P2, Nemesis (pfp, name, W/L)
-
 import { Flex, Box } from "@radix-ui/themes";
 import StatCard from "./StatCard";
 import NemesisCard, { type NemesisData } from "./NemesisCard";
 import FormCard from "./FormCard";
+import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface StatsProps {
     totalGames: number;
@@ -17,9 +16,9 @@ interface StatsProps {
 }
 
 function winRateColor(winRate: number): string {
-    if (winRate > 50) return '#22c55e';
-    if (winRate < 50) return '#ef4444';
-    return '#9ca3af';                    
+    if (winRate > 50) return UI.COLORS.PROFILE.WIN;
+    if (winRate < 50) return UI.COLORS.PROFILE.LOSE;
+    return UI.COLORS.PROFILE.DRAW;                    
 }
 
 export default function ProfileStats( { totalGames, totalWins, p1Games, p1Wins, p2Games, p2Wins, results, nemesis }: StatsProps ) {
@@ -31,6 +30,7 @@ export default function ProfileStats( { totalGames, totalWins, p1Games, p1Wins, 
     
     return (
         <Box style={{
+            width: '100%',
             backgroundColor: 'rgba(15, 15, 15, 0.6)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
