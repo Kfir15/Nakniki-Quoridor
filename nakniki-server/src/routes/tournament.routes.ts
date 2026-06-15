@@ -7,6 +7,7 @@ const router = Router();
 
 router.get(R.TOURNAMENTS.LIST, authenticateUser, TournamentController.listOpenTournaments);
 router.post(R.TOURNAMENTS.CREATE, authenticateUser, TournamentController.createTournament);
+router.get(R.TOURNAMENTS.MINE, authenticateUser, TournamentController.getMyTournaments);   // must be BEFORE /:id
 router.get(R.TOURNAMENTS.DETAILS, authenticateUser, TournamentController.getTournamentDetails);
 router.post(R.TOURNAMENTS.JOIN, authenticateUser, TournamentController.joinTournament);
 

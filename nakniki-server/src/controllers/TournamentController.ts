@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import { tournamentService } from '../services'
+import { TournamentRepository } from '../repositories/TournamentRepository';
 
 export const TournamentController = {
     async createTournament(req: Request, res: Response) {
@@ -83,6 +84,22 @@ export const TournamentController = {
 
         } catch (error: any) {
             return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message});
+        }
+    },
+
+    async getMyTournaments(req: Request, res: Response) {
+        // the tournaments the logged-in user has participated in
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                return res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+            }
+
+            const tournaments = await TournamentRepository.getUserTournaments(userId);
+            return res.status(StatusCodes.OK).json(tournaments);
+
+        } catch (error: any) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
         }
     },
 }
