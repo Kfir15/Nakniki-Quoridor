@@ -1,4 +1,5 @@
 import RankBadge from '../RankBadge';
+import EloBadge from "../EloBadge";
 import AnimatedButton from '../AnimatedButton';
 import { GearIcon } from "@radix-ui/react-icons";
 import { Avatar, Flex, Text, Box } from "@radix-ui/themes";
@@ -9,12 +10,13 @@ interface HeaderProps {
     email: string;
     date: string;
     rankData: any;
+    elo: number
     hero: boolean;
     avatarURL: string | null;
     onClick?: () => void;
 }
 
-export default function ProfileHeader( {name, email, date, rankData, hero = true, avatarURL, onClick}: HeaderProps ) {
+export default function ProfileHeader( {name, email, date, rankData, elo, hero = true, avatarURL, onClick}: HeaderProps ) {
     return (
        <Box style={{
             backgroundColor: 'rgba(15, 15, 15, 0.6)',
@@ -48,12 +50,15 @@ export default function ProfileHeader( {name, email, date, rankData, hero = true
                                 
                             </Flex>
                             <Flex direction="column" gap="4" align="center">
+                                <EloBadge elo={elo} hero={hero} showLabel={false}></EloBadge>
+                                <RankBadge rankData={rankData} hero={hero}></RankBadge>
+                            </Flex>
+                            <Flex>
                                 <AnimatedButton onClick={onClick} size="3"> 
                                     <Flex align="center" gap="4" style={{color: "white"}}>
                                         <GearIcon></GearIcon>
                                         Edit Profile </Flex>
                                     </AnimatedButton>
-                                <RankBadge rankData={rankData} hero={hero}></RankBadge>
                             </Flex>
                             
             </Flex>

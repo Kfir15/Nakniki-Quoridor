@@ -4,8 +4,8 @@ import { getEloTier } from '../constants/elo.constants';
 
 interface EloBadgeProps {
     elo: number;
-    hero?: boolean;       // bigger, glowing version for the profile header
-    showLabel?: boolean;  // show the tier name (e.g. "NAKNIKI-GOD") next to the number
+    hero?: boolean;       // affects size, true means bigger
+    showLabel?: boolean;  // show the tier name
 }
 
 export default function EloBadge({ elo, hero = false, showLabel = true }: EloBadgeProps) {
@@ -22,8 +22,8 @@ export default function EloBadge({ elo, hero = false, showLabel = true }: EloBad
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: hero ? '10px' : '6px',
-                color: tier.color,                       // also tints the icons (they use currentColor)
-                backgroundColor: `${tier.color}1f`,      // ~12% tint of the tier color
+                color: tier.color,
+                backgroundColor: `${tier.color}1f`,
                 border: `1px solid ${tier.color}`,
                 padding: hero ? '8px 22px' : '4px 12px',
                 fontSize: hero ? '22px' : '14px',
@@ -33,7 +33,7 @@ export default function EloBadge({ elo, hero = false, showLabel = true }: EloBad
             }}
         >
             <Icon size={hero ? 24 : 16} />
-            {elo}
+            ELO: {elo}
             {showLabel && <span style={{ opacity: 0.85 }}>{tier.label.toUpperCase()}</span>}
         </Badge>
     );
