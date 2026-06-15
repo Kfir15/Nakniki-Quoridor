@@ -25,8 +25,6 @@ const boxStyle: React.CSSProperties = {
 
 export default function TournamentCard({ played, won }: TournamentCardProps) {
     return (
-        // height: 100% so the column fills the row's stretched height (matching ProfileStats);
-        // gap creates the space between the two boxes
         <Flex direction="column" gap="4" style={{ height: '100%' }}>
             {/* tournaments played */}
             <Box style={boxStyle}>
@@ -37,7 +35,7 @@ export default function TournamentCard({ played, won }: TournamentCardProps) {
                 </Text>
             </Box>
 
-            {/* tournaments won — gold trophy */}
+            {/* tournaments won */}
             <Box style={{ ...boxStyle, border: `1px solid ${UI.COLORS.PROFILE.GOLD}55` }}>
                 <Trophy size={28} color={UI.COLORS.PROFILE.GOLD} />
                 <Text size="7" weight="bold" style={{ color: UI.COLORS.PROFILE.GOLD }}>{won}</Text>

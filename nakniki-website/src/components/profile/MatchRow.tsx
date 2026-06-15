@@ -7,9 +7,9 @@ export interface MatchRowData {
     opponentName: string;
     opponentAvatar: string | null;
     youWon: boolean;
-    isPlayerOne: boolean;   // were you player 1? drives the VS ordering
+    isPlayerOne: boolean;
     isAI: boolean;
-    date: string;           // created_at ISO string
+    date: string;
 }
 
 // compact "x ago" formatter
@@ -26,8 +26,6 @@ function timeAgo(iso: string): string {
 export default function MatchRow({ match, onAnalyze }: { match: MatchRowData; onAnalyze: () => void }) {
     const { youName, opponentName, opponentAvatar, youWon, isPlayerOne, isAI, date } = match;
     const color = youWon ? UI.COLORS.PROFILE.WIN : UI.COLORS.PROFILE.LOSE;
-
-    // order the VS line by who was player 1; bold whichever side is "you"
     const leftName = isPlayerOne ? youName : opponentName;
     const rightName = isPlayerOne ? opponentName : youName;
 
@@ -42,7 +40,6 @@ export default function MatchRow({ match, onAnalyze }: { match: MatchRowData; on
                 padding: '22px 22px',
             }}
         >
-            {/* opponent avatar */}
             <Avatar
                 src={opponentAvatar || undefined}
                 fallback={opponentName.charAt(0).toUpperCase()}
@@ -50,7 +47,6 @@ export default function MatchRow({ match, onAnalyze }: { match: MatchRowData; on
                 radius="full"
             />
 
-            {/* P1 vs P2 — your name is bold */}
             <Flex align="center" justify="center" gap="2" style={{ flex: 1, minWidth: 0 }}>
                 <Text size="4" weight={isPlayerOne ? 'bold' : 'regular'} truncate>{leftName}</Text>
                 <Text size="5" color="orange">VS</Text>
@@ -58,17 +54,12 @@ export default function MatchRow({ match, onAnalyze }: { match: MatchRowData; on
                 {isAI && <Badge color="gray" variant="soft" size="1">AI</Badge>}
             </Flex>
 
-            {/* result */}
             <Badge size="3" color={youWon ? 'green' : 'red'} variant="soft" radius="full">
                 {youWon ? 'WON' : 'LOST'}
             </Badge>
-
-            {/* when */}
             <Text size="3" color="gray" style={{ minWidth: '64px', textAlign: 'right' }}>
                 {timeAgo(date)}
             </Text>
-
-            {/* analyze (onClick stubbed for now → will route to the analyze page later) */}
             <Button size="3" variant="soft" onClick={onAnalyze}>Analyze</Button>
         </Flex>
     );
