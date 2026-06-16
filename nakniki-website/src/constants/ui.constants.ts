@@ -25,6 +25,16 @@ export const UI_CONSTANTS = {
         },
         WALL: {
             BASE: 'rgba(128, 0, 0, 1.0)',      
+        },
+        PROFILE: {
+            BG: {
+                WIN: 'rgba(34,197,94,0.15)',
+                LOSE: 'rgba(239,68,68,0.15)',
+            },
+            WIN: '#22c55e',
+            LOSE: '#ef4444',
+            DRAW: '#9ca3af',
+            GOLD: '#eadf41',
         }
     },
 

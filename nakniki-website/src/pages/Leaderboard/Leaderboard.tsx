@@ -10,11 +10,8 @@ import LeaderboardTable from '../../components/Leaderboard/LeaderboardTable';
 import LeaderboardBackground from '../../components/Leaderboard/LeaderboardBackground';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { HttpStatus } from '../../constants/http.constants';
+import { type RankData } from '../../constants/ranks.constants';
 
-interface RankData {
-    isTop: boolean;
-    rank: string;
-}
 
 export default function Leaderboard() {
     const { user } = useUser();

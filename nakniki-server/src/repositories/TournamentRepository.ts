@@ -111,7 +111,25 @@ export const TournamentRepository = {
             .from(DB.TABLES.TOURNAMENTS)
             .select('id, name')
             .eq('status', TournamentStatus.REGISTERING);
-        
+
+        // check if success
+        if (error) throw error;
+
+        return data;
+    },
+
+    async getUserTournaments(userId: string) {
+        // every tournament this user joined, with the tournaments info
+        const { data, error } = await supabase
+            .from(DB.TABLES.TOURNAMENT_PARTICIPANTS)
+            .select(`
+                placement,
+                eliminated,
+                tournament:tournament_id(id, name, status, size, winner_id, created_at, finished_at)
+            `)
+            .eq('user_id', userId)
+            .order('joined_at', { ascending: false });
+
         // check if success
         if (error) throw error;
 

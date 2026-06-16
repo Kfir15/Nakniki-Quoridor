@@ -176,6 +176,7 @@ export const MatchRepository = {
                 created_at: match.created_at,
                 finished_at: match.finished_at,
                 winner_id: match.winner_id,
+                is_player_1: isPlayer1,
                 user_data: user,
                 opponent_data: {
                     ...opponent,

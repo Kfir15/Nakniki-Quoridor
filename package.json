@@ -5,5 +5,12 @@
         "nakniki-shared",
         "nakniki-server",
         "nakniki-website"
-    ]
+    ],
+    "dependencies": {
+        "react-icons": "^5.6.0"
+    },
+    "overrides": {
+        "react": "19.2.4",
+        "react-dom": "19.2.4"
+    }
 }
