@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 import EditProfileDialog from '../../components/profile/EditProfileDialogue';
+import ProfileBackground from '../../components/profile/ProfileBackground';
 
 function findNemesis(history: any[]): NemesisData | null {
     // save every unique opponent - not including AI
@@ -105,6 +106,7 @@ export default function ProfilePage() {
         
     return (
             <Container size="4" p="5">
+                <ProfileBackground></ProfileBackground>
                 <ProfileHeader
                     name={profile.username}
                     email={user?.email ?? 'No mail detected'}

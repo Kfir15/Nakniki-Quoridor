@@ -37,7 +37,13 @@ export default function MatchRow({ match, onAnalyze }: { match: MatchRowData; on
                 background: 'rgba(0, 0, 0, 0.4)',
                 border: `1px solid ${color}`,
                 borderRadius: '12px',
-                padding: '22px 22px',
+                padding: '26px 26px',
+                width: '100%',
+                backgroundColor: 'rgba(15, 15, 15, 0.6)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: 'inset 0 6px 20px rgba(255,255,255,0.02)',
+                
             }}
         >
             <Avatar
