@@ -1,6 +1,5 @@
 import RankBadge from '../RankBadge';
 import EloBadge from "../EloBadge";
-import AnimatedButton from '../AnimatedButton';
 import { GearIcon } from "@radix-ui/react-icons";
 import { Avatar, Flex, Text, Box, Button } from "@radix-ui/themes";
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';

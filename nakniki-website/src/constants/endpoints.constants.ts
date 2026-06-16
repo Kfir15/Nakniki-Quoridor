@@ -7,6 +7,7 @@ export const ENDPOINTS = {
         LEADERBOARD: '/users/leaderboard',
         RANK: '/users/rank',
         PROFILE: '/users/profile',
+        UPDATE: '/users/update',
         SEARCH: (query: string) => `/users/search?q=${query}`,
         H2H_STATS: (userId: string) => `/users/h2h/${userId}`,
     },

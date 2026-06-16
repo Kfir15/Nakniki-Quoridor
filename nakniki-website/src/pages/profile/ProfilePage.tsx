@@ -11,6 +11,7 @@ import { useUser } from '../../services/UserContext';
 import { useState, useEffect } from 'react';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
+import EditProfileDialog from '../../components/profile/EditProfileDialogue';
 
 function findNemesis(history: any[]): NemesisData | null {
     // save every unique opponent - not including AI
@@ -47,35 +48,35 @@ export default function ProfilePage() {
     const [history, setHistory] = useState<any[]>([]);
     const [tournaments, setTournaments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [editOpen, setEditOpen] = useState(false);
+    
+    const fetchProfileData = async () => {
+        if (!user?.token) return;
+
+        setIsLoading(true);
+        try {
+            const [profileRes, rankRes, historyRes, tourneyRes] = await Promise.all([
+                sendGet(E.USERS.PROFILE, user.token),
+                sendGet(E.USERS.RANK, user.token),
+                sendGet(E.MATCHES.HISTORY, user.token),
+                sendGet(E.TOURNAMENTS.MINE, user.token),
+            ]);
+
+            // set the data
+            setProfile(profileRes.data);
+            setRank(rankRes.data.rank);
+            setHistory(historyRes.data);
+            setTournaments(tourneyRes.data);
+        } catch (error) {
+            console.error("Failed to load profile data");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-            const fetchProfileData = async () => {
-                if (!user?.token) return;
-    
-                setIsLoading(true);
-                try {
-
-                    const [profileRes, rankRes, historyRes, tourneyRes] = await Promise.all([
-                        sendGet(E.USERS.PROFILE, user.token),
-                        sendGet(E.USERS.RANK, user.token),
-                        sendGet(E.MATCHES.HISTORY, user.token),
-                        sendGet(E.TOURNAMENTS.MINE, user.token),
-                    ]);
-    
-                    // set the data
-                    setProfile(profileRes.data);
-                    setRank(rankRes.data.rank);
-                    setHistory(historyRes.data);
-                    setTournaments(tourneyRes.data);
-                } catch (error) {
-                    console.error("Failed to load profile data");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-    
-            fetchProfileData();
-        }, [user?.token]);
+        fetchProfileData();
+    }, [user?.token]);
 
         if (isLoading) return <LoadingSpinner />;
         if (!profile) return <Text color="red">Couldn't load profile. Try again.</Text>;
@@ -112,7 +113,7 @@ export default function ProfilePage() {
                     elo={profile.elo_rating}
                     hero={true}
                     avatarURL={profile.avatar_url}
-                    onClick={() => alert('edit profile clicked')}
+                    onClick={() => setEditOpen(true)}
                 />
     
                 {/* align="stretch" makes the tournament column stretch to the stats box's height */}
@@ -141,6 +142,14 @@ export default function ProfilePage() {
                     </Text>
                     <MatchList matches={matchRows} onAnalyze={(id) => alert('analyze match ' + id)} />
                 </Flex>
+
+                <EditProfileDialog
+                    open={editOpen}
+                    onOpenChange={setEditOpen}
+                    currentUsername={profile.username}
+                    currentAvatar={profile.avatar_url}
+                    onSaved={fetchProfileData}
+                />
             </Container>
         );
 }
