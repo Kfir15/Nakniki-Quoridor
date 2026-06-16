@@ -7,6 +7,7 @@ import { useUser } from './services/UserContext';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
 import AuthLayout from './components/auth/AuthLayout';
+import HowToPlay from './pages/tutorial/HowToPlay';
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/footer/Footer';
 import Leaderboard from './pages/Leaderboard/Leaderboard';
@@ -49,11 +50,10 @@ export default function App() {
           {/* protected routes */}
           <Route element={<RoutesRequireAuth />}>
             <Route path={R.LEADERBOARD} element={<Leaderboard />} />
-            <Route path={R.HOW_TO_PLAY} element={<div>How To Play Page</div>} />
             <Route path={R.PROFILE_BASE} element={<ProfilePage />} />
+            <Route path={R.HOW_TO_PLAY} element={<HowToPlay/>} />
             <Route path={R.MP_LOBBY} element={<MultiplayerLobby />} />
             <Route path={R.WAITING} element={<WaitingRoom />} />
-
             <Route path={R.GAME} element={<GamePage />} />
           </Route>
 
