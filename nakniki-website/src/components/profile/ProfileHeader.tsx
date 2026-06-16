@@ -2,7 +2,7 @@ import RankBadge from '../RankBadge';
 import EloBadge from "../EloBadge";
 import AnimatedButton from '../AnimatedButton';
 import { GearIcon } from "@radix-ui/react-icons";
-import { Avatar, Flex, Text, Box } from "@radix-ui/themes";
+import { Avatar, Flex, Text, Box, Button } from "@radix-ui/themes";
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 interface HeaderProps {
@@ -59,11 +59,11 @@ export default function ProfileHeader( {name, email, date, rankData, elo, hero =
                                 <EloBadge elo={elo} hero={hero} showLabel={false}></EloBadge>   
                             </Flex>
                             <Flex>
-                                <AnimatedButton onClick={onClick} size="3"> 
+                                <Button variant="soft" onClick={onClick} size="3"> 
                                     <Flex align="center" gap="4" style={{color: "white"}}>
                                         <GearIcon></GearIcon>
                                         Edit Profile </Flex>
-                                    </AnimatedButton>
+                                    </Button>
                             </Flex>
                             
             </Flex>
