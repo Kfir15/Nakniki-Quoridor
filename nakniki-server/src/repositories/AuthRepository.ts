@@ -43,5 +43,13 @@ export const AuthRepository = {
 
         // return  the user data
         return data.user;
+    },
+
+    async updateUserMetadata(userId: string, metadata: { username?: string; avatar_url?: string }) {
+        // try to update user info
+        const { error } = await supabase.auth.admin.updateUserById(userId, {
+            user_metadata: metadata,
+        });
+        if (error) throw error;
     }
 }

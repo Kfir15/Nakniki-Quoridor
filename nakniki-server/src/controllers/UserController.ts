@@ -4,6 +4,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { uploadAvatarToSupabase, deleteOldAvatar } from '../utils/storageHelper';
 import { DB_CONSTANTS as DB } from '../constants/db.constants';
 import { MatchRepository } from '../repositories/MatchRepository';
+import { AuthRepository } from '../repositories/AuthRepository';
 
 export const UserController = {
     async getUser(req: Request, res: Response) {
@@ -58,6 +59,13 @@ export const UserController = {
 
             // try to update the user
             const updatedUser = await UserRepository.updateProfile(userId, { username, avatar_url });
+
+            // update the auth table as well if the first update succeeded
+            await AuthRepository.updateUserMetadata(userId, {
+                username: updatedUser.username,
+                avatar_url: updatedUser.avatar_url,
+            });
+            
             return res.status(StatusCodes.OK).json(updatedUser);
         } catch (error: any) {
             // if this is uniqe name error

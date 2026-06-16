@@ -6,6 +6,7 @@ import { sendPut } from '../../services/api';
 import { compressImage } from '../../services/imageService';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import FormError from '../error/FormError';
+import { supabase } from '../../lib/supabase';
 
 interface EditProfileDialogProps {
     open: boolean;
@@ -72,7 +73,8 @@ export default function EditProfileDialog({
             if (avatarFile) formData.append('avatar', avatarFile);
 
             await sendPut(E.USERS.UPDATE, user?.token, {}, formData);
-
+            // Update the session to update the new user data
+            await supabase.auth.refreshSession()
             onSaved();             // tell to refresh the profile
             onOpenChange(false);   // close the dialog
         } catch (err: any) {
@@ -144,3 +146,4 @@ export default function EditProfileDialog({
         </Dialog.Root>
     );
 }
+
