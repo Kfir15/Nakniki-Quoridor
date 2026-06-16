@@ -48,11 +48,11 @@ export default function ProfileStats( { totalGames, totalWins, p1Games, p1Wins, 
                     <StatCard label="As P1" value={`${p1Wins}-${p1Losses}`} color={winRateColor(rate(p1Wins, p1Games))} />
                     <StatCard label="As P2" value={`${p2Wins}-${p2Losses}`} color={winRateColor(rate(p2Wins, p2Games))} />
                 </Flex>
-                <Flex gap="9" align="center" justify="center">
-                    <NemesisCard nemesis={nemesis}></NemesisCard>
-                </Flex>
                 <Flex justify={"center"}>
                     <FormCard results={results}></FormCard>
+                </Flex>
+                <Flex gap="9" align="center" justify="center">
+                    <NemesisCard nemesis={nemesis}></NemesisCard>
                 </Flex>
         </Box>
     );

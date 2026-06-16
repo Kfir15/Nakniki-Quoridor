@@ -16,6 +16,10 @@ interface HeaderProps {
     onClick?: () => void;
 }
 
+const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
 export default function ProfileHeader( {name, email, date, rankData, elo, hero = true, avatarURL, onClick}: HeaderProps ) {
     return (
        <Box style={{
@@ -41,7 +45,7 @@ export default function ProfileHeader( {name, email, date, rankData, elo, hero =
                                 <Text size="5"><strong>{name}</strong></Text>
                                 <Flex align="center" style={{ opacity: 0.6 }}>
                                     <Text size="1" weight="bold" style={{ letterSpacing: '1px' }}>
-                                        PLAYING SINCE {date.toUpperCase()}
+                                        PLAYING SINCE {formatDate(date)}
                                     </Text>
                                     
                                 </Flex>
