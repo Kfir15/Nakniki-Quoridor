@@ -118,7 +118,7 @@ export const MatchRepository = {
         const { data, error } = await supabase
             .from(DB.TABLES.MATCHES)
             .select(`
-                id, lobby_code, status, is_ai_match, created_at, finished_at, winner_id, player_1_id, player_2_id, is_player_1,
+                id, lobby_code, status, is_ai_match, created_at, finished_at, winner_id, player_1_id, player_2_id,
                 player_1:player_1_id(id, username, avatar_url, elo_rating),
                 player_2:player_2_id(id, username, avatar_url, elo_rating)
             `)
@@ -176,6 +176,7 @@ export const MatchRepository = {
                 created_at: match.created_at,
                 finished_at: match.finished_at,
                 winner_id: match.winner_id,
+                is_player_1: isPlayer1,
                 user_data: user,
                 opponent_data: {
                     ...opponent,

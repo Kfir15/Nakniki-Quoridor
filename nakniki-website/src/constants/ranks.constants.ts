@@ -53,3 +53,8 @@ export const MEDAL_COLORS = {
     SILVER: "#9CA3AF",
     BRONZE: "#B45309"
 } as const;
+
+export interface RankData {
+    isTop: boolean;
+    rank: string;
+}

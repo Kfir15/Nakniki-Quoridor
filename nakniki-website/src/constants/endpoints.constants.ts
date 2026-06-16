@@ -9,5 +9,11 @@ export const ENDPOINTS = {
         PROFILE: '/users/profile',
         SEARCH: (query: string) => `/users/search?q=${query}`,
         H2H_STATS: (userId: string) => `/users/h2h/${userId}`,
-    }
+    },
+    MATCHES: {
+        HISTORY: '/matches/history',
+    },
+    TOURNAMENTS: {
+        MINE: '/tournaments/mine',
+    },
 } as const;

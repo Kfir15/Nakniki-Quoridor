@@ -16,7 +16,7 @@ import WaitingRoom from './pages/lobby/WaitingRoom';
 import RoutesRequireAuth from './components/RoutesRequireAuth';
 import GamePage from './pages/game/GamePage';
 import NotFoundPage from './pages/NotFoundPage';
-import Profile from './pages/profile/Profile';
+import ProfilePage from './pages/profile/ProfilePage';
 
 export default function App() {
   const { user } = useUser();
@@ -50,7 +50,7 @@ export default function App() {
           <Route element={<RoutesRequireAuth />}>
             <Route path={R.LEADERBOARD} element={<Leaderboard />} />
             <Route path={R.HOW_TO_PLAY} element={<div>How To Play Page</div>} />
-            <Route path={R.PROFILE_BASE} element={<Profile />} />
+            <Route path={R.PROFILE_BASE} element={<ProfilePage />} />
             <Route path={R.MP_LOBBY} element={<MultiplayerLobby />} />
             <Route path={R.WAITING} element={<WaitingRoom />} />
 

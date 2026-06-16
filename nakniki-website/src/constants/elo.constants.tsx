@@ -3,13 +3,12 @@ import { GiHotDog } from 'react-icons/gi';
 import type { ElementType } from 'react';
 
 export interface EloTier {
-    min: number;       // lowest ELO that belongs to this tier
+    min: number;
     label: string;
     color: string;
     Icon: ElementType; // any renderable icon component (lucide / emoji wrapper / react-icons)
 }
 
-// ordered low -> high. `min` is the inclusive floor of each band.
 export const ELO_TIERS: EloTier[] = [
     { min: 0,    label: 'Baby',                 color: '#ec4899', Icon: Baby },
     { min: 801,  label: 'Beginner',             color: '#65d16b', Icon: User },
