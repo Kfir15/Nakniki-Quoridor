@@ -17,7 +17,8 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
     const navigate = useNavigate();
     const [elo, setElo] = useState<number>(1200);
     const username = user.user_metadata?.username || 'Player';
-    const avatarUrl = user.user_metadata?.avatar_url || undefined;
+    // Taking the user profile from the users table rather than the auth table
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(user.user_metadata?.avatar_url || undefined);
 
     useEffect(() => {
         // get player profile
@@ -26,6 +27,7 @@ export default function UserProfileDropdown({ user, logOut }: Props) {
                 // send the request
                 const response = await sendGet(E.USERS.PROFILE, user.token);
                 if (response.data?.elo_rating) setElo(response.data.elo_rating);
+                if (response.data?.avatar_url) setAvatarUrl(response.data.avatar_url);
             } catch (error) {
                 console.error("Failed to fetch user Elo");
             }
