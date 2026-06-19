@@ -15,9 +15,9 @@ import { DB_CONSTANTS as DB } from '../constants/db.constants';
 
 // ─── configure here ───────────────────────────────────────────────────
 const PLAYERS = [
-    { email: 'bdavush1@gmail.com', password: 'JR4z28p1Q', targetElo: 2001 },  // 2000+  → Nakniki-God
-    { email: 'tyrone@tyrone.tyrone', password: 'Tyrone1', targetElo: 1704 },  // 1601-2000 → Expert
-    { email: 'nakniki@user.com', password: 'JR4z28p1Q', targetElo: 360  },  // <800   → Baby
+    { email: 'name@gmail.com', password: 'password', targetElo: 2001 },  // 2000+  → Nakniki-God
+    { email: 'name@gmail.com', password: 'password', targetElo: 1704 },  // 1601-2000 → Expert
+    { email: 'name@gmail.com', password: 'password', targetElo: 360  },  // <800   → Baby
 ];
 const MATCHES_TO_GENERATE = 55;
 const STRONGER_WIN_RATE = 0.7;   // chance the higher-target player wins each match
