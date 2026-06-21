@@ -31,7 +31,7 @@ export const useMultiplayerLobby = () => {
 
     // create new lobby
     const createLobby = useCallback((isPublic: boolean) => {
-        // ge tje socket
+        // get the socket
         const socket = socketManager.getSocket();
         if (!socket) return setError("Not connected to server.");
         pendingLobbyType.current = isPublic ? 'public' : 'private';
