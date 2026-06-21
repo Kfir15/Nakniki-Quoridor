@@ -32,7 +32,11 @@ export class TournamentService {
         p_tournament: tournamentId,
         p_user: userId,
     });
-    if (error) throw error;
+    if (error) 
+        if (error.code === '23505') { // Duplicate unique key - meaning a player has attempted to join the same tournament twice
+            throw new Error('You have already joined this tournament.');
+        }
+        throw error;
 
     const tournament = await TournamentRepository.getTournamentById(tournamentId);
     const participants = await TournamentRepository.getAllTournamentParticipants(tournamentId);
