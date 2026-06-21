@@ -21,8 +21,10 @@ export class TournamentService {
     }
 
     // create a new tournament and return its id
-    async createTournament(tSize: number, tName: string): Promise<string> {
-        return await TournamentRepository.createTournament(tSize, tName);
+    async createTournament(tSize: number, tName: string, creatorId: string): Promise<string> {
+        const tournamentId = await TournamentRepository.createTournament(tSize, tName);
+        await this.joinTournament(tournamentId, creatorId);   // creator is also a participant
+        return tournamentId;
     }
 
     // join a tournament as a participant
@@ -32,11 +34,12 @@ export class TournamentService {
         p_tournament: tournamentId,
         p_user: userId,
     });
-    if (error) 
+    if (error) { 
         if (error.code === '23505') { // Duplicate unique key - meaning a player has attempted to join the same tournament twice
             throw new Error('You have already joined this tournament.');
         }
         throw error;
+    }
 
     const tournament = await TournamentRepository.getTournamentById(tournamentId);
     const participants = await TournamentRepository.getAllTournamentParticipants(tournamentId);

@@ -19,7 +19,7 @@ export const TournamentController = {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "size must be 4/8/16 and name is required" });
             }
 
-            const tournamentId = await tournamentService.createTournament(size, name.trim());
+            const tournamentId = await tournamentService.createTournament(size, name.trim(), userId);
             return res.status(StatusCodes.CREATED).json({ id: tournamentId });
 
         } catch (error: any) {
