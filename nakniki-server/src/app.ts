@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { StatusCodes } from 'http-status-codes';
 import appRouter from './routes/app.routes';
 import { setupSockets } from './sockets';
+import { tournamentService } from './services';
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ const PORT = process.env.PORT || 3174;
 
 httpServer.listen(PORT, () => {
     console.log(`✅ Server is sprinting on http://localhost:${PORT}`);
+    // Checks every 15 minutes whether a tournament has been open for too long without starting
+    tournamentService.startStaleSweep();
 });
 
 export default app;

@@ -86,7 +86,7 @@ export class TournamentService {
                     slot,                                                                           // the match's number in the round
                     round === 1 ? tournamentUsers[slot].id : null,                                  // we can only apply participants for the first round of the tournament
                     round === 1 ? tournamentUsers[tournamentUsers.length - slot - 1].id : null,     // same here
-                    slot % 2 + 1                                                              // the position the winner will play from (player 1 or player 2)
+                    slot % 2 + 1                                                                    // the position the winner will play from (player 1 or player 2)
                 );
                 roundMatches.push(id); 
             }
@@ -210,5 +210,13 @@ export class TournamentService {
         ]);
         if (!tournament) throw new Error('Tournament not found');
         return { tournament, participants, matches };
+    }
+
+    startStaleSweep() {
+        setInterval(async () => {
+            const cutoff = new Date(Date.now() - G.TOURNAMENT_TIMEOUT).toISOString();
+            try { await TournamentRepository.cancelStaleTournaments(cutoff); }
+            catch (e) { console.error('stale-tournament sweep failed', e); }
+        }, G.SWEEP_INTERVAL);
     }
 }

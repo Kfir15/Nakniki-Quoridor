@@ -137,5 +137,15 @@ export const TournamentRepository = {
         if (error) throw error;
 
         return data;
-    }
+    },
+
+    // Sets tournaments that have been out for too long to "CANCELLED", to not keep them stale forever
+    async cancelStaleTournaments(cutoffISO: string) {
+    const { error } = await supabase
+        .from(DB.TABLES.TOURNAMENTS)
+        .update({ status: TournamentStatus.CANCELLED })
+        .eq('status', TournamentStatus.REGISTERING)
+        .lt('created_at', cutoffISO);
+    if (error) throw error;
+}
 }
