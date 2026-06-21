@@ -9,6 +9,7 @@ export interface TournamentSummary {
     size: number;
     status: string;
     created_at: string;
+    participant_count: number;
 }
 
 export const useTournamentLobby = () => {

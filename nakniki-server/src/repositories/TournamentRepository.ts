@@ -109,13 +109,16 @@ export const TournamentRepository = {
         // Get all tournaments that can be joined
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENTS)
-            .select('id, name')
+            .select('id, name, size, status, created_at, tournament_participants(count)')
             .eq('status', TournamentStatus.REGISTERING);
 
         // check if success
         if (error) throw error;
 
-        return data;
+        return data.map(t => ({
+            ...t,
+            participant_count: t.tournament_participants?.[0]?.count ?? 0,
+        }));
     },
 
     async getUserTournaments(userId: string) {
