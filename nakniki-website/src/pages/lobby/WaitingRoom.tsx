@@ -82,17 +82,16 @@ function TypewriterLog() {
 
     // the lines
     const pool = [
-        'Establishing secure handshake...',
+        'Establishing secure nakniki-handshake...',
         'Nakniki_OS: STATUS_OK (0x0042)',
-        'Initializing AI heuristics...',
-        'Checking network integrity...',
-        'Syncing minimax threads...',
-        'Searching for challengers...',
-        'AES-256 Tunnel active.',
-        'Broadcasting lobby availability...',
-        'Node: BAR_ILAN_CS_CENTRAL',
-        'Ping: 24ms | Loss: 0%',
-        'Verifying game state V4.0...'
+        'Initializing nakniki-AI heuristics...',
+        'Checking nakniki-network integrity...',
+        'Syncing nakniki-max threads...',
+        'Waiting for nakniki-challenger...',
+        'AES-256 nakniki-tunnel active.',
+        'Node: NAKNIKI_CORE',
+        'Ping: 69ms | Loss: this is loss',
+        'Nakniki-launching the match...'
     ];
 
     useEffect(() => {

@@ -10,4 +10,6 @@ export const ROUTES = {
     MP_LOBBY: '/mp-lobby',
     GAME: '/game/:gameId',
     WAITING: '/waiting/:lobbyType/:gameId',
+    TOURNAMENTS: '/tournaments',
+    JOIN_TOURNAMENT: '/tournaments/:id/join'
 } as const;

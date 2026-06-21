@@ -14,7 +14,7 @@ export default function MultiplayerLobby() {
             width: '100%',
             flexGrow: 1,
             height: '100%',
-            maxHeight: 'calc(100vh - 70px - 80px)',
+            maxHeight: 'calc(100vh - 150px)',
             overflow: 'hidden',
             display: 'flex',
             justifyContent: 'center',

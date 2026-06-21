@@ -79,7 +79,7 @@ export default function ProfilePage() {
         fetchProfileData();
     }, [user?.token]);
 
-        if (isLoading) return <LoadingSpinner />;
+        if (isLoading) return <LoadingSpinner/>;
         if (!profile) return <Text color="red">Couldn't load profile. Try again.</Text>;
 
 
@@ -95,7 +95,7 @@ export default function ProfilePage() {
         const matchRows: MatchRowData[] = history.map(m => ({
             id: m.id,
             youName: m.user_data.username,
-            opponentName:   m.is_ai_match ? UI.DEFAULTS.BOT.NAME : m.opponent_data.username,
+            opponentName: m.is_ai_match ? UI.DEFAULTS.BOT.NAME : m.opponent_data.username,
             opponentAvatar: m.is_ai_match ? UI.DEFAULTS.BOT.AVATAR : (m.opponent_data.avatar_url ?? null),
             youWon: m.winner_id === user?.id,
             isPlayerOne: m.is_player_1,
@@ -120,7 +120,7 @@ export default function ProfilePage() {
     
                 {/* align="stretch" makes the tournament column stretch to the stats box's height */}
                 <Flex mt="5" gap="4" align="stretch">
-                    <Box style={{ flex: '2.3' }}>        {/* stats panel should be 70% of the screen */}
+                    <Box style={{ flex: '2.3' }}>        {/* stats panel is 70% of the screen */}
                         <ProfileStats
                             totalGames={history.length}
                             totalWins={wonMatches.length}

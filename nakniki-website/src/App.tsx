@@ -18,6 +18,7 @@ import RoutesRequireAuth from './components/RoutesRequireAuth';
 import GamePage from './pages/game/GamePage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProfilePage from './pages/profile/ProfilePage';
+import TournamentLobby from './pages/tournament/TournamentLobby'
 
 export default function App() {
   const { user } = useUser();
@@ -55,6 +56,7 @@ export default function App() {
             <Route path={R.MP_LOBBY} element={<MultiplayerLobby />} />
             <Route path={R.WAITING} element={<WaitingRoom />} />
             <Route path={R.GAME} element={<GamePage />} />
+            <Route path={R.TOURNAMENTS} element={<TournamentLobby/>} />
           </Route>
 
         </Routes>
