@@ -26,7 +26,7 @@ export function TournamentActionHub({ createTournament, isCreating }: Props) {
                     {SIZES.map((s) => (
                         <Button key={s} size="2" style={{ flexGrow: 1, cursor: 'pointer' }}
                             variant={size === s ? 'solid' : 'soft'}
-                            color={size === s ? 'yellow' : 'gray'}
+                            color={size === s ? 'gold' : 'gray'}
                             onClick={() => setSize(s)}>
                             {s} players
                         </Button>
@@ -34,7 +34,7 @@ export function TournamentActionHub({ createTournament, isCreating }: Props) {
                 </Flex>
 
                 <Button size="4" disabled={!name.trim() || isCreating}
-                    color="yellow"
+                    color="gold"
                     onClick={() => createTournament(name.trim(), size)}
                     style={{ cursor: 'pointer', justifyContent: 'space-between' }}>
                     <Flex align="center" gap="2"><Trophy size={18} /> Create</Flex>

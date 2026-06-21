@@ -15,10 +15,10 @@ export const ENDPOINTS = {
         HISTORY: '/matches/history',
     },
     TOURNAMENTS: {
-        LIST:    '/tournaments',
-        CREATE:  '/tournaments',
-        MINE:    '/tournaments/mine',
+        LIST: '/tournaments',
+        CREATE: '/tournaments',
+        MINE: '/tournaments/mine',
         DETAILS: (id: string) => `/tournaments/${id}`,
-        JOIN:    (id: string) => `/tournaments/${id}/join`,
+        JOIN: (id: string) => `/tournaments/${id}/join`,
     },
 } as const;

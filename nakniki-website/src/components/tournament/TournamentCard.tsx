@@ -20,7 +20,7 @@ export function TournamentCard({ tournament, onJoin, index }: Props) {
                     <Flex align="center" gap="4">
                         <Flex align="center" justify="center"
                             style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                            <Trophy size={24} color="var(--accent-9)" />
+                            <Trophy size={24} color="orange" />
                         </Flex>
                         <Box>
                             <Text weight="bold" size="4" style={{ display: 'block', marginBottom: 4 }}>
@@ -33,7 +33,7 @@ export function TournamentCard({ tournament, onJoin, index }: Props) {
                         </Box>
                     </Flex>
 
-                    <Button size="3" disabled={isFull}
+                    <Button size="3" color="gold" disabled={isFull}
                         onClick={() => onJoin(tournament.id)}
                         style={{ cursor: 'pointer', borderRadius: 8 }}>
                         <Play size={16} fill="currentColor" style={{ marginRight: 6 }} />

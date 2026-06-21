@@ -11,5 +11,5 @@ export const ROUTES = {
     GAME: '/game/:gameId',
     WAITING: '/waiting/:lobbyType/:gameId',
     TOURNAMENTS: '/tournaments',
-    JOIN_TOURNAMENT: '/tournaments/:id/join'
+    TOURNAMENT_PARTICIPATE: '/tournaments/:id/participate'
 } as const;
