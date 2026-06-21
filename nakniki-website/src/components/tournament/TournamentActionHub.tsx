@@ -24,9 +24,9 @@ export function TournamentActionHub({ createTournament, isCreating }: Props) {
                 {/* size picker — three toggle buttons */}
                 <Flex gap="2">
                     {SIZES.map((s) => (
-                        <Button key={s} size="3" style={{ flexGrow: 1, cursor: 'pointer' }}
+                        <Button key={s} size="2" style={{ flexGrow: 1, cursor: 'pointer' }}
                             variant={size === s ? 'solid' : 'soft'}
-                            color={size === s ? undefined : 'gray'}
+                            color={size === s ? 'yellow' : 'gray'}
                             onClick={() => setSize(s)}>
                             {s} players
                         </Button>
@@ -34,6 +34,7 @@ export function TournamentActionHub({ createTournament, isCreating }: Props) {
                 </Flex>
 
                 <Button size="4" disabled={!name.trim() || isCreating}
+                    color="yellow"
                     onClick={() => createTournament(name.trim(), size)}
                     style={{ cursor: 'pointer', justifyContent: 'space-between' }}>
                     <Flex align="center" gap="2"><Trophy size={18} /> Create</Flex>

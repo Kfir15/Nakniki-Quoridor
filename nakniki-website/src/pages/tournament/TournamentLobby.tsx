@@ -20,8 +20,8 @@ export default function TournamentLobby() {
                 <Box mb="7" style={{ flexShrink: 0 }}>
                     <Flex align="center" gap="3" mb="2">
                         <Flex align="center" justify="center"
-                            style={{ width: 48, height: 48, backgroundColor: 'var(--accent-9)', borderRadius: 12 }}>
-                            <Trophy size={28} color="white" />
+                            style={{ width: 48, height: 48, backgroundColor: 'yellow', borderRadius: 12 }}>
+                            <Trophy size={28} color="black" />
                         </Flex>
                         <Text size="8" weight="bold" style={{ letterSpacing: '-0.5px' }}>Tournaments League</Text>
                     </Flex>
