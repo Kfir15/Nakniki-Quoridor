@@ -274,16 +274,24 @@ export class MultiplayerService {
         if (isP1) return PlayerRole.P1;
         if (isP2) return PlayerRole.P2;
         
-        // 3. FAILSAFE: If you copy-pasted the URL or refreshed the page, the server lost your socket ID.
-        // In local development, we just automatically authorize whoever's turn it currently is so you can play!
-        return session.game.getState().turn;
+        // 3. Unknown caller: socket isn't registered AND userId matches neither player.
+        // Reject the action instead of guessing — guessing corrupts real multiplayer games.
+        return null;
     }
 
     private async handleGameOver(session: GameSession, finalState: GameState) {
         if (!session.dbMatchId) return;
 
-        // get the roles
-        const winnerRole = finalState.winner === PlayerRole.P1 ? PlayerRole.P1 : PlayerRole.P2;
+        // if the game somehow ended without a real winner, don't continue the matches
+        if (finalState.winner === null) {
+            console.error("handleGameOver: game ended with no winner, skipping result.", finalState.id);
+            this.gameManager.deleteSession(finalState.id);
+            session.dbMatchId = undefined;
+            return;
+        }
+
+        // get the roles (winner is guaranteed P1 or P2 here)
+        const winnerRole = finalState.winner;
         const loserRole = winnerRole === PlayerRole.P1 ? PlayerRole.P2 : PlayerRole.P1;
 
         // get the ID's
