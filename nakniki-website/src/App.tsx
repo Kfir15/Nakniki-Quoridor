@@ -19,6 +19,7 @@ import GamePage from './pages/game/GamePage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import TournamentLobby from './pages/tournament/TournamentLobby'
+import { useTournamentMatchListener } from './hooks/useTournamentMatchListener';
 
 export default function App() {
   const { user } = useUser();
@@ -31,6 +32,8 @@ export default function App() {
       socketManager.disconnect();
     }
   }, [user]);
+  // Listener to send tournament players to their respective matches at all times
+  useTournamentMatchListener();
 
   return (
     <Flex direction="column" style={{ minHeight: '100vh' }}>
