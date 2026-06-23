@@ -14,6 +14,7 @@ export interface TournamentSummary {
 
 export const useTournamentLobby = () => {
     const [tournaments, setTournaments] = useState<TournamentSummary[]>([]);
+    const [myTournaments, setMyTournaments] = useState<TournamentSummary[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,7 +26,9 @@ export const useTournamentLobby = () => {
         setIsRefreshing(true);
         try {
             const res = await sendGet<TournamentSummary[]>(E.TOURNAMENTS.LIST, user?.token);
+            const myRes = await sendGet<TournamentSummary[]>(E.TOURNAMENTS.MINE, user?.token);
             setTournaments(res.data);
+            setMyTournaments(myRes.data);
         } catch (e: any) {
             setError(e?.response?.data?.error ?? 'Failed to load tournaments.');
         } finally {
@@ -59,7 +62,7 @@ export const useTournamentLobby = () => {
     }, [refreshTournaments]);
 
     return {
-        tournaments, refreshTournaments, createTournament, joinTournament,
+        tournaments, myTournaments, refreshTournaments, createTournament, joinTournament,
         isRefreshing, isCreating, error, clearError,
     };
 };

@@ -1,7 +1,7 @@
 import { Flex, Box } from '@radix-ui/themes';
 import type { PropsWithChildren } from 'react';
 
-export function LobbyWrapper({ children }: PropsWithChildren) {
+export function LobbyWrapper({ children, maxWidth = '1136px' }: PropsWithChildren<{ maxWidth?: string }>) {
     return (
         <Box style={{
             width: '100%',
@@ -16,7 +16,7 @@ export function LobbyWrapper({ children }: PropsWithChildren) {
 
             <Flex direction="column" style={{
                 width: '100%',
-                maxWidth: '1136px',
+                maxWidth: maxWidth,
                 height: '100%',
                 margin: '0 auto',
                 padding: '32px 24px',

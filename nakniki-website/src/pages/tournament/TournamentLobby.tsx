@@ -12,13 +12,13 @@ import { useNavigate } from 'react-router-dom';
 export default function TournamentLobby() {
     const navigate = useNavigate();
     const {
-        tournaments, createTournament, refreshTournaments,
+        tournaments, myTournaments, createTournament, refreshTournaments,
         isRefreshing, isCreating, error, clearError,
     } = useTournamentLobby();
 
     return (
         <>
-            <LobbyWrapper>
+            <LobbyWrapper maxWidth='1500px'>
                 {/* headline */}
                 <Box mb="7" style={{ flexShrink: 0 }}>
                     <Flex align="center" gap="3" mb="2">
@@ -36,22 +36,44 @@ export default function TournamentLobby() {
                         <TournamentActionHub createTournament={createTournament} isCreating={isCreating} />
                     </Box>
 
-                    <LobbyList
-                        items={tournaments}
-                        isRefreshing={isRefreshing}
-                        onRefresh={refreshTournaments}
-                        title="Open tournaments"
-                        emptyTitle="No open tournaments found"
-                        emptyText="It's quiet right now. Start a new tournament and become a champion!"
-                        loadingText="searching matches..."
-                        renderItem={(t, i) => (
-                            <TournamentCard 
-                                key={t.id} 
-                                tournament={t} 
-                                onJoin={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
-                                index={i} />
-                        )}
-                    />
+                    <Flex gap="6" style={{ gridColumn: 'span 8', height: '100%', minHeight: 0 }}>
+                        <Box style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                            <LobbyList
+                                items={tournaments}
+                                isRefreshing={isRefreshing}
+                                onRefresh={refreshTournaments}
+                                title="Open Tournaments"
+                                emptyTitle="No open tournaments found"
+                                emptyText="It's quiet right now. Start a new tournament and become a champion!"
+                                loadingText="searching tournaments..."
+                                renderItem={(t, i) => (
+                                    <TournamentCard 
+                                        key={t.id} 
+                                        tournament={t} 
+                                        onJoin={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
+                                        index={i} />
+                                )}
+                            />
+                        </Box>
+                        <Box style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                            <LobbyList
+                                items={myTournaments}
+                                isRefreshing={isRefreshing}
+                                onRefresh={refreshTournaments}
+                                title="Your Tournaments"
+                                emptyTitle="You're not participating in any tournaments"
+                                emptyText="Sign in to a new tournament and become a champion!"
+                                loadingText="searching your tournaments..."
+                                renderItem={(t, i) => (
+                                    <TournamentCard 
+                                        key={t.id} 
+                                        tournament={t} 
+                                        onJoin={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
+                                        index={i} />
+                                )}
+                            />
+                        </Box>
+                    </Flex>
                 </Grid>
             </LobbyWrapper>
 

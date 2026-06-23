@@ -1,9 +1,11 @@
 import { Flex, Text, Box, Button, Card, Badge, Avatar, Separator } from '@radix-ui/themes';
-import { Trophy, Users, Shield, Check } from 'lucide-react';
+import { Trophy, Users, Check } from 'lucide-react';
 import { useState } from 'react';
 import { sendPost } from '../../services/api';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { useUser } from '../../services/UserContext';
+import EloBadge from '../../components/EloBadge';
+import { TournamentRegisteringText } from '../../components/tournament/TournamentRegisteringText';
 
 interface Participant {
     user_id: string;
@@ -41,28 +43,28 @@ export function TournamentRegisteringPage({ details, refresh }: Props) {
         <Flex direction="column" align="center" gap="6" style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px' }}>
             {/* header */}
             <Flex direction="column" align="center" gap="2">
-                <Trophy size={48} color="var(--accent-9)" />
+                <Trophy size={48} color="gold" />
                 <Text size="8" weight="bold">{tournament.name}</Text>
-                <Badge color="amber" variant="soft" radius="full" size="2">Registering</Badge>
+                <TournamentRegisteringText isFull={isFull}/>
             </Flex>
 
             {/* fill status */}
             <Flex direction="column" align="center" gap="2">
-                <Badge color={isFull ? 'green' : 'gray'} variant="soft" radius="full" size="2">
+                <Badge color='green' variant="soft" radius="full" size="2">
                     <Users size={14} style={{ marginRight: 4 }} /> {participants.length} / {tournament.size}
                 </Badge>
                 <Text color="gray" size="2">
-                    {isFull ? 'Tournament is full — starting soon!' : `Waiting for ${spotsLeft} more player${spotsLeft === 1 ? '' : 's'}…`}
+                    {isFull ? '' : `Waiting for ${spotsLeft} more player${spotsLeft === 1 ? '' : 's'}`}
                 </Text>
             </Flex>
 
             {/* join button or "you're in" */}
             {isParticipant ? (
                 <Badge color="green" variant="soft" size="3" radius="full">
-                    <Check size={16} style={{ marginRight: 6 }} /> You're in — waiting for the bracket
+                    <Check size={16} style={{ marginRight: 6 }} /> You're participating in this tournament!
                 </Badge>
             ) : (
-                <Button size="4" onClick={handleJoin} disabled={isJoining || isFull} style={{ cursor: 'pointer' }}>
+                <Button size="4" color="gold" onClick={handleJoin} disabled={isJoining || isFull} style={{ cursor: 'pointer' }}>
                     <Trophy size={18} style={{ marginRight: 8 }} /> {isFull ? 'Full' : 'Join Tournament'}
                 </Button>
             )}
@@ -82,9 +84,7 @@ export function TournamentRegisteringPage({ details, refresh }: Props) {
                                         fallback={p.user.username?.charAt(0).toUpperCase() ?? '?'} radius="full" size="3" />
                                     <Text weight="bold">{p.user.username}</Text>
                                 </Flex>
-                                <Badge color="blue" variant="soft" radius="full">
-                                    <Shield size={12} style={{ marginRight: 4 }} /> {p.user.elo_rating}
-                                </Badge>
+                                <EloBadge elo={p.user.elo_rating} hero={false} showLabel={false}></EloBadge>
                             </Flex>
                         </Card>
                     ))}
