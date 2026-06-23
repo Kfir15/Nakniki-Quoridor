@@ -83,6 +83,9 @@ export const TournamentController = {
             return res.status(StatusCodes.OK).json( details );
 
         } catch (error: any) {
+             if (error.message === 'Tournament not found') {
+                return res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
+            }
             return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message});
         }
     },
