@@ -5,6 +5,7 @@ import FloatingError from '../../components/error/FloatingError';
 import { LobbyWrapper } from '../../components/lobby/LobbyWrapper';
 import { LobbyList } from '../../components/lobby/LobbyList';
 import { TournamentCard } from '../../components/tournament/TournamentCard';
+import { MyTournamentCard } from '../../components/tournament/MyTournamentCard';
 import { TournamentActionHub } from '../../components/tournament/TournamentActionHub';
 import { ROUTES as R } from '../../constants/routes.constants';
 import { useNavigate } from 'react-router-dom';
@@ -65,10 +66,10 @@ export default function TournamentLobby() {
                                 emptyText="Sign in to a new tournament and become a champion!"
                                 loadingText="searching your tournaments..."
                                 renderItem={(t, i) => (
-                                    <TournamentCard 
+                                    <MyTournamentCard 
                                         key={t.id} 
                                         tournament={t} 
-                                        onJoin={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
+                                        onView={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
                                         index={i} />
                                 )}
                             />

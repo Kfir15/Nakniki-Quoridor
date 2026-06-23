@@ -37,7 +37,7 @@ export function LobbyList<T>({
                 </Box>
 
 
-            <Flex direction="column" gap="3" style={{ flexGrow: 1, overflowY: 'auto', paddingRight: '12px', paddingBottom: '12px' }}>
+            <Flex direction="column" gap="3" style={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', paddingRight: '12px', paddingBottom: '12px' }}>
                 <AnimatePresence mode="popLayout">
                     {isRefreshing && items.length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

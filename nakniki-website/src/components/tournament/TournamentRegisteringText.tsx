@@ -13,6 +13,7 @@ export function TournamentRegisteringText({ isFull }: { isFull: boolean }) {
     if (isFull) return <Text color="green" weight="bold">Starting soon!</Text>;
     return (
         <Text color="orange" weight="bold" size="9" align="center">
+            <span style={{ display: 'inline-block', width: '1.5em' }} /> 
             Registering
             <span style={{ display: 'inline-block', width: '1.5em', textAlign: 'left' }}>{'.'.repeat(dots)}</span>
         </Text>

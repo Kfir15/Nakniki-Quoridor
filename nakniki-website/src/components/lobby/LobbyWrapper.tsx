@@ -6,7 +6,7 @@ export function LobbyWrapper({ children, maxWidth = '1136px' }: PropsWithChildre
         <Box style={{
             width: '100%',
             flexGrow: 1,
-            height: '100%',
+            height: 'calc(100vh - 150px)',
             maxHeight: 'calc(100vh - 150px)',
             overflow: 'hidden',
             display: 'flex',
@@ -24,7 +24,7 @@ export function LobbyWrapper({ children, maxWidth = '1136px' }: PropsWithChildre
                 overflow: 'hidden',
                 minHeight: 0
             }}>
-                <Flex direction="column" style={{ /* ...same... */ }}>
-                {children}
-            </Flex></Flex> </Box>)
+                {children} 
+            </Flex> 
+        </Box>)
 }
