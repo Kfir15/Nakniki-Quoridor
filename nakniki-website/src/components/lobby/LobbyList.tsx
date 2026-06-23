@@ -11,10 +11,11 @@ type LobbyListProps<T> = {
     emptyText: string;
     loadingText: string;
     renderItem: (item: T, index: number) => React.ReactNode;
+    showRefresh?: boolean;
 };
 
 export function LobbyList<T>({
-    items, isRefreshing, onRefresh, title, emptyTitle, emptyText, loadingText, renderItem }: 
+    items, isRefreshing, onRefresh, title, emptyTitle, emptyText, loadingText, renderItem, showRefresh = true }: 
     LobbyListProps<T>) {
     return (
         <Flex direction="column" style={{ gridColumn: 'span 8', height: '100%', overflow: 'hidden', minHeight: 0 }}>
@@ -28,10 +29,13 @@ export function LobbyList<T>({
                                 {items.length} Open
                             </Badge>
                         </Flex>
-                        <Button variant="ghost" color="gray" onClick={onRefresh} disabled={isRefreshing} style={{ cursor: 'pointer' }}>
-                            <RefreshCcw size={16} className={isRefreshing ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
-                            Refresh List
-                        </Button>
+                        {showRefresh && (
+                            // Only show the refresh button if the value is true
+                            <Button variant="ghost" color="gray" onClick={onRefresh} disabled={isRefreshing} style={{ cursor: 'pointer' }}>
+                                <RefreshCcw size={16} className={isRefreshing ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
+                                Refresh List
+                            </Button> 
+                        )}
                     </Flex>
                     <Separator size="4" mb="4" style={{ opacity: 0.2 }} />
                 </Box>

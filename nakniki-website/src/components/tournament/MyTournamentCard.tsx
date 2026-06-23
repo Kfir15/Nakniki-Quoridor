@@ -2,6 +2,7 @@ import { Flex, Text, Box, Button, Card, Badge } from '@radix-ui/themes';
 import { Trophy, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { MyTournament } from '../../hooks/useTournamentLobby';
+import { TournamentStatus } from '@nakniki/shared';
 
 const STATUS_LABEL: Record<string, { label: string; color: any }> = {
     IN_PROGRESS: { label: 'Live', color: 'green' },
@@ -25,9 +26,10 @@ export function MyTournamentCard({ tournament, onView, index }: {
                             <Badge color={s.color} variant="soft" radius="full">{s.label}</Badge>
                         </Box>
                     </Flex>
-                    <Button size="3" color="gold" onClick={() => onView(tournament.id)} style={{ cursor: 'pointer', borderRadius: 8 }}>
+                    
+                    { tournament.status !== TournamentStatus.CANCELLED && (<Button size="3" color="gold" onClick={() => onView(tournament.id)} style={{ cursor: 'pointer', borderRadius: 8 }}>
                         <Eye size={16} style={{ marginRight: 6 }} /> View
-                    </Button>
+                    </Button>)}
                 </Flex>
             </Card>
         </motion.div>
