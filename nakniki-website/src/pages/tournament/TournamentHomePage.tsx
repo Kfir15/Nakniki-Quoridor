@@ -1,5 +1,5 @@
 import { useParams, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { sendGet } from '../../services/api';
 import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { ROUTES as R } from '../../constants/routes.constants';
@@ -19,25 +19,26 @@ export default function TournamentHomePage() {
     const [error, setError] = useState<string | null>(null);
     const [notFound, setNotFound] = useState(false);
 
-    useEffect(() => {
-        const fetchDetails = async () => {
-            try {
-                const res = await sendGet(E.TOURNAMENTS.DETAILS(id!), user?.token);
-                setDetails(res.data);
+    const fetchDetails = useCallback(async () => {
+        try {
+            const res = await sendGet(E.TOURNAMENTS.DETAILS(id!), user?.token);
+            setDetails(res.data);
+            setNotFound(false);
+        }
+        catch (e: any) {
+            if (e?.response?.status === 404) {
+                setNotFound(true);
+            } else {
+                setNotFound(false);
+                setError(e?.response?.data?.error ?? 'Failed to load tournament.');
             }
-            catch (e: any) {
-                if (e?.response?.status === 404) {
-                    setNotFound(true);
-                } else {
-                    setError(e?.response?.data?.error ?? 'Failed to load tournament.');  // server/network
-                }
-            }
-            finally {
-                setIsLoading(false);
-            }
-        };
-        if (id) fetchDetails();
+        }
+        finally {
+            setIsLoading(false);
+        }
     }, [id, user?.token]);
+
+    useEffect(() => { if (id) fetchDetails(); }, [id, fetchDetails]);
 
     if (isLoading) return <LoadingSpinner/>;
     if (notFound)  return <Navigate to={R.NOT_FOUND} replace />;
@@ -51,10 +52,10 @@ export default function TournamentHomePage() {
 
     switch (details.tournament.status) {
         case TournamentStatus.REGISTERING:
-            return <TournamentRegisteringPage details={details} />;
+            return <TournamentRegisteringPage details={details} refresh={fetchDetails} />;
         case TournamentStatus.IN_PROGRESS:
         case TournamentStatus.FINISHED:
-            return <TournamentBracketPage details={details} />;   // bracket handles both
+            return  null // <TournamentBracketPage details={details} />; 
         case TournamentStatus.CANCELLED:
         default:
             return <Navigate to={R.NOT_FOUND} replace />;

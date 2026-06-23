@@ -6,10 +6,13 @@ import { LobbyWrapper } from '../../components/lobby/LobbyWrapper';
 import { LobbyList } from '../../components/lobby/LobbyList';
 import { TournamentCard } from '../../components/tournament/TournamentCard';
 import { TournamentActionHub } from '../../components/tournament/TournamentActionHub';
+import { ROUTES as R } from '../../constants/routes.constants';
+import { useNavigate } from 'react-router-dom';
 
 export default function TournamentLobby() {
+    const navigate = useNavigate();
     const {
-        tournaments, createTournament, joinTournament, refreshTournaments,
+        tournaments, createTournament, refreshTournaments,
         isRefreshing, isCreating, error, clearError,
     } = useTournamentLobby();
 
@@ -42,7 +45,11 @@ export default function TournamentLobby() {
                         emptyText="It's quiet right now. Start a new tournament and become a champion!"
                         loadingText="searching matches..."
                         renderItem={(t, i) => (
-                            <TournamentCard key={t.id} tournament={t} onJoin={joinTournament} index={i} />
+                            <TournamentCard 
+                                key={t.id} 
+                                tournament={t} 
+                                onJoin={(id) => navigate(R.TOURNAMENT_DETAIL.replace(':id', id))} 
+                                index={i} />
                         )}
                     />
                 </Grid>
