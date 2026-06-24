@@ -21,6 +21,7 @@ import ProfilePage from './pages/profile/ProfilePage';
 import TournamentLobby from './pages/tournament/TournamentLobby'
 import TournamentHomePage from './pages/tournament/TournamentHomePage';
 import { useTournamentMatchListener } from './hooks/useTournamentMatchListener';
+import BracketTest from './pages/tournament/BracketTest';
 
 // Force GamePage to fully remount when the game id changes, relevant for tournaments
 function GamePageRoute() {
@@ -68,6 +69,7 @@ export default function App() {
             <Route path={R.GAME} element={<GamePageRoute />} />
             <Route path={R.TOURNAMENTS} element={<TournamentLobby/>} />
             <Route path={R.TOURNAMENT_DETAIL} element={<TournamentHomePage />} /> 
+            <Route path="/brackettest" element={<BracketTest />} />
           </Route>
 
         </Routes>
