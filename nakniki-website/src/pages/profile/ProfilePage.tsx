@@ -54,6 +54,7 @@ export default function ProfilePage() {
     const [tournaments, setTournaments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editOpen, setEditOpen] = useState(false);
+    const navigate = useNavigate();
     
     const fetchProfileData = async () => {
         if (!user?.token) return;
@@ -85,8 +86,6 @@ export default function ProfilePage() {
 
         if (isLoading) return <LoadingSpinner/>;
         if (!profile) return <Text color="red">Couldn't load profile. Try again.</Text>;
-
-        const navigate = useNavigate();
 
         const wonMatches = history.filter(m => m.winner_id === user?.id);
         const p1Matches = history.filter(m => m.is_player_1);
@@ -147,7 +146,7 @@ export default function ProfilePage() {
                     <Text size="2" weight="bold" color="gray" style={{ letterSpacing: '2px' }}>
                         MATCH HISTORY
                     </Text>
-                    <MatchList matches={matchRows} onAnalyze={(id) => navigate(R.ANALYSIS.replace(':id', id))} />
+                    <MatchList matches={matchRows} onAnalyze={(id) => navigate(R.ANALYSIS.replace(':gameId', id))} />
                 </Flex>
 
                 <EditProfileDialog
