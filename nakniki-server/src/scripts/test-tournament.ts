@@ -115,13 +115,15 @@ async function main() {
 
     // ---- 1. create + join ----
     console.log('\n=== 1. Create tournament & join players ===');
-    const tournamentId = await service.createTournament(SIZE, `TEST ${new Date().toISOString()}`);
+    // players[0] is the creator, so they're auto-joined by createTournament
+    const tournamentId = await service.createTournament(SIZE, `TEST ${new Date().toISOString()}`, players[0]!.id);
     console.log(`    tournament id: ${tournamentId}`);
 
     let t = await getTournamentRow(tournamentId);
     check('new tournament status is REGISTERING', t.status === TournamentStatus.REGISTERING, `(got ${t.status})`);
 
-    for (const u of players) {
+    // creator (players[0]) already joined via createTournament, so join the rest
+    for (const u of players.slice(1)) {
         await service.joinTournament(tournamentId, u.id);
     }
     let participants = await getParticipants(tournamentId);

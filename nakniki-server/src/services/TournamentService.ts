@@ -21,8 +21,10 @@ export class TournamentService {
     }
 
     // create a new tournament and return its id
-    async createTournament(tSize: number, tName: string): Promise<string> {
-        return await TournamentRepository.createTournament(tSize, tName);
+    async createTournament(tSize: number, tName: string, creatorId: string): Promise<string> {
+        const tournamentId = await TournamentRepository.createTournament(tSize, tName);
+        await this.joinTournament(tournamentId, creatorId);   // creator is also a participant
+        return tournamentId;
     }
 
     // join a tournament as a participant
@@ -32,7 +34,12 @@ export class TournamentService {
         p_tournament: tournamentId,
         p_user: userId,
     });
-    if (error) throw error;
+    if (error) { 
+        if (error.code === '23505') { // Duplicate unique key - meaning a player has attempted to join the same tournament twice
+            throw new Error('You have already joined this tournament.');
+        }
+        throw error;
+    }
 
     const tournament = await TournamentRepository.getTournamentById(tournamentId);
     const participants = await TournamentRepository.getAllTournamentParticipants(tournamentId);
@@ -79,7 +86,7 @@ export class TournamentService {
                     slot,                                                                           // the match's number in the round
                     round === 1 ? tournamentUsers[slot].id : null,                                  // we can only apply participants for the first round of the tournament
                     round === 1 ? tournamentUsers[tournamentUsers.length - slot - 1].id : null,     // same here
-                    slot % 2 + 1                                                              // the position the winner will play from (player 1 or player 2)
+                    slot % 2 + 1                                                                    // the position the winner will play from (player 1 or player 2)
                 );
                 roundMatches.push(id); 
             }
@@ -169,8 +176,10 @@ export class TournamentService {
         // Update the tournament_matches table with the game session ID
         await TournamentMatchesRepository.startTournamentMatch(tMatchId, session.dbMatchId);
         // tell both players their match exists and where to go
-        this.io?.to(tournamentMatch.player_1_id).to(tournamentMatch.player_2_id)
-        .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId });
+        this.io?.to(tournamentMatch.player_1_id)
+            .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, tournamentId: tournamentMatch.tournament_id, isHost: true });
+        this.io?.to(tournamentMatch.player_2_id)
+        .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, tournamentId: tournamentMatch.tournament_id, isHost: false });
 
         // forfeit the match if both players haven't checked in within the time limit
         session.lobbyTimeout = setTimeout(async () => {
@@ -203,5 +212,13 @@ export class TournamentService {
         ]);
         if (!tournament) throw new Error('Tournament not found');
         return { tournament, participants, matches };
+    }
+
+    startStaleSweep() {
+        setInterval(async () => {
+            const cutoff = new Date(Date.now() - G.TOURNAMENT_TIMEOUT).toISOString();
+            try { await TournamentRepository.cancelStaleTournaments(cutoff); }
+            catch (e) { console.error('stale-tournament sweep failed', e); }
+        }, G.SWEEP_INTERVAL);
     }
 }

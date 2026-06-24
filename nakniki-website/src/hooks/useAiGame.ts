@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes.constants';
 import { SOCKET_EVENTS as S } from '@nakniki/shared';
@@ -10,6 +10,7 @@ export const useAiGame = () => {
     const [isInitializing, setIsInitializing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useUser();
+    const startedRef = useRef(false);   // did THIS hook start an AI game?
 
     const clearError = useCallback(() => setError(null), []);
 
@@ -37,6 +38,7 @@ export const useAiGame = () => {
         }
 
         // start the game
+        startedRef.current = true;
         setIsInitializing(true);
         socket.emit(S.CLIENT.AI_START);
     };
@@ -47,6 +49,11 @@ export const useAiGame = () => {
 
         // handle game started event
         const handleGameStarted = (data: { gameId: string; state: any }) => {
+            // GAME_STARTED is shared by AI / MP / tournament games. Only react if WE
+            // started an AI game — otherwise we'd hijack a tournament match's navigation.
+            if (!startedRef.current) return;
+            startedRef.current = false;
+
             // navigate to the game screen
             setIsInitializing(false);
             const gamePath = ROUTES.GAME.replace(':gameId', data.gameId);
@@ -55,6 +62,7 @@ export const useAiGame = () => {
 
         // handle error
         const handleError = (data: { message: string }) => {
+            startedRef.current = false;
             setIsInitializing(false);
             setError(data.message);
         };

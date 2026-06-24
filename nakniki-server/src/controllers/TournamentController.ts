@@ -19,7 +19,7 @@ export const TournamentController = {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "size must be 4/8/16 and name is required" });
             }
 
-            const tournamentId = await tournamentService.createTournament(size, name.trim());
+            const tournamentId = await tournamentService.createTournament(size, name.trim(), userId);
             return res.status(StatusCodes.CREATED).json({ id: tournamentId });
 
         } catch (error: any) {
@@ -83,6 +83,9 @@ export const TournamentController = {
             return res.status(StatusCodes.OK).json( details );
 
         } catch (error: any) {
+             if (error.message === 'Tournament not found') {
+                return res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
+            }
             return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message});
         }
     },

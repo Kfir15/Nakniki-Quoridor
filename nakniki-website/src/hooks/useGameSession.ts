@@ -19,6 +19,10 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
             setError("No active connection to the server.");
             return;
         }
+        // start the game (update its state)
+        const handleGameStarted = (data: { state: GameState }) => {
+            setGameState(hydrateGameState(data.state));
+        };
 
         // update the game state
         const handleStateUpdate = (newState: any) => {
@@ -42,6 +46,7 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
 
         // listeners for events
         socket.on(S.SERVER.STATE_UPDATE, handleStateUpdate);
+        socket.on(S.SERVER.GAME_STARTED, handleGameStarted);
         socket.on(S.SERVER.INVALID_MOVE, handleInvalidMove);
         socket.on(S.SERVER.ERROR, handleGeneralError);
         socket.on(S.SERVER.GAME_ABANDONED, handleGameAbandoned);
@@ -53,6 +58,7 @@ export const useGameSession = (initialState: GameState, gameId: string, isAiGame
 
         return () => {
             socket.off(S.SERVER.STATE_UPDATE, handleStateUpdate);
+            socket.off(S.SERVER.GAME_STARTED, handleGameStarted);
             socket.off(S.SERVER.INVALID_MOVE, handleInvalidMove);
             socket.off(S.SERVER.ERROR, handleGeneralError);
             socket.off(S.SERVER.GAME_ABANDONED, handleGameAbandoned);

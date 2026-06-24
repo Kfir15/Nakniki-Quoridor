@@ -13,7 +13,7 @@ import BackButton from '../../components/BackButton';
 import type { SidebarPlayerData } from '../../components/game/PlayerCard';
 import GameIntroOverlay from '../../components/game/GameIntroOverlay';
 import ActionPanel from '../../components/game/ActionPanel';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
 
 export default function GamePage() {
@@ -27,13 +27,23 @@ export default function GamePage() {
     const isAiGame = location.state?.isAiGame ?? false;
     const myRole = isHost ? PlayerRole.P1 : PlayerRole.P2;
     const opponentRole = isHost ? PlayerRole.P2 : PlayerRole.P1;
-    const [isIntroPlaying, setIsIntroPlaying] = useState(!isAiGame);
+    const [isIntroPlaying, setIsIntroPlaying] = useState(false);
+    const introHasPlayed = useRef(false);
+    const tournamentId = location.state?.tournamentId ?? null;
 
     const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo } = useGameSession(
         initialState,
         gameId!,
         isAiGame
     );
+
+    // start the intro the moment the game goes live, to make sure the timers are synced
+    useEffect(() => {
+        if (!isAiGame && gameState?.status === GameStatus.IN_PROGRESS && !introHasPlayed.current) {
+            introHasPlayed.current = true;
+            setIsIntroPlaying(true);
+        }
+    }, [gameState?.status, isAiGame]);
 
     const handleLeaveGame = () => {
         if (gameState && gameState.status === GameStatus.IN_PROGRESS) {
@@ -159,7 +169,7 @@ export default function GamePage() {
                         p1Data={p1Data} 
                         p2Data={p2Data} 
                         initialTimeSeconds={UI.TIMERS.DEFAULT_MATCH_SECONDS}
-                        isTimerActive={isAiGame ? true : !isIntroPlaying} 
+                        isTimerActive={isAiGame ? true : !isIntroPlaying}
                     />
                 </Box>
 
@@ -204,7 +214,7 @@ export default function GamePage() {
                 winner={actualWinner}
                 myRole={myRole}
                 reason={actualReason}
-                onReturnHome={() => navigate(R.HOME)} 
+                onReturnHome={() => navigate(tournamentId ? R.TOURNAMENT_DETAIL.replace(':id', tournamentId) : R.HOME)}
             />
 
             <FloatingError message={error || ''} onClose={clearError} />

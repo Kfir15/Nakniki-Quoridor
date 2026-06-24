@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { AuthRepository } from '../repositories/AuthRepository';
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,6 +25,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
         req.user = user;
         next();
     } catch (error: any) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+        // a thrown token-verification error almost always means a bad/expired 
+        return res.status(StatusCodes.UNAUTHORIZED).json({ error: "Invalid or expired session." });
     }
 };

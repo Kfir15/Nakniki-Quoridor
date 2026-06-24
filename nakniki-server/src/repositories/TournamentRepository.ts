@@ -109,13 +109,16 @@ export const TournamentRepository = {
         // Get all tournaments that can be joined
         const { data, error } = await supabase
             .from(DB.TABLES.TOURNAMENTS)
-            .select('id, name')
+            .select('id, name, size, status, created_at, tournament_participants(count)')
             .eq('status', TournamentStatus.REGISTERING);
 
         // check if success
         if (error) throw error;
 
-        return data;
+        return data.map(t => ({
+            ...t,
+            participant_count: t.tournament_participants?.[0]?.count ?? 0,
+        }));
     },
 
     async getUserTournaments(userId: string) {
@@ -134,5 +137,15 @@ export const TournamentRepository = {
         if (error) throw error;
 
         return data;
-    }
+    },
+
+    // Sets tournaments that have been out for too long to "CANCELLED", to not keep them stale forever
+    async cancelStaleTournaments(cutoffISO: string) {
+    const { error } = await supabase
+        .from(DB.TABLES.TOURNAMENTS)
+        .update({ status: TournamentStatus.CANCELLED })
+        .eq('status', TournamentStatus.REGISTERING)
+        .lt('created_at', cutoffISO);
+    if (error) throw error;
+}
 }

@@ -18,7 +18,7 @@ export default function RegisteredHome() {
     };
 
     const handleTournamentClick = () => {
-        alert("Tournament feature coming soon");
+        navigate(R.TOURNAMENTS);
     };
 
     return (
