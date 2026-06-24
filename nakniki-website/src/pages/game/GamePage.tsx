@@ -29,6 +29,7 @@ export default function GamePage() {
     const opponentRole = isHost ? PlayerRole.P2 : PlayerRole.P1;
     const [isIntroPlaying, setIsIntroPlaying] = useState(false);
     const introHasPlayed = useRef(false);
+    const tournamentId = location.state?.tournamentId ?? null;
 
     const { gameState, movePawn, placeWall, error, clearError, abandonGame, opponentAbandoned, playersInfo } = useGameSession(
         initialState,
@@ -213,7 +214,7 @@ export default function GamePage() {
                 winner={actualWinner}
                 myRole={myRole}
                 reason={actualReason}
-                onReturnHome={() => navigate(R.HOME)} 
+                onReturnHome={() => navigate(tournamentId ? R.TOURNAMENT_DETAIL.replace(':id', tournamentId) : R.HOME)}
             />
 
             <FloatingError message={error || ''} onClose={clearError} />

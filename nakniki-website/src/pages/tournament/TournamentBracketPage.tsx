@@ -1,5 +1,6 @@
-import { Flex, Text, Box } from '@radix-ui/themes';
+import { Flex, Text, Box, Button } from '@radix-ui/themes';
 import { useMemo } from 'react';
+import { RefreshCcw } from 'lucide-react'
 import { useUser } from '../../services/UserContext';
 import { TournamentStatus } from '@nakniki/shared';
 import { TournamentBracket } from '../../components/tournament/TournamentBracket';
@@ -17,7 +18,7 @@ function roundLabel(idx: number, total: number) {
 
 
 
-export function TournamentBracketPage({ details }: { details: any }) {
+export function TournamentBracketPage({ details, refresh }: { details: any; refresh: () => void }) {
     const { user } = useUser();
     const myName = user?.user_metadata?.username ?? null;
     const { tournament, participants, matches } = details;
@@ -44,13 +45,19 @@ export function TournamentBracketPage({ details }: { details: any }) {
         <Flex direction="column" align="center" gap="6"
           style={{ padding: '32px 0', minHeight: '100%', position: 'relative' }}>
             <TournamentBackground />
+            
             <Flex direction="column" align="center" gap="9" style={{ position: 'relative', zIndex: 1, width: '100%' }}>
-                {/* header / champion banner */}
+                {/* header */}
                 {tournament.status === TournamentStatus.FINISHED && champion ? (
                     <TournamentChampionBanner name={championName} pfp={championPfp}></TournamentChampionBanner>
                 ) : (
                     <Text size="8" weight="bold">{tournament.name}</Text>
                 )}
+
+                {/* refresh button */}
+                <Button variant="ghost" color="gray" onClick={refresh} style={{ cursor: 'pointer' }}>
+                    <RefreshCcw size={16} style={{ marginRight: 6 }} /> Refresh
+                </Button>
 
                 {/* scrollable bracket */}
                 <Box style={{ width: '100%', overflowX: 'auto', overflowY: 'hidden', flexGrow: 1, paddingBottom: 16 }}>

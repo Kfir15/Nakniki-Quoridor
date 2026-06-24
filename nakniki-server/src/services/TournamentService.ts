@@ -179,9 +179,9 @@ export class TournamentService {
         await TournamentMatchesRepository.startTournamentMatch(tMatchId, session.dbMatchId);
         // tell both players their match exists and where to go
         this.io?.to(tournamentMatch.player_1_id)
-            .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, isHost: true });
+            .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, tournamentId: tournamentMatch.tournament_id, isHost: true });
         this.io?.to(tournamentMatch.player_2_id)
-        .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, isHost: false });
+        .emit(S.SERVER.TOURNAMENT_MATCH_READY, { gameId, tournamentMatchId: tMatchId, tournamentId: tournamentMatch.tournament_id, isHost: false });
 
         // forfeit the match if both players haven't checked in within the time limit
         session.lobbyTimeout = setTimeout(async () => {
