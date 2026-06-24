@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socketManager } from '../lib/socket.manager';
-import { SOCKET_EVENTS as S, GameStatus } from '@nakniki/shared';
+import { SOCKET_EVENTS as S, GameStatus, GAME_CONSTANTS as G } from '@nakniki/shared';
 import { ROUTES as R } from '../constants/routes.constants';
 import { useUser } from '../services/UserContext';
 
@@ -16,6 +16,7 @@ export const useTournamentMatchListener = () => {
         // Once the match is ready
         const handleMatchReady = (data: { gameId: string; isHost: boolean; tournamentId: string }) => {
             // Tell the server we want to check in to the game
+            setTimeout(() => {
             socket.emit(S.CLIENT.JOIN_TOURNAMENT_MATCH, { gameId: data.gameId });
 
             // Only ever enter the game with an already STARTED state
@@ -27,22 +28,23 @@ export const useTournamentMatchListener = () => {
                 socket.off(S.SERVER.GAME_STARTED, handleStarted);
                 navigate(R.GAME.replace(':gameId', data.gameId), {
                     state: { initialState: state, isHost: data.isHost, isAiGame: false, tournamentId: data.tournamentId },
-                });
-            };
+                    });
+                };
 
-            // Check game state and act accordingly
-            const handleJoined = (joined: { gameId: string; state: any }) => {
-                if (joined.state?.status === GameStatus.IN_PROGRESS) enterGame(joined.state);
-            };
+                // Check game state and act accordingly
+                const handleJoined = (joined: { gameId: string; state: any }) => {
+                    if (joined.state?.status === GameStatus.IN_PROGRESS) enterGame(joined.state);
+                };
 
-            // when the 2nd player checks in and the game goes live
-            const handleStarted = (started: { gameId: string; state: any }) => {
-                enterGame(started.state);
-            };
+                // when the 2nd player checks in and the game goes live
+                const handleStarted = (started: { gameId: string; state: any }) => {
+                    enterGame(started.state);
+                };
 
-            socket.on(S.SERVER.LOBBY_JOINED, handleJoined);
-            socket.on(S.SERVER.GAME_STARTED, handleStarted);
-        };
+                socket.on(S.SERVER.LOBBY_JOINED, handleJoined);
+                socket.on(S.SERVER.GAME_STARTED, handleStarted);
+            }, G.TOURNAMENT_MATCH_DELAY);
+        }
 
         socket.on(S.SERVER.TOURNAMENT_MATCH_READY, handleMatchReady);
 

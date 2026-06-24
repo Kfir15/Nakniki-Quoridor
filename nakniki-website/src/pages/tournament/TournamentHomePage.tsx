@@ -55,7 +55,7 @@ export default function TournamentHomePage() {
             return <TournamentRegisteringPage details={details} refresh={fetchDetails} />;
         case TournamentStatus.IN_PROGRESS:
         case TournamentStatus.FINISHED:
-            return <TournamentBracketPage details={details} />; 
+            return <TournamentBracketPage details={details} refresh={fetchDetails} />; 
         case TournamentStatus.CANCELLED:
         default:
             return <Navigate to={R.NOT_FOUND} replace />;

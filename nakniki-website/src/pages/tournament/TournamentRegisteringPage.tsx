@@ -6,6 +6,7 @@ import { ENDPOINTS as E } from '../../constants/endpoints.constants';
 import { useUser } from '../../services/UserContext';
 import EloBadge from '../../components/EloBadge';
 import { TournamentRegisteringText } from '../../components/tournament/TournamentRegisteringText';
+import RefreshButton from '../../components/RefreshButton';
 
 interface Participant {
     user_id: string;
@@ -47,6 +48,8 @@ export function TournamentRegisteringPage({ details, refresh }: Props) {
                 <Text size="8" weight="bold">{tournament.name}</Text>
                 <TournamentRegisteringText isFull={isFull}/>
             </Flex>
+
+            <RefreshButton refresh={refresh}/>
 
             {/* fill status */}
             <Flex direction="column" align="center" gap="2">

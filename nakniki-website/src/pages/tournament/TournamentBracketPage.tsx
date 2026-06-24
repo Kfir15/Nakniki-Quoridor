@@ -1,11 +1,11 @@
-import { Flex, Text, Box, Button } from '@radix-ui/themes';
+import { Flex, Text, Box } from '@radix-ui/themes';
 import { useMemo } from 'react';
-import { RefreshCcw } from 'lucide-react'
 import { useUser } from '../../services/UserContext';
 import { TournamentStatus } from '@nakniki/shared';
 import { TournamentBracket } from '../../components/tournament/TournamentBracket';
 import { TournamentBackground } from '../../components/tournament/TournamentBackground';
 import { TournamentChampionBanner } from '../../components/tournament/TournamentChampionBanner';
+import RefreshButton from '../../components/RefreshButton';
 
 function roundLabel(idx: number, total: number) {
     const fromEnd = total - 1 - idx;
@@ -54,10 +54,7 @@ export function TournamentBracketPage({ details, refresh }: { details: any; refr
                     <Text size="8" weight="bold">{tournament.name}</Text>
                 )}
 
-                {/* refresh button */}
-                <Button variant="ghost" color="gray" onClick={refresh} style={{ cursor: 'pointer' }}>
-                    <RefreshCcw size={16} style={{ marginRight: 6 }} /> Refresh
-                </Button>
+                <RefreshButton refresh={refresh}/>
 
                 {/* scrollable bracket */}
                 <Box style={{ width: '100%', overflowX: 'auto', overflowY: 'hidden', flexGrow: 1, paddingBottom: 16 }}>

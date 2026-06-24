@@ -155,8 +155,6 @@ export class TournamentService {
             // check if the next match now has both players, start the match if yes
             const nextMatch = await TournamentMatchesRepository.getTournamentMatchById(tournamentMatch.next_tournament_match_id);
             if (nextMatch.player_1_id && nextMatch.player_2_id) {
-                // Giving the players a short delay before throwing them into the match
-                await new Promise(resolve => setTimeout(resolve, G.TOURNAMENT_MATCH_DELAY));
                 await this.startTournamentMatch(tournamentMatch.next_tournament_match_id);
             }
         }     
