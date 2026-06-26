@@ -7,10 +7,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useUser } from "../../services/UserContext";
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { buildStates } from "../../utils/analysisHelpers";
-import { Flex, Button, Text } from "@radix-ui/themes";
+import { Flex, Button, Text, Box } from "@radix-ui/themes";
 import GameBoard from "../../components/game/GameBoard";
 import { ArrowLeftIcon, ArrowRightIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon } from "@radix-ui/react-icons";
 import { LayoutGroup } from 'framer-motion';
+import { MoveList } from "../../components/analysis/MoveList";
+
 
 
 export function AnalysisPage() {
@@ -53,44 +55,59 @@ export function AnalysisPage() {
 
         const last = states.length - 1;
         const go = (i: number) => setCurrentIndex(Math.max(0, Math.min(last, i)));
+        const p1Name = match?.player_1?.username ?? "Player 1";
+        const p2Name = match?.player_2?.username ?? "Player 2";
 
         if (isLoading) return <LoadingSpinner></LoadingSpinner>;
         if (error || !match) return <Text color="red">{error ?? "Couldn't load analysis."}</Text>;
         return (
+            <Flex align="center" style={{ width: '100%', height: '100%', padding: '0 40px' }}>
 
-            <Flex direction="column" align="center" gap="4" style={{ padding: 24 }}>
-                {/* The board itself */ }
-                <GameBoard
-                    gameState={states[currentIndex]}
-                    myRole={PlayerRole.P1}         // fixed orientation for the replay
-                    movePawn={() => {}}            // Can't move pawns on our own on a replay
-                    placeWall={() => {}}           // Can't place walls on our own on a replay
-                    readOnly
-                />
+                {/* EVAL BAR */}
+                <Box style={{ width: 'clamp(240px, 22vw, 320px)' }}></Box>
 
-                { /* Control Panel of the moves */ }
-                <Flex align="center" gap="2">
-                    <Button onClick={() => go(0)} disabled={currentIndex === 0}>
-                        <DoubleArrowLeftIcon></DoubleArrowLeftIcon>
-                    </Button>
-                    <Button onClick={() => go(currentIndex-1)} disabled={currentIndex === 0}>
-                        <ArrowLeftIcon></ArrowLeftIcon>
-                    </Button>
-                    <Text size="3" color="gray" style={{ minWidth: 70, textAlign: 'center' }}>
-                        {currentIndex} / {last}
-                    </Text>
-                    <Button onClick={() => go(currentIndex+1)} disabled={currentIndex === last}>
-                        <ArrowRightIcon></ArrowRightIcon>
-                    </Button>
-                    <Button onClick={() => go(last)} disabled={currentIndex === last}>
-                        <DoubleArrowRightIcon></DoubleArrowRightIcon>
-                    </Button>
+                <Flex direction="column" align="center" gap="4" style={{ flex: 1 }}>
+                    {/* The board itself */ }
+                    <GameBoard
+                        gameState={states[currentIndex]}
+                        myRole={PlayerRole.P1}         // fixed orientation for the replay
+                        movePawn={() => {}}            // Can't move pawns on our own on a replay
+                        placeWall={() => {}}           // Can't place walls on our own on a replay
+                        readOnly
+                    />
+
+                    { /* Control Panel of the moves */ }
+                    <Flex align="center" gap="2">
+                        <Button onClick={() => go(0)} disabled={currentIndex === 0}>
+                            <DoubleArrowLeftIcon></DoubleArrowLeftIcon>
+                        </Button>
+                        <Button onClick={() => go(currentIndex-1)} disabled={currentIndex === 0}>
+                            <ArrowLeftIcon></ArrowLeftIcon>
+                        </Button>
+                        <Text size="3" color="gray" style={{ minWidth: 70, textAlign: 'center' }}>
+                            {currentIndex} / {last}
+                        </Text>
+                        <Button onClick={() => go(currentIndex+1)} disabled={currentIndex === last}>
+                            <ArrowRightIcon></ArrowRightIcon>
+                        </Button>
+                        <Button onClick={() => go(last)} disabled={currentIndex === last}>
+                            <DoubleArrowRightIcon></DoubleArrowRightIcon>
+                        </Button>
+                    </Flex>
                 </Flex>
-            </Flex>
-        );
-    }
 
-// Need: get the match actions for the match, save them as a state
+                <Box style={{ width: 'clamp(240px, 22vw, 320px)', height: '60%', maxHeight: '720px', zIndex: 50 }}>
+                        <MoveList 
+                            actions={actions}
+                            currentIndex={currentIndex}
+                            onSelect={setCurrentIndex}
+                        />
+                </Box>
+        </Flex>
+    );
+}
+
+
 // Make an eval bar
 // save action history, back, forward, start phase, end phase buttons
 // Reuse the game board from the play page
