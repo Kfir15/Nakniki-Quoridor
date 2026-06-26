@@ -61,7 +61,7 @@ export function AnalysisPage() {
         if (isLoading) return <LoadingSpinner></LoadingSpinner>;
         if (error || !match) return <Text color="red">{error ?? "Couldn't load analysis."}</Text>;
         return (
-            <Flex align="center" style={{ width: '100%', height: '100%', padding: '0 40px' }}>
+            <Flex align="center" style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: 0, padding: '0 40px' }}>
 
                 {/* EVAL BAR */}
                 <Box style={{ width: 'clamp(240px, 22vw, 320px)' }}></Box>
@@ -96,7 +96,7 @@ export function AnalysisPage() {
                     </Flex>
                 </Flex>
 
-                <Box style={{ width: 'clamp(240px, 22vw, 320px)', height: '60%', maxHeight: '720px', zIndex: 50 }}>
+                <Box style={{ width: '15%', height: '75%', minHeight: 0, overflowY: 'scroll', zIndex: 50 }}>
                         <MoveList 
                             actions={actions}
                             currentIndex={currentIndex}

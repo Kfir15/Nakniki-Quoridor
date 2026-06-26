@@ -1,6 +1,7 @@
 import { Box, Text } from '@radix-ui/themes';
 import { type MatchAction } from '../../constants/analysis.constants';
 import { GAME_CONSTANTS as G } from '@nakniki/shared';
+import { UI_CONSTANTS as C } from '../../constants/ui.constants';
 
 export function MoveList({ actions, currentIndex, onSelect }: {
     actions: MatchAction[];
@@ -21,9 +22,9 @@ export function MoveList({ actions, currentIndex, onSelect }: {
                 const isP1 = i % 2 === 0;                  // moves strictly alternate, P1 first
                 return (
                     <Box key={a.id} onClick={() => onSelect(step)} style={{
-                        padding: 8, marginBottom: 6, cursor: 'pointer', borderRadius: 8,
-                        backgroundColor: isCurrent ? 'rgba(255,255,255,0.12)' : 'transparent',
-                        borderLeft: `3px solid ${isP1 ? '#ef4444' : '#eab308'}`,
+                        padding: 8, marginBottom: 16, cursor: 'pointer', borderRadius: 8,
+                        backgroundColor: isCurrent ? C.COLORS.BACKGROUND : 'transparent',
+                        borderLeft: `4px solid ${isP1 ? C.COLORS.P1.SOLID : C.COLORS.P2.SOLID}`,
                     }}>
                         <Text size="2" style={{ color: 'white' }}>{i + 1}. {fmt(a)}</Text>
                     </Box>

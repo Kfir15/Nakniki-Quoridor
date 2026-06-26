@@ -11,6 +11,8 @@ export const UI_CONSTANTS = {
     },
 
     COLORS: {
+        BACKGROUND: 'rgba(255,255,255,0.12)',
+
         P1: {
             BASE: 'rgba(139, 0, 0, 1.0)',        
             GLOW: 'rgba(230, 45, 45, 0.4)',      
