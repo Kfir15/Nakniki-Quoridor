@@ -1,5 +1,3 @@
-import { GAME_CONSTANTS as G } from '@nakniki/shared'
-
 export enum Accuracy {   
     BEST = "Best Move",
     EXCELLENT = "Excellent",
@@ -28,7 +26,7 @@ export interface MatchAction {
     id: string;
     turn_number: number;
     player_id: string;
-    action_type: typeof G.ACTION_TYPES;
+    action_type: string;
     action_data: any;
     analysis: MoveAnalysis | null;
 }

@@ -1,16 +1,13 @@
 import { ENDPOINTS as E } from "../../constants/endpoints.constants";
 import { type MoveAnalysis, type MatchAction, type MatchInfo, Accuracy } from "../../constants/analysis.constants";
 import { sendGet } from "../../services/api";
-import { type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
+import { BoardManager, Position, PlayerRole, GameStatus, type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "../../services/UserContext";
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { Text } from "lucide-react";
-
-function buildStates(actions: MatchAction[]) {
-
-}
+import { buildStates } from "../../utils/analysisHelpers";
 
 
 export function AnalysisPage() {
