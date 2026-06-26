@@ -6,16 +6,17 @@ interface PawnProps {
     player: PlayerRole;
     isCurrentTurn?: boolean;
     onClick?: () => void;
+    disableLayout?: boolean;
 }
 
-export default function Pawn({ player, isCurrentTurn, onClick }: PawnProps) {
+export default function Pawn({ player, isCurrentTurn, onClick, disableLayout }: PawnProps) {
     
     // get the pawn theme base on his role (ketchup vs mustard)
     const theme = player === PlayerRole.P1 ? UI.COLORS.P1 : UI.COLORS.P2;
 
     return (
         <motion.div
-            layoutId={`pawn-${player}`}
+            {...(disableLayout ? {} : { layoutId: `pawn-${player}` })}
             
             // trigger
             onPointerDown={(e) => {
