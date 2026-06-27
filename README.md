@@ -2,9 +2,9 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.x-61dafb.svg?style=flat-square&logo=react)](https://react.dev/)
-[![Python](https://img.shields.io/badge/Python-3.12-red.svg?style=flat-square&logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=flat-square&logo=python)](https://www.python.org/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.x-purple.svg?style=flat-square&logo=socketdotio)](https://socket.io/)
-[![Supabase](https://img.shields.io/badge/Supabase-orange?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-black?style=flat-square&logo=supabase&logoColor=3ECF8E)](https://supabase.com/)
 
 A high-fidelity, real-time multiplayer implementation of the classic abstract strategy game **Quoridor**. This system features a highly optimized asynchronous AI engine and real-time socket-based matchmaking lobby synchronization.
 
@@ -39,9 +39,9 @@ A high-fidelity, real-time multiplayer implementation of the classic abstract st
 * Review completed games step-by-step with an integrated engine breakdown of every turn.
 * Compares player choices directly against the optimal move discovered by the **analysis AI system**, highlighting positional blunders and strategic opportunities.
 
-### 🏆 Custom Friend Leagues
-* Set up league tournaments instantly to play directly with your friends.
-* Track standings dynamically through structured bracket stages until the final games determine the ultimate league winner.
+### 🏆 Bracket Style Competitions
+* Set up tournaments instantly to play directly with strangers or your friends.
+* Track standings dynamically through structured bracket stages until the final games determine the ultimate tournament winner.
 
 ---
 
