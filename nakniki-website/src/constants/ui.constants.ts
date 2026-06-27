@@ -12,6 +12,7 @@ export const UI_CONSTANTS = {
 
     COLORS: {
         BACKGROUND: 'rgba(255,255,255,0.12)',
+        ARROW: 'rgba(255,255,255,0.55)',
 
         P1: {
             BASE: 'rgba(139, 0, 0, 1.0)',        

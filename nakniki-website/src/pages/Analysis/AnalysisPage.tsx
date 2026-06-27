@@ -1,17 +1,18 @@
 import { ENDPOINTS as E } from "../../constants/endpoints.constants";
-import { type MoveAnalysis, type MatchAction, type MatchInfo, ACCURACY_COLORS } from "../../constants/analysis.constants";
+import { type MatchAction, type MatchInfo, ACCURACY_COLORS } from "../../constants/analysis.constants";
 import { sendGet } from "../../services/api";
-import { BoardManager, Position, PlayerRole, GameStatus, type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
+import { PlayerRole } from "@nakniki/shared";
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "../../services/UserContext";
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { buildStates, formatAction } from "../../utils/analysisHelpers";
+import { buildStates, formatAction, buildBestMove } from "../../utils/analysisHelpers";
 import { Flex, Button, Text, Box, Badge } from "@radix-ui/themes";
 import GameBoard from "../../components/game/GameBoard";
 import { ArrowLeftIcon, ArrowRightIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon } from "@radix-ui/react-icons";
 import { MoveList } from "../../components/analysis/MoveList";
 import { EvalBar } from "../../components/analysis/EvalBar";
+import BestMoveOverlay from "../../components/analysis/BestMoveOverlay";
 
 
 
@@ -60,6 +61,12 @@ export function AnalysisPage() {
         const moveWasP1 = (currentIndex - 1) % 2 === 0;
         let p1Eval    = analysis ? (moveWasP1 ? analysis.evaluation : -analysis.evaluation) : null;
 
+        // Shows the best move
+        const bestMove = useMemo(
+        () => buildBestMove(steps[currentIndex].analysis, states[currentIndex - 1], currentIndex),
+        [steps, states, currentIndex],
+        );
+
         if (isLoading) return <LoadingSpinner></LoadingSpinner>;
         if (error || !match) return <Text color="red">{error ?? "Couldn't load analysis."}</Text>;
         return (
@@ -76,9 +83,6 @@ export function AnalysisPage() {
                             <Badge color={ACCURACY_COLORS[analysis.accuracy]} variant="soft" radius="full">
                                 {analysis.accuracy}
                             </Badge>
-                            {analysis.score_drop > 0 && (
-                                <Text size="2" color="gray">Cost: −{analysis.score_drop.toFixed(1)}</Text>
-                            )}
                             <Text size="2" color="gray">Best: {formatAction(analysis.best_action)}</Text>
                         </Flex>
                     )}
@@ -86,13 +90,17 @@ export function AnalysisPage() {
 
                 <Flex direction="column" align="center" gap="4" style={{ flex: 1 }}>
                     {/* The board itself */ }
-                    <GameBoard
-                        gameState={states[currentIndex]}
-                        myRole={PlayerRole.P1}         // fixed orientation for the replay
-                        movePawn={() => {}}            // Can't move pawns on our own on a replay
-                        placeWall={() => {}}           // Can't place walls on our own on a replay
-                        readOnly
-                    />
+                    <Box style={{ position: 'relative', display: 'inline-block' }}>
+                        <GameBoard
+                            gameState={states[currentIndex]}
+                            myRole={PlayerRole.P1}
+                            movePawn={() => {}}
+                            placeWall={() => {}}
+                            readOnly
+                        />
+                        {bestMove && <BestMoveOverlay hint={bestMove} boardSize={states[currentIndex].size} />}
+                    </Box>
+                    
 
                     { /* Control Panel of the moves */ }
                     <Flex align="center" gap="2">
@@ -124,8 +132,3 @@ export function AnalysisPage() {
         </Flex>
     );
 }
-
-
-// Make an eval bar
-// save action history, back, forward, start phase, end phase buttons
-// Reuse the game board from the play page

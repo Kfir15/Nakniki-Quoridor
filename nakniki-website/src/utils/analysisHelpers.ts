@@ -1,5 +1,6 @@
 import { BoardManager, Position, PlayerRole, GameStatus, type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
-import { type MatchAction } from "../constants/analysis.constants";
+import { type MatchAction, type MoveAnalysis, Accuracy } from "../constants/analysis.constants";
+import { Orientation } from "@nakniki/shared";
 
 export function buildStates(actions: MatchAction[]) {
     const manager = new BoardManager(G.BOARD_SIZE);
@@ -56,3 +57,28 @@ export const formatAction = (ba: any[]) => {
         ? `Wall ${String(orient).toUpperCase()} (${pos[0]}, ${pos[1]})`
         : `Move (${pos[0]}, ${pos[1]})`;
 };
+
+export type Hint =
+  | { kind: 'move'; mover: PlayerRole; from: { r: number; c: number }; to: { r: number; c: number } }
+  | { kind: 'wall'; r: number; c: number; orient: Orientation };
+
+export function buildBestMove(
+  analysis: MoveAnalysis | null | undefined,
+  prevState: GameState | undefined,
+  currentIndex: number,
+): 
+Hint | null {
+    if (!analysis || !prevState || currentIndex === 0) return null;
+    if (analysis.accuracy === Accuracy.BEST) return null;          // nothing to show if the best move was player
+    const ba = analysis.best_action;
+    if (!ba) return null;
+
+    if (ba[0] === 'wall') {
+        const [r, c] = ba[2];
+        return { kind: 'wall', r, c, orient: ba[3] as Orientation };
+    }
+    const moverIsP1 = (currentIndex - 1) % 2 === 0;
+    const from = (moverIsP1 ? prevState.player1 : prevState.player2).position;
+    const [r, c] = ba[2];
+    return { kind: 'move', mover: moverIsP1 ? PlayerRole.P1 : PlayerRole.P2, from: { r: from.r, c: from.c }, to: { r, c } };
+}
