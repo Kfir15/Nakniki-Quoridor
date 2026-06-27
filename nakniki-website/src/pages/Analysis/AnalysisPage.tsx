@@ -1,5 +1,6 @@
 import { ENDPOINTS as E } from "../../constants/endpoints.constants";
 import { type MatchAction, type MatchInfo, ACCURACY_COLORS } from "../../constants/analysis.constants";
+import { UI_CONSTANTS as C } from "../../constants/ui.constants";
 import { sendGet } from "../../services/api";
 import { PlayerRole } from "@nakniki/shared";
 import { useParams } from 'react-router-dom';
@@ -61,6 +62,12 @@ export function AnalysisPage() {
         const moveWasP1 = (currentIndex - 1) % 2 === 0;
         let p1Eval    = analysis ? (moveWasP1 ? analysis.evaluation : -analysis.evaluation) : null;
 
+        const action = steps[currentIndex].action;
+        const pendingAnalysis =
+        !!action &&
+        (action.action_type === 'move' || action.action_type === 'wall') &&
+        !analysis;
+
         // Shows the best move
         const bestMove = useMemo(
         () => buildBestMove(steps[currentIndex].analysis, states[currentIndex - 1], currentIndex),
@@ -78,14 +85,20 @@ export function AnalysisPage() {
                         <EvalBar evaluation={p1Eval}></EvalBar>
                     </Box>
                     
-                    {analysis && (
-                        <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: 'rgba(15,15,15)' }}>
+                    {analysis ? (
+                        <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: C.COLORS.ANALYSIS_BOX }}>
                             <Badge color={ACCURACY_COLORS[analysis.accuracy]} variant="soft" radius="full">
                                 {analysis.accuracy}
                             </Badge>
                             <Text size="2" color="gray">Best: {formatAction(analysis.best_action)}</Text>
                         </Flex>
-                    )}
+                    ) : pendingAnalysis ? (
+                        <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: C.COLORS.ANALYSIS_BOX }}>
+                            <Text size="2" color="gray" style={{ textAlign: 'center', lineHeight: 1.5 }}>
+                                Our NAKNIKI-AI is working hard to analyze your match! Please return in a few moments! 🌭
+                            </Text>
+                        </Flex>
+                    ) : null}
                 </Box>
 
                 <Flex direction="column" align="center" gap="4" style={{ flex: 1 }}>

@@ -15,7 +15,7 @@ export function MoveList({ actions, currentIndex, onSelect }: {
 
     return (
         <Box style={{ height: '100%', overflowY: 'auto', padding: 12,
-            backgroundColor: 'rgba(15,15,15,0.75)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16 }}>
+            backgroundColor: C.COLORS.ANALYSIS_BOX, border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16 }}>
             {actions.map((a, i) => {
                 const step = i + 1;                       // the state AFTER move i
                 const isCurrent = currentIndex === step;
