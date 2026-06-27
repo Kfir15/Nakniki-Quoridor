@@ -1,17 +1,17 @@
 import { ENDPOINTS as E } from "../../constants/endpoints.constants";
-import { type MoveAnalysis, type MatchAction, type MatchInfo, Accuracy } from "../../constants/analysis.constants";
+import { type MoveAnalysis, type MatchAction, type MatchInfo, ACCURACY_COLORS } from "../../constants/analysis.constants";
 import { sendGet } from "../../services/api";
 import { BoardManager, Position, PlayerRole, GameStatus, type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "../../services/UserContext";
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { buildStates } from "../../utils/analysisHelpers";
-import { Flex, Button, Text, Box } from "@radix-ui/themes";
+import { buildStates, formatAction } from "../../utils/analysisHelpers";
+import { Flex, Button, Text, Box, Badge } from "@radix-ui/themes";
 import GameBoard from "../../components/game/GameBoard";
 import { ArrowLeftIcon, ArrowRightIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon } from "@radix-ui/react-icons";
-import { LayoutGroup } from 'framer-motion';
 import { MoveList } from "../../components/analysis/MoveList";
+import { EvalBar } from "../../components/analysis/EvalBar";
 
 
 
@@ -55,8 +55,10 @@ export function AnalysisPage() {
 
         const last = states.length - 1;
         const go = (i: number) => setCurrentIndex(Math.max(0, Math.min(last, i)));
-        const p1Name = match?.player_1?.username ?? "Player 1";
-        const p2Name = match?.player_2?.username ?? "Player 2";
+
+        const analysis  = steps[currentIndex].analysis;
+        const moveWasP1 = (currentIndex - 1) % 2 === 0;
+        let p1Eval    = analysis ? (moveWasP1 ? analysis.evaluation : -analysis.evaluation) : null;
 
         if (isLoading) return <LoadingSpinner></LoadingSpinner>;
         if (error || !match) return <Text color="red">{error ?? "Couldn't load analysis."}</Text>;
@@ -64,7 +66,23 @@ export function AnalysisPage() {
             <Flex align="center" style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: 0, padding: '0 40px' }}>
 
                 {/* EVAL BAR */}
-                <Box style={{ width: 'clamp(240px, 22vw, 320px)' }}></Box>
+                <Box style={{ width: '15%', height: '75%', paddingLeft:'10px', display: 'flex', flexDirection: 'column', gap: 16 }} >
+                    <Box style={{ flex: 1, minHeight: 0 }}>
+                        <EvalBar evaluation={p1Eval}></EvalBar>
+                    </Box>
+                    
+                    {analysis && (
+                        <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: 'rgba(15,15,15)' }}>
+                            <Badge color={ACCURACY_COLORS[analysis.accuracy]} variant="soft" radius="full">
+                                {analysis.accuracy}
+                            </Badge>
+                            {analysis.score_drop > 0 && (
+                                <Text size="2" color="gray">Cost: −{analysis.score_drop.toFixed(1)}</Text>
+                            )}
+                            <Text size="2" color="gray">Best: {formatAction(analysis.best_action)}</Text>
+                        </Flex>
+                    )}
+                </Box>
 
                 <Flex direction="column" align="center" gap="4" style={{ flex: 1 }}>
                     {/* The board itself */ }
@@ -96,7 +114,7 @@ export function AnalysisPage() {
                     </Flex>
                 </Flex>
 
-                <Box style={{ width: '15%', height: '75%', minHeight: 0, overflowY: 'scroll', zIndex: 50 }}>
+                <Box style={{ width: '15%', height: '75%', minHeight: 0, overflowY: 'auto', zIndex: 50 }}>
                         <MoveList 
                             actions={actions}
                             currentIndex={currentIndex}

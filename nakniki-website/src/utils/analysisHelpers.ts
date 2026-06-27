@@ -1,5 +1,5 @@
 import { BoardManager, Position, PlayerRole, GameStatus, type GameState, GAME_CONSTANTS as G } from "@nakniki/shared";
-import { type MoveAnalysis, type MatchAction, type MatchInfo, Accuracy } from "../constants/analysis.constants";
+import { type MatchAction } from "../constants/analysis.constants";
 
 export function buildStates(actions: MatchAction[]) {
     const manager = new BoardManager(G.BOARD_SIZE);
@@ -48,3 +48,11 @@ export function buildStates(actions: MatchAction[]) {
 
     return states;
 }
+
+export const formatAction = (ba: any[]) => {
+    if (!ba) return '';
+    const [type, , pos, orient] = ba;                 // [type, player, [r,c], orient (may be null)]
+    return type === G.ACTION_TYPES.WALL
+        ? `Wall ${String(orient).toUpperCase()} (${pos[0]}, ${pos[1]})`
+        : `Move (${pos[0]}, ${pos[1]})`;
+};

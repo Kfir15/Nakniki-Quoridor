@@ -1,3 +1,8 @@
+import { Badge } from '@radix-ui/themes';
+import type { ComponentProps } from 'react';
+
+type AccentColor = ComponentProps<typeof Badge>['color'];
+
 export enum Accuracy {   
     BEST = "Best Move",
     EXCELLENT = "Excellent",
@@ -7,7 +12,7 @@ export enum Accuracy {
     BLUNDER = "Blunder",
 }
 
-export const ACCURACY_COLORS: Record<Accuracy, string> = {
+export const ACCURACY_COLORS: Record<Accuracy, AccentColor> = {
     [Accuracy.BEST]: 'green',
     [Accuracy.EXCELLENT]: 'teal',
     [Accuracy.GOOD]: 'blue',
