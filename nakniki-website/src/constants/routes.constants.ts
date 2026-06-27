@@ -12,5 +12,5 @@ export const ROUTES = {
     WAITING: '/waiting/:lobbyType/:gameId',
     TOURNAMENTS: '/tournaments',
     TOURNAMENT_DETAIL: '/tournaments/:id',
-    TOURNAMENT_PARTICIPATE: '/tournaments/:id/participate'
+    ANALYSIS: '/analysis/:gameId',
 } as const;

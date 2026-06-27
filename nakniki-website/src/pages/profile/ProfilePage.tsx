@@ -9,12 +9,15 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { sendGet } from '../../services/api';
 import { useUser } from '../../services/UserContext';
 import { useState, useEffect } from 'react';
-import { ENDPOINTS as E } from '../../constants/endpoints.constants';
+import { ENDPOINTS as E} from '../../constants/endpoints.constants';
 import { UI_CONSTANTS as UI } from '../../constants/ui.constants';
+import { ROUTES as R } from '../../constants/routes.constants';
 import EditProfileDialog from '../../components/profile/EditProfileDialogue';
 import ProfileBackground from '../../components/profile/ProfileBackground';
+import { useNavigate } from 'react-router-dom';
 
 function findNemesis(history: any[]): NemesisData | null {
+
     // save every unique opponent - not including AI
     const opponents = new Map<string, any>();
     for (const m of history) {
@@ -43,6 +46,7 @@ function findNemesis(history: any[]): NemesisData | null {
 }
 
 export default function ProfilePage() {
+    
     const { user } = useUser();
     const [profile, setProfile] = useState<any>(null);
     const [rank, setRank] = useState<any>(null);
@@ -50,6 +54,7 @@ export default function ProfilePage() {
     const [tournaments, setTournaments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editOpen, setEditOpen] = useState(false);
+    const navigate = useNavigate();
     
     const fetchProfileData = async () => {
         if (!user?.token) return;
@@ -81,7 +86,6 @@ export default function ProfilePage() {
 
         if (isLoading) return <LoadingSpinner/>;
         if (!profile) return <Text color="red">Couldn't load profile. Try again.</Text>;
-
 
         const wonMatches = history.filter(m => m.winner_id === user?.id);
         const p1Matches = history.filter(m => m.is_player_1);
@@ -142,7 +146,7 @@ export default function ProfilePage() {
                     <Text size="2" weight="bold" color="gray" style={{ letterSpacing: '2px' }}>
                         MATCH HISTORY
                     </Text>
-                    <MatchList matches={matchRows} onAnalyze={(id) => alert('analyze match ' + id)} />
+                    <MatchList matches={matchRows} onAnalyze={(id) => navigate(R.ANALYSIS.replace(':gameId', id))} />
                 </Flex>
 
                 <EditProfileDialog

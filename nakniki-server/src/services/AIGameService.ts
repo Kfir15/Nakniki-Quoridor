@@ -42,7 +42,7 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
+        const stateBefore = structuredClone(session.game.getState());
 
         // try to move the pawn
         const [success, newState] = session.game.tryMovePawn(PlayerRole.P1, target);
@@ -63,7 +63,7 @@ export class AIGameService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
+        const stateBefore = structuredClone(session.game.getState());
 
         // try to place the wall
         const [success, newState] = session.game.tryPlaceWall(PlayerRole.P1, pos, orient);

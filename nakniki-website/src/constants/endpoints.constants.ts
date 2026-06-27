@@ -13,6 +13,7 @@ export const ENDPOINTS = {
     },
     MATCHES: {
         HISTORY: '/matches/history',
+        ANALYSIS: (id: string) => `/matches/${id}`,
     },
     TOURNAMENTS: {
         LIST: '/tournaments',

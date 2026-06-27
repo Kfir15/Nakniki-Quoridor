@@ -12,9 +12,10 @@ interface GameBoardProps {
     myRole: PlayerRole;
     movePawn: (row: number, col: number) => void;
     placeWall: (row: number, col: number, orientation: Orientation) => void;
+    readOnly?: boolean;
 }
 
-export default function GameBoard({ gameState, myRole, movePawn, placeWall }: GameBoardProps) {
+export default function GameBoard({ gameState, myRole, movePawn, placeWall, readOnly }: GameBoardProps) {
     // get game variables
     const size = gameState.size;
     const isP2 = myRole === PlayerRole.P2;
@@ -136,6 +137,7 @@ export default function GameBoard({ gameState, myRole, movePawn, placeWall }: Ga
                                                             player={getPlayerAt(r, c)!}
                                                             isCurrentTurn={gameState.turn === getPlayerAt(r, c)}
                                                             onClick={() => handleCellClick(r, c)}
+                                                            disableLayout={readOnly}
                                                         />
                                                     )}
                                                 </BoardCell>
