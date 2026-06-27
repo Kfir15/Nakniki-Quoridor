@@ -133,7 +133,7 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
+        const stateBefore = structuredClone(session.game.getState());
 
         // get the player session
         const role = this.getPlayerRole(session, userId, socketId);
@@ -175,7 +175,7 @@ export class MultiplayerService {
         // get the session
         const session = this.gameManager.getSession(gameId);
         if (!session || session.game.status !== GameStatus.IN_PROGRESS) return null;
-        const stateBefore = session.game.getState();
+        const stateBefore = structuredClone(session.game.getState());
 
         // get the player role and check that it is his turn
         const role = this.getPlayerRole(session, userId, socketId);
