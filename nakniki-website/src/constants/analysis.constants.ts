@@ -39,6 +39,9 @@ export interface MatchInfo {
     id: string;
     status: string;
     winner_id: string | null;
+    is_ai_match: boolean;
+    player_1_id: string;
+    player_2_id: string | null;
     player_1: { username: string; avatar_url: string | null } | null;
     player_2: { username: string; avatar_url: string | null } | null;
 }
