@@ -1,5 +1,5 @@
 import { ENDPOINTS as E } from "../../constants/endpoints.constants";
-import { type MatchAction, type MatchInfo, ACCURACY_COLORS } from "../../constants/analysis.constants";
+import { type MatchAction, type MatchInfo, ACCURACY_COLORS, Accuracy } from "../../constants/analysis.constants";
 import { UI_CONSTANTS as C } from "../../constants/ui.constants";
 import { sendGet } from "../../services/api";
 import { PlayerRole } from "@nakniki/shared";
@@ -58,17 +58,42 @@ export function AnalysisPage() {
         const last = states.length - 1;
         const go = (i: number) => setCurrentIndex(Math.max(0, Math.min(last, i)));
 
+        // Orient the board to the side the viewer played (AI matches: the human is P1).
+        const viewerRole = match?.player_2_id && match.player_2_id === user?.id ? PlayerRole.P2 : PlayerRole.P1;
+        const isAiMatch = match?.is_ai_match === true;
+
         const analysis  = steps[currentIndex].analysis;
         const moveWasP1 = (currentIndex - 1) % 2 === 0;
-        let p1Eval    = analysis ? (moveWasP1 ? analysis.evaluation : -analysis.evaluation) : null;
+
+        // Eval bar: carry the last real eval forward through AI / not-yet-analyzed moves, so the bar "holds".
+        const evalSeries = useMemo(() => {
+            const out: (number | null)[] = [];
+            let carried: number | null = null;
+            steps.forEach((step, i) => {
+                if (step.analysis) {
+                    const wasP1 = (i - 1) % 2 === 0;
+                    carried = wasP1 ? step.analysis.evaluation : -step.analysis.evaluation;
+                }
+                out.push(carried);
+            });
+            return out;
+        }, [steps]);
+        const p1Eval = evalSeries[currentIndex];
 
         const action = steps[currentIndex].action;
-        const pendingAnalysis =
-        !!action &&
-        (action.action_type === 'move' || action.action_type === 'wall') &&
-        !analysis;
+        const isAnalyzable = !!action && (action.action_type === 'move' || action.action_type === 'wall');
+        // In an AI match the AI is P2; its moves are never analyzed, so treat them as the optimal (best) move.
+        const isAiMove = isAiMatch && isAnalyzable && !moveWasP1 && !analysis;
+        const pendingAnalysis = isAnalyzable && !analysis && !isAiMove;
 
-        // Shows the best move
+        // The AI's own move, shaped like a best_action for display.
+        const aiBest = action && isAiMove
+            ? (action.action_type === 'wall'
+                ? ['wall', '', [action.action_data.r, action.action_data.c], action.action_data.orient]
+                : ['move', '', [action.action_data.r, action.action_data.c]])
+            : null;
+
+        // Best-move overlay — only for real, analyzed (human) moves; null otherwise.
         const bestMove = useMemo(
         () => buildBestMove(steps[currentIndex].analysis, states[currentIndex - 1], currentIndex),
         [steps, states, currentIndex],
@@ -82,7 +107,7 @@ export function AnalysisPage() {
                 {/* EVAL BAR */}
                 <Box style={{ width: '15%', height: '75%', paddingLeft:'10px', display: 'flex', flexDirection: 'column', gap: 16 }} >
                     <Box style={{ flex: 1, minHeight: 0 }}>
-                        <EvalBar evaluation={p1Eval}></EvalBar>
+                        <EvalBar evaluation={p1Eval} flipped={viewerRole === PlayerRole.P2}></EvalBar>
                     </Box>
                     
                     {analysis ? (
@@ -91,6 +116,13 @@ export function AnalysisPage() {
                                 {analysis.accuracy}
                             </Badge>
                             <Text size="2" color="gray">Best: {formatAction(analysis.best_action)}</Text>
+                        </Flex>
+                    ) : isAiMove ? (
+                        <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: C.COLORS.ANALYSIS_BOX }}>
+                            <Badge color={ACCURACY_COLORS[Accuracy.BEST]} variant="soft" radius="full">
+                                {Accuracy.BEST}
+                            </Badge>
+                            <Text size="2" color="gray">Best: {formatAction(aiBest!)}</Text>
                         </Flex>
                     ) : pendingAnalysis ? (
                         <Flex direction="column" gap="2" style={{ padding: 12, borderRadius: 12, backgroundColor: C.COLORS.ANALYSIS_BOX }}>
@@ -106,12 +138,12 @@ export function AnalysisPage() {
                     <Box style={{ position: 'relative', display: 'inline-block' }}>
                         <GameBoard
                             gameState={states[currentIndex]}
-                            myRole={PlayerRole.P1}
+                            myRole={viewerRole}
                             movePawn={() => {}}
                             placeWall={() => {}}
                             readOnly
                         />
-                        {bestMove && <BestMoveOverlay hint={bestMove} boardSize={states[currentIndex].size} />}
+                        {bestMove && <BestMoveOverlay hint={bestMove} boardSize={states[currentIndex].size} flipped={viewerRole === PlayerRole.P2} />}
                     </Box>
                     
 

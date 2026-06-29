@@ -11,9 +11,13 @@ export type Hint =
   | { kind: 'move'; mover: PlayerRole; from: { r: number; c: number }; to: { r: number; c: number } }
   | { kind: 'wall'; r: number; c: number; orient: Orientation };
 
-export default function BestMoveOverlay({ hint, boardSize }: { hint: Hint; boardSize: number }) {
-  const total = PAD * 2 + boardSize * CELL + (boardSize - 1) * GAP;
-  const ctr = (r: number, c: number) => ({ x: PAD + c * PITCH + CELL / 2, y: PAD + r * PITCH + CELL / 2 });
+export default function BestMoveOverlay({ hint, boardSize, flipped = false }: { hint: Hint; boardSize: number; flipped?: boolean }) {
+  const N = boardSize;
+  const total = PAD * 2 + N * CELL + (N - 1) * GAP;
+  // When the board is oriented for P2 it's a 180° flip, so mirror rows/cols (and rectangles) about the centre.
+  const gr = (r: number) => flipped ? (N - 1 - r) : r;
+  const gc = (c: number) => flipped ? (N - 1 - c) : c;
+  const ctr = (r: number, c: number) => ({ x: PAD + gc(c) * PITCH + CELL / 2, y: PAD + gr(r) * PITCH + CELL / 2 });
 
   return (
     <Box style={{ position: 'absolute', top: 0, left: 0, width: total, height: total, pointerEvents: 'none', zIndex: 25 }}>
@@ -30,7 +34,7 @@ export default function BestMoveOverlay({ hint, boardSize }: { hint: Hint; board
             </svg>
           ); })()}
 
-          <Box style={{ position: 'absolute', left: PAD + hint.to.c * PITCH, top: PAD + hint.to.r * PITCH,
+          <Box style={{ position: 'absolute', left: PAD + gc(hint.to.c) * PITCH, top: PAD + gr(hint.to.r) * PITCH,
                         width: CELL, height: CELL, display: 'flex', alignItems: 'center', justifyContent: 'center',
                         opacity: 0.45, filter: 'grayscale(0.85)' }}>
             <Pawn player={hint.mover} disableLayout />
@@ -38,11 +42,13 @@ export default function BestMoveOverlay({ hint, boardSize }: { hint: Hint; board
         </>
       ) : (() => {
         const h = hint.orient === Orientation.HORIZONTAL;
+        const w = h ? 2 * CELL + GAP : GAP;
+        const hgt = h ? GAP : 2 * CELL + GAP;
+        let x = PAD + hint.c * PITCH + (h ? 0 : CELL);
+        let y = PAD + hint.r * PITCH + (h ? CELL : 0);
+        if (flipped) { x = total - x - w; y = total - y - hgt; }   // mirror the wall rectangle
         return (
-          <Box style={{ position: 'absolute',
-                        left: PAD + hint.c * PITCH + (h ? 0 : CELL),
-                        top:  PAD + hint.r * PITCH + (h ? CELL : 0),
-                        filter: 'grayscale(0.3) brightness(0.7)' }}>
+          <Box style={{ position: 'absolute', left: x, top: y, filter: 'grayscale(0.3) brightness(0.7)' }}>
             <Wall orientation={hint.orient} isPreview />
           </Box>
         );
