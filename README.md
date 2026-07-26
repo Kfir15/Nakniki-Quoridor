@@ -6,6 +6,8 @@
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.x-purple.svg?style=flat-square&logo=socketdotio)](https://socket.io/)
 [![Supabase](https://img.shields.io/badge/Supabase-black?style=flat-square&logo=supabase&logoColor=3ECF8E)](https://supabase.com/)
 
+🎮 **Play live here:** [nakniki-quoridor.brandale.co.il](https://nakniki-quoridor.brandale.co.il)
+
 A high-fidelity, real-time multiplayer implementation of the classic abstract strategy game **Quoridor**. This system features a highly optimized asynchronous AI engine and real-time socket-based matchmaking lobby synchronization.
 
 ---
